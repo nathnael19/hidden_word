@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hidden_word/core/style/app_theme.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
-import 'package:hidden_word/features/home/presentation/pages/home_page.dart';
+import 'package:hidden_word/features/splash/presentation/pages/splash_page.dart';
 import 'injection_container.dart' as di;
 
 void main() async {
@@ -15,15 +16,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Hidden Word',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: BlocProvider(
-        create: (_) => di.sl<HomeCubit>(),
-        child: const HomePage(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => di.sl<HomeCubit>()),
+      ],
+      child: MaterialApp(
+        title: 'Hidden Word',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.darkTheme,
+        home: const SplashPage(),
       ),
     );
   }
