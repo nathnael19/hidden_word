@@ -6,6 +6,7 @@ class AppColors {
   
   // Primary
   static const Color primaryRed = Color(0xFFE63946);
+  static const Color primaryPink = Color(0xFFFF8B94); // Soft pink for characters and glows
   
   // Secondary
   static const Color gold = Color(0xFFFFD700);
