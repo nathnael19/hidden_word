@@ -6,7 +6,14 @@ class HomeCubit extends Cubit<HomeState> {
 
   void init() {
     emit(HomeLoading());
-    // Simulate some logic
-    emit(HomeLoaded());
+    // Initializing with default theme
+    emit(const HomeLoaded(selectedTheme: 'Food'));
+  }
+
+  void selectTheme(String theme) {
+    final currentState = state;
+    if (currentState is HomeLoaded) {
+      emit(currentState.copyWith(selectedTheme: theme));
+    }
   }
 }
