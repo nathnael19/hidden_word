@@ -54,7 +54,6 @@ class _HomePageState extends State<HomePage> {
                           _buildHeroSection(),
                           const SizedBox(height: 54),
                           _buildThemeSection(context, state.selectedTheme),
-                          const SizedBox(height: 48),
                           _buildStartButton(),
                           const SizedBox(
                             height: 140,
@@ -228,7 +227,7 @@ class _HomePageState extends State<HomePage> {
           crossAxisCount: 2,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 0.9,
+          childAspectRatio: 1.2,
           children: [
             _ThemeCard(
               title: 'Food',
