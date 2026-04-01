@@ -23,6 +23,10 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.obsidian,
+      extendBodyBehindAppBar: true,
+      extendBody: true,
+      appBar: const _HomeAppBar(),
+      bottomNavigationBar: const _BottomNavBar(),
       body: BlocBuilder<HomeCubit, HomeState>(
         builder: (context, state) {
           if (state is HomeLoading) {
@@ -33,38 +37,32 @@ class _HomePageState extends State<HomePage> {
           if (state is HomeLoaded) {
             return Stack(
               children: [
-                // Cinematic Background Elements
+                // Cinematic Background Elements (behind scroll view)
                 _buildBackgroundGlows(),
                 _buildEclipseArc(),
 
                 // Main Content
                 SafeArea(
+                  bottom: false,
                   child: SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildAppBar(),
                           const SizedBox(height: 54),
                           _buildHeroSection(),
                           const SizedBox(height: 54),
                           _buildThemeSection(context, state.selectedTheme),
                           const SizedBox(height: 48),
                           _buildStartButton(),
-                          const SizedBox(height: 120), // Padding for BottomNav
+                          const SizedBox(
+                            height: 140,
+                          ), // Space for fixed BottomNav
                         ],
                       ),
                     ),
                   ),
-                ),
-
-                // Bottom Nav
-                const Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: _BottomNavBar(),
                 ),
               ],
             );
@@ -130,53 +128,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAppBar() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Icon(
-            Icons.sort,
-            color: AppColors.onSurface.withOpacity(0.7),
-            size: 24,
-          ),
-          // Compact Centered Logo ስውር ቃል
-          Row(
-            children: [
-              _buildSmallLogoBox('ስ', AppColors.onSurface),
-              _buildSmallLogoBox('ው', AppColors.onSurface),
-              _buildSmallLogoBox('ር', AppColors.onSurface),
-              const SizedBox(width: 4),
-              _buildSmallLogoBox('ቃ', AppColors.primaryPink),
-              _buildSmallLogoBox('ል', AppColors.primaryPink),
-            ],
-          ),
-          Icon(
-            Icons.settings_outlined,
-            color: AppColors.onSurface.withOpacity(0.7),
-            size: 24,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSmallLogoBox(String text, Color color) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 0.5),
-      padding: const EdgeInsets.all(1.5),
-      child: Text(
-        text,
-        style: GoogleFonts.epilogue(
-          fontSize: 30,
-          fontWeight: FontWeight.bold,
-          color: color,
-        ),
-      ),
-    );
-  }
-
   Widget _buildHeroSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,15 +142,28 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         const SizedBox(height: 16),
-        // Hero Split-Color Amharic Logo
+        // Hero Split-Color Amharic Logo (NO BORDERS)
         Row(
           children: [
-            _buildHeroLogoBox('ስ', AppColors.onSurface),
-            _buildHeroLogoBox('ው', AppColors.onSurface),
-            _buildHeroLogoBox('ር', AppColors.onSurface),
-            const SizedBox(width: 8),
-            _buildHeroLogoBox('ቃ', AppColors.primaryPink),
-            _buildHeroLogoBox('ል', AppColors.primaryPink),
+            Text(
+              'ስውር',
+              style: GoogleFonts.epilogue(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                color: AppColors.onSurface,
+                letterSpacing: 4,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'ቃል',
+              style: GoogleFonts.epilogue(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                color: AppColors.primaryPink,
+                letterSpacing: 4,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -228,23 +192,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildHeroLogoBox(String text, Color color) {
-    return Container(
-      margin: const EdgeInsets.only(right: 3),
-      width: 44,
-      height: 54,
-      alignment: Alignment.center,
-      child: Text(
-        text,
-        style: GoogleFonts.epilogue(
-          fontSize: 28,
-          fontWeight: FontWeight.w900,
-          color: color,
-        ),
-      ),
     );
   }
 
@@ -383,6 +330,54 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const _HomeAppBar();
+
+  @override
+  Size get preferredSize => const Size.fromHeight(70);
+
+  @override
+  Widget build(BuildContext context) {
+    // Custom Top App Bar with fixed position
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 24.0),
+        child: Icon(
+          Icons.sort,
+          color: AppColors.onSurface.withOpacity(0.7),
+          size: 24,
+        ),
+      ),
+
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'ስውር',
+            style: GoogleFonts.epilogue(
+              // fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppColors.onSurface,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            'ቃል',
+            style: GoogleFonts.epilogue(
+              // fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryPink,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ThemeCard extends StatelessWidget {
   final String title;
   final String keywords;
@@ -517,10 +512,13 @@ class _BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 84,
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLow.withOpacity(0.95),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
