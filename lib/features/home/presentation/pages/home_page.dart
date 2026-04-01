@@ -26,11 +26,17 @@ class _HomePageState extends State<HomePage> {
       body: BlocBuilder<HomeCubit, HomeState>(
         builder: (context, state) {
           if (state is HomeLoading) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.gold),
+            );
           }
           if (state is HomeLoaded) {
             return Stack(
               children: [
+                // Cinematic Background Elements
+                _buildBackgroundGlows(),
+                _buildEclipseArc(),
+
                 // Main Content
                 SafeArea(
                   child: SingleChildScrollView(
@@ -40,11 +46,11 @@ class _HomePageState extends State<HomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildAppBar(),
-                          const SizedBox(height: 32),
-                          _buildHeader(),
-                          const SizedBox(height: 48),
+                          const SizedBox(height: 54),
+                          _buildHeroSection(),
+                          const SizedBox(height: 54),
                           _buildThemeSection(context, state.selectedTheme),
-                          const SizedBox(height: 40),
+                          const SizedBox(height: 48),
                           _buildStartButton(),
                           const SizedBox(height: 120), // Padding for BottomNav
                         ],
@@ -52,7 +58,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-                
+
                 // Bottom Nav
                 const Positioned(
                   bottom: 0,
@@ -69,122 +75,174 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAppBar() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Icon(Icons.sort, color: AppColors.onSurface.withOpacity(0.8), size: 28),
-        // Amharic Logo ስውር ቃል
-        Row(
-          children: [
-            _buildSmallLogoBox('ስ'),
-            _buildSmallLogoBox('ው'),
-            _buildSmallLogoBox('ር'),
-            const SizedBox(width: 4),
-            _buildSmallLogoBox('ቃ'),
-            _buildSmallLogoBox('ል'),
-          ],
-        ),
-        Icon(Icons.settings_outlined, color: AppColors.onSurface.withOpacity(0.8), size: 28),
-      ],
-    );
-  }
-
-  Widget _buildSmallLogoBox(String text) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 1),
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.onSurface.withOpacity(0.4)),
-        borderRadius: BorderRadius.circular(2),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.epilogue(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          color: AppColors.onSurface,
+  Widget _buildBackgroundGlows() {
+    return Positioned(
+      left: -100,
+      top: 100,
+      child: Container(
+        width: 300,
+        height: 300,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            colors: [
+              AppColors.primaryPink.withOpacity(0.08),
+              AppColors.primaryPink.withOpacity(0.02),
+              Colors.transparent,
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        // Decorative Arc Background
-        Positioned(
-          right: -60,
-          top: -20,
-          child: Opacity(
-            opacity: 0.1,
+  Widget _buildEclipseArc() {
+    return Positioned(
+      right: -80,
+      top: 100,
+      child: Opacity(
+        opacity: 0.15,
+        child: Container(
+          width: 350,
+          height: 350,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: AppColors.onSurface.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Center(
             child: Container(
-              width: 200,
-              height: 200,
+              width: 310,
+              height: 310,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.gold, width: 2),
+                border: Border.all(
+                  color: AppColors.onSurface.withOpacity(0.1),
+                  width: 1,
+                ),
               ),
             ),
           ),
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      ),
+    );
+  }
+
+  Widget _buildAppBar() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Icon(
+            Icons.sort,
+            color: AppColors.onSurface.withOpacity(0.7),
+            size: 24,
+          ),
+          // Compact Centered Logo ስውር ቃል
+          Row(
+            children: [
+              _buildSmallLogoBox('ስ', AppColors.onSurface),
+              _buildSmallLogoBox('ው', AppColors.onSurface),
+              _buildSmallLogoBox('ር', AppColors.onSurface),
+              const SizedBox(width: 4),
+              _buildSmallLogoBox('ቃ', AppColors.primaryPink),
+              _buildSmallLogoBox('ል', AppColors.primaryPink),
+            ],
+          ),
+          Icon(
+            Icons.settings_outlined,
+            color: AppColors.onSurface.withOpacity(0.7),
+            size: 24,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSmallLogoBox(String text, Color color) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 0.5),
+      padding: const EdgeInsets.all(1.5),
+      child: Text(
+        text,
+        style: GoogleFonts.epilogue(
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'THE HIDDEN WORD',
+          style: GoogleFonts.manrope(
+            color: AppColors.gold,
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Hero Split-Color Amharic Logo
+        Row(
           children: [
-            Text(
-              'THE HIDDEN WORD',
-              style: GoogleFonts.manrope(
-                color: AppColors.gold,
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.5,
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Large Amharic Logo
-            Row(
-              children: [
-                _buildHeaderLogoBox('ስ'),
-                _buildHeaderLogoBox('ው'),
-                _buildHeaderLogoBox('ር'),
-                const SizedBox(width: 12),
-                _buildHeaderLogoBox('ቃ', color: AppColors.primaryRed.withOpacity(0.4)),
-                _buildHeaderLogoBox('ል', color: AppColors.primaryRed.withOpacity(0.4)),
+            _buildHeroLogoBox('ስ', AppColors.onSurface),
+            _buildHeroLogoBox('ው', AppColors.onSurface),
+            _buildHeroLogoBox('ር', AppColors.onSurface),
+            const SizedBox(width: 8),
+            _buildHeroLogoBox('ቃ', AppColors.primaryPink),
+            _buildHeroLogoBox('ል', AppColors.primaryPink),
+          ],
+        ),
+        const SizedBox(height: 16),
+        // Divider with Pink Gradient
+        Container(
+          width: 120,
+          height: 4,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(2),
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primaryPink.withOpacity(0.6),
+                Colors.transparent,
               ],
             ),
-            const SizedBox(height: 24),
-            Text(
-              'Find the spy among you. Speak\ncarefully, trust no one.',
-              style: GoogleFonts.beVietnamPro(
-                fontSize: 18,
-                color: AppColors.onSurface.withOpacity(0.7),
-                height: 1.4,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ],
+          ),
+        ),
+        const SizedBox(height: 32),
+        Text(
+          'Find the spy among you. Speak\ncarefully, trust no one.',
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 18,
+            color: AppColors.onSurface.withOpacity(0.6),
+            height: 1.4,
+            fontWeight: FontWeight.w400,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildHeaderLogoBox(String text, {Color? color}) {
+  Widget _buildHeroLogoBox(String text, Color color) {
     return Container(
-      margin: const EdgeInsets.only(right: 4),
-      width: 48,
-      height: 58,
-      decoration: BoxDecoration(
-        border: Border.all(color: color ?? AppColors.onSurface, width: 2),
-        borderRadius: BorderRadius.circular(8),
-      ),
+      margin: const EdgeInsets.only(right: 3),
+      width: 44,
+      height: 54,
       alignment: Alignment.center,
       child: Text(
         text,
         style: GoogleFonts.epilogue(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: color ?? AppColors.onSurface,
+          fontSize: 28,
+          fontWeight: FontWeight.w900,
+          color: color,
         ),
       ),
     );
@@ -208,9 +266,9 @@ class _HomePageState extends State<HomePage> {
             Text(
               'REQUIRED',
               style: GoogleFonts.manrope(
-                fontSize: 10,
+                fontSize: 8,
                 fontWeight: FontWeight.w900,
-                color: AppColors.onSurface.withOpacity(0.3),
+                color: AppColors.onSurface.withOpacity(0.2),
                 letterSpacing: 1,
               ),
             ),
@@ -271,9 +329,9 @@ class _HomePageState extends State<HomePage> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryRed.withOpacity(0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                color: AppColors.primaryRed.withOpacity(0.2),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
@@ -286,15 +344,19 @@ class _HomePageState extends State<HomePage> {
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
-                  letterSpacing: 1,
+                  letterSpacing: 1.2,
                 ),
               ),
-              const SizedBox(width: 12),
-              const Icon(Icons.play_arrow, color: Colors.white, size: 20),
+              const SizedBox(width: 10),
+              const Icon(
+                Icons.play_arrow_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -303,7 +365,7 @@ class _HomePageState extends State<HomePage> {
               style: GoogleFonts.manrope(
                 fontSize: 10,
                 fontWeight: FontWeight.w800,
-                color: AppColors.onSurface.withOpacity(0.4),
+                color: AppColors.onSurface.withOpacity(0.3),
               ),
             ),
             Text(
@@ -311,7 +373,7 @@ class _HomePageState extends State<HomePage> {
               style: GoogleFonts.manrope(
                 fontSize: 10,
                 fontWeight: FontWeight.w800,
-                color: AppColors.gold.withOpacity(0.8),
+                color: AppColors.gold.withOpacity(0.6),
               ),
             ),
           ],
@@ -345,19 +407,13 @@ class _ThemeCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppColors.surfaceContainerHigh,
+          color: AppColors.surfaceContainerHigh.withOpacity(0.8),
           borderRadius: BorderRadius.circular(24),
           border: isSelected
-              ? Border.all(color: AppColors.primaryRed.withOpacity(0.4), width: 1.5)
-              : null,
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primaryRed.withOpacity(0.1),
-                    blurRadius: 10,
-                    spreadRadius: 1,
-                  )
-                ]
+              ? Border.all(
+                  color: AppColors.primaryPink.withOpacity(0.3),
+                  width: 1.5,
+                )
               : null,
         ),
         child: Stack(
@@ -365,7 +421,13 @@ class _ThemeCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon, color: isSelected ? AppColors.primaryRed : AppColors.onSurface.withOpacity(0.6), size: 32),
+                Icon(
+                  icon,
+                  color: isSelected
+                      ? AppColors.primaryPink
+                      : AppColors.onSurface.withOpacity(0.5),
+                  size: 30,
+                ),
                 const Spacer(),
                 Text(
                   title,
@@ -380,7 +442,7 @@ class _ThemeCard extends StatelessWidget {
                   keywords,
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 12,
-                    color: AppColors.onSurface.withOpacity(0.4),
+                    color: AppColors.onSurface.withOpacity(0.3),
                     height: 1.4,
                   ),
                 ),
@@ -394,7 +456,7 @@ class _ThemeCard extends StatelessWidget {
                   width: 8,
                   height: 8,
                   decoration: const BoxDecoration(
-                    color: AppColors.primaryRed,
+                    color: AppColors.primaryPink,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -411,13 +473,13 @@ class _ThemeCard extends StatelessWidget {
                       width: 4,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.2),
+                        color: Colors.green.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(2),
                       ),
                       child: Stack(
                         children: [
                           Positioned(
-                            top: 10,
+                            top: 12,
                             left: -2,
                             child: Container(
                               width: 8,
@@ -427,7 +489,7 @@ class _ThemeCard extends StatelessWidget {
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.green.withOpacity(0.8),
+                                    color: Colors.green.withOpacity(0.6),
                                     blurRadius: 8,
                                     spreadRadius: 2,
                                   ),
@@ -454,41 +516,48 @@ class _BottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 90,
-      margin: const EdgeInsets.all(16),
+      height: 84,
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(30),
+        color: AppColors.surfaceContainerLow.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(28),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildNavItem(context, Icons.home_filled, 'HOME', true),
-          _buildNavItem(context, Icons.history, 'HISTORY', false),
+          _buildNavItem(context, Icons.history_rounded, 'HISTORY', false),
           _buildNavItem(context, Icons.menu_book_rounded, 'RULES', false),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(BuildContext context, IconData icon, String label, bool isActive) {
+  Widget _buildNavItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+    bool isActive,
+  ) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           decoration: isActive
               ? BoxDecoration(
-                  color: AppColors.primaryRed.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(16),
+                  color: AppColors.primaryRed.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(14),
                 )
               : null,
           child: Column(
             children: [
               Icon(
                 icon,
-                color: isActive ? AppColors.primaryRed : AppColors.onSurface.withOpacity(0.4),
-                size: 26,
+                color: isActive
+                    ? AppColors.primaryRed
+                    : AppColors.onSurface.withOpacity(0.3),
+                size: 24,
               ),
               const SizedBox(height: 4),
               Text(
@@ -496,7 +565,9 @@ class _BottomNavBar extends StatelessWidget {
                 style: GoogleFonts.manrope(
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
-                  color: isActive ? AppColors.onSurface : AppColors.onSurface.withOpacity(0.4),
+                  color: isActive
+                      ? AppColors.onSurface
+                      : AppColors.onSurface.withOpacity(0.3),
                   letterSpacing: 0.5,
                 ),
               ),
