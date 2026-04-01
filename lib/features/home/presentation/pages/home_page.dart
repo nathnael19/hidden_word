@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
+import 'package:hidden_word/features/game_lobby/presentation/pages/game_lobby_page.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
 
@@ -267,39 +268,47 @@ class _HomePageState extends State<HomePage> {
   Widget _buildStartButton() {
     return Column(
       children: [
-        Container(
-          width: double.infinity,
-          height: 64,
-          decoration: BoxDecoration(
-            color: AppColors.primaryRed,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryRed.withOpacity(0.2),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'START GAME',
-                style: GoogleFonts.manrope(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  letterSpacing: 1.2,
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const GameLobbyPage()),
+            );
+          },
+          child: Container(
+            width: double.infinity,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.primaryRed,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryRed.withOpacity(0.2),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
                 ),
-              ),
-              const SizedBox(width: 10),
-              const Icon(
-                Icons.play_arrow_rounded,
-                color: Colors.white,
-                size: 24,
-              ),
-            ],
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'START GAME',
+                  style: GoogleFonts.manrope(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Icon(
+                  Icons.play_arrow_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 24),
