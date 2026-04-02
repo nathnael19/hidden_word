@@ -6,7 +6,7 @@ import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
 import 'package:hidden_word/features/game/presentation/pages/results_page.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
-import 'package:hidden_word/features/multiplayer/data/models/network_message.dart';
+import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
 
 class VotingPage extends StatelessWidget {
   const VotingPage({super.key});
@@ -176,11 +176,17 @@ class VotingPage extends StatelessWidget {
           isSelected: isSelected,
           onTap: () {
             context.read<GameCubit>().selectVote(index);
-            final myName = context.read<MultiplayerCubit>().state.playerName;
-            context.read<MultiplayerCubit>().sendToHost(NetworkMessage(
-              type: NetworkMessageType.action,
-              payload: {'action': 'VOTE', 'playerName': myName, 'votedPlayerName': targetName},
-            ).encode());
+            final mp = context.read<MultiplayerCubit>();
+            final st = mp.state;
+            if (st.status == MultiplayerStatus.hosting ||
+                st.status == MultiplayerStatus.connected) {
+              mp.submitVote(st.playerName, targetName);
+            } else {
+              final spies = context.read<GameCubit>().state.spyPlayerNames;
+              final caught =
+                  spies.isNotEmpty && spies.contains(targetName);
+              context.read<GameCubit>().startResults(caught, targetName);
+            }
           },
         );
       },
