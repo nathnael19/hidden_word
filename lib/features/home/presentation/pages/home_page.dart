@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
-import 'package:hidden_word/features/game_lobby/presentation/pages/game_lobby_page.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
+import 'package:hidden_word/features/home/presentation/widgets/connect_section.dart';
 import 'package:hidden_word/features/settings/presentation/pages/settings_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -26,7 +26,9 @@ class _HomePageState extends State<HomePage> {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         final currentIndex = (state is HomeLoaded) ? state.currentTabIndex : 0;
-        final selectedTheme = (state is HomeLoaded) ? state.selectedTheme : 'Food';
+        final selectedTheme = (state is HomeLoaded)
+            ? state.selectedTheme
+            : 'Food';
 
         return Scaffold(
           backgroundColor: AppColors.obsidian,
@@ -41,7 +43,7 @@ class _HomePageState extends State<HomePage> {
                   index: currentIndex,
                   children: [
                     _HomeSection(selectedTheme: selectedTheme),
-                    const _PlaceholderSection(title: 'HISTORY'),
+                    const ConnectSection(),
                     const _PlaceholderSection(title: 'RULES'),
                     const SettingsPage(),
                   ],
@@ -78,9 +80,7 @@ class _HomeSection extends StatelessWidget {
                   const SizedBox(height: 54),
                   _buildThemeSection(context, selectedTheme),
                   _buildStartButton(context),
-                  const SizedBox(
-                    height: 140,
-                  ), // Space for fixed BottomNav
+                  const SizedBox(height: 140), // Space for fixed BottomNav
                 ],
               ),
             ),
@@ -287,10 +287,8 @@ class _HomeSection extends StatelessWidget {
       children: [
         GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const GameLobbyPage()),
-            );
+            context.read<HomeCubit>().setTabIndex(1);
+            context.read<HomeCubit>().setConnectViewMode(ConnectViewMode.main);
           },
           child: Container(
             width: double.infinity,
@@ -529,10 +527,34 @@ class _BottomNavBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildNavItem(context, Icons.home_filled, 'HOME', currentIndex == 0, 0),
-              _buildNavItem(context, Icons.history_rounded, 'HISTORY', currentIndex == 1, 1),
-              _buildNavItem(context, Icons.menu_book_rounded, 'RULES', currentIndex == 2, 2),
-              _buildNavItem(context, Icons.settings_rounded, 'SETTINGS', currentIndex == 3, 3),
+              _buildNavItem(
+                context,
+                Icons.home_filled,
+                'HOME',
+                currentIndex == 0,
+                0,
+              ),
+              _buildNavItem(
+                context,
+                Icons.sensors_rounded,
+                'CONNECT',
+                currentIndex == 1,
+                1,
+              ),
+              _buildNavItem(
+                context,
+                Icons.menu_book_rounded,
+                'RULES',
+                currentIndex == 2,
+                2,
+              ),
+              _buildNavItem(
+                context,
+                Icons.settings_rounded,
+                'SETTINGS',
+                currentIndex == 3,
+                3,
+              ),
             ],
           ),
         );
@@ -548,7 +570,12 @@ class _BottomNavBar extends StatelessWidget {
     int index,
   ) {
     return GestureDetector(
-      onTap: () => context.read<HomeCubit>().setTabIndex(index),
+      onTap: () {
+        context.read<HomeCubit>().setTabIndex(index);
+        if (index == 1) {
+          context.read<HomeCubit>().setConnectViewMode(ConnectViewMode.main);
+        }
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
