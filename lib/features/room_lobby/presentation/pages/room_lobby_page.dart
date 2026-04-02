@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/room_lobby/presentation/cubit/room_lobby_cubit.dart';
 import 'package:hidden_word/features/room_lobby/presentation/cubit/room_lobby_state.dart';
+import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
+import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
 
 class RoomLobbyPage extends StatefulWidget {
   const RoomLobbyPage({super.key});
@@ -21,79 +23,60 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.obsidian,
-      appBar: _buildAppBar(),
-      body: BlocBuilder<RoomLobbyCubit, RoomLobbyState>(
-        builder: (context, state) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 32),
-                _buildSettingsCard(context, state),
-                const SizedBox(height: 32),
-                _buildInviteSection(state.roomId),
-                const SizedBox(height: 40),
-                _buildPlayersHeader(state.players.length),
-                const SizedBox(height: 24),
-                _buildPlayersGrid(state.players),
-                const SizedBox(height: 48),
-                _buildStartButton(),
-                const SizedBox(height: 40),
-              ],
-            ),
-          );
-        },
-      ),
+    return BlocBuilder<RoomLobbyCubit, RoomLobbyState>(
+      builder: (context, state) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildBackNavigation(),
+              const SizedBox(height: 24),
+              _buildHeader(),
+              const SizedBox(height: 32),
+              _buildSettingsCard(context, state),
+              const SizedBox(height: 32),
+              _buildInviteSection(state.roomId),
+              const SizedBox(height: 40),
+              _buildPlayersHeader(state.players.length),
+              const SizedBox(height: 24),
+              _buildPlayersGrid(state.players),
+              const SizedBox(height: 48),
+              _buildStartButton(),
+              const SizedBox(height: 40),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      centerTitle: true,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white70),
-        onPressed: () => Navigator.pop(context),
-      ),
-      title: Row(
+  Widget _buildBackNavigation() {
+    return GestureDetector(
+      onTap: () {
+        context.read<HomeCubit>().setConnectViewMode(ConnectViewMode.main);
+      },
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          const Icon(Icons.arrow_back, color: Colors.white70, size: 20),
+          const SizedBox(width: 8),
           Text(
-            'ስውር',
-            style: GoogleFonts.epilogue(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            'ቃል',
-            style: GoogleFonts.epilogue(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primaryPink,
+            'BACK TO LOBBY',
+            style: GoogleFonts.manrope(
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              color: Colors.white70,
+              letterSpacing: 1,
             ),
           ),
         ],
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16.0),
-          child: CircleAvatar(
-            radius: 18,
-            backgroundColor: AppColors.surfaceContainerHigh,
-            backgroundImage: const AssetImage('assets/ritualist_avatar.png'),
-          ),
-        ),
-      ],
     );
   }
+
+
+
 
   Widget _buildHeader() {
     return Column(
