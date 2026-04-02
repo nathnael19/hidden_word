@@ -20,16 +20,50 @@ class GameState extends Equatable {
     this.currentPlayerIndex = 1,
     this.isRevealed = false,
     this.totalPlayers = 6,
-    this.secretWord = 'BUNA', // Placeholder: Coffee
+    this.secretWord = 'BUNA',
     this.isSpy = false,
     this.isReady = false,
     this.phase = GamePhase.reveal,
-    this.timerSeconds = 105, // Discussion: 01:45
+    this.timerSeconds = 105,
     this.isPeeking = false,
     this.votedPlayerIndex,
     this.isVotingReady = false,
     this.spyCaught = true,
   });
+
+  factory GameState.fromJson(Map<String, dynamic> json) {
+    return GameState(
+      currentPlayerIndex: json['currentPlayerIndex'] as int,
+      isRevealed: json['isRevealed'] as bool,
+      totalPlayers: json['totalPlayers'] as int,
+      secretWord: json['secretWord'] as String,
+      isSpy: json['isSpy'] as bool,
+      isReady: json['isReady'] as bool,
+      phase: GamePhase.values.firstWhere((e) => e.name == json['phase']),
+      timerSeconds: json['timerSeconds'] as int,
+      isPeeking: json['isPeeking'] as bool,
+      votedPlayerIndex: json['votedPlayerIndex'] as int?,
+      isVotingReady: json['isVotingReady'] as bool,
+      spyCaught: json['spyCaught'] as bool,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'currentPlayerIndex': currentPlayerIndex,
+      'isRevealed': isRevealed,
+      'totalPlayers': totalPlayers,
+      'secretWord': secretWord,
+      'isSpy': isSpy,
+      'isReady': isReady,
+      'phase': phase.name,
+      'timerSeconds': timerSeconds,
+      'isPeeking': isPeeking,
+      'votedPlayerIndex': votedPlayerIndex,
+      'isVotingReady': isVotingReady,
+      'spyCaught': spyCaught,
+    };
+  }
 
   GameState copyWith({
     int? currentPlayerIndex,
