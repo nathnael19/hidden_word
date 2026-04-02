@@ -6,6 +6,11 @@ import 'package:hidden_word/features/room_lobby/presentation/cubit/room_lobby_cu
 import 'package:hidden_word/features/room_lobby/presentation/cubit/room_lobby_state.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
+import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
+import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
+import 'package:hidden_word/features/multiplayer/data/models/network_message.dart';
+import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
+import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
 
 class RoomLobbyPage extends StatefulWidget {
   const RoomLobbyPage({super.key});
@@ -19,33 +24,39 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
   void initState() {
     super.initState();
     context.read<RoomLobbyCubit>().init();
+    // Start broadcasting the room on the local network immediately
+    context.read<MultiplayerCubit>().startHosting('My Room');
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<RoomLobbyCubit, RoomLobbyState>(
-      builder: (context, state) {
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildBackNavigation(),
-              const SizedBox(height: 24),
-              _buildHeader(),
-              const SizedBox(height: 32),
-              _buildSettingsCard(context, state),
-              const SizedBox(height: 32),
-              _buildInviteSection(state.roomId),
-              const SizedBox(height: 40),
-              _buildPlayersHeader(state.players.length),
-              const SizedBox(height: 24),
-              _buildPlayersGrid(state.players),
-              const SizedBox(height: 48),
-              _buildStartButton(),
-              const SizedBox(height: 40),
-            ],
-          ),
+      builder: (context, roomState) {
+        return BlocBuilder<MultiplayerCubit, MultiplayerState>(
+          builder: (context, netState) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildBackNavigation(),
+                  const SizedBox(height: 24),
+                  _buildHeader(netState),
+                  const SizedBox(height: 32),
+                  _buildSettingsCard(context, roomState),
+                  const SizedBox(height: 32),
+                  _buildInviteSection(netState),
+                  const SizedBox(height: 40),
+                  _buildPlayersHeader(netState.connectedPlayers.length + 1),
+                  const SizedBox(height: 24),
+                  _buildPlayersGrid(netState.connectedPlayers),
+                  const SizedBox(height: 48),
+                  _buildStartButton(context, netState),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            );
+          },
         );
       },
     );
@@ -78,7 +89,8 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
 
 
 
-  Widget _buildHeader() {
+  Widget _buildHeader(MultiplayerState netState) {
+    final isHosting = netState.status == MultiplayerStatus.hosting;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -94,7 +106,7 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                 letterSpacing: 2,
               ),
             ),
-            _buildConnectionBadge(),
+            _buildConnectionBadge(isHosting),
           ],
         ),
         const SizedBox(height: 8),
@@ -123,13 +135,13 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
     );
   }
 
-  Widget _buildConnectionBadge() {
+  Widget _buildConnectionBadge(bool isActive) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
+        color: isActive ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
+        border: Border.all(color: isActive ? Colors.green.withOpacity(0.3) : Colors.orange.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -137,18 +149,18 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
           Container(
             width: 6,
             height: 6,
-            decoration: const BoxDecoration(
-              color: Colors.green,
+            decoration: BoxDecoration(
+              color: isActive ? Colors.green : Colors.orange,
               shape: BoxShape.circle,
             ),
           ),
           const SizedBox(width: 8),
           Text(
-            'CONNECTION STABLE',
+            isActive ? 'BROADCASTING' : 'STARTING...',
             style: GoogleFonts.manrope(
               fontSize: 8,
               fontWeight: FontWeight.w900,
-              color: Colors.green,
+              color: isActive ? Colors.green : Colors.orange,
               letterSpacing: 0.5,
             ),
           ),
@@ -335,7 +347,10 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
     );
   }
 
-  Widget _buildInviteSection(String roomId) {
+  Widget _buildInviteSection(MultiplayerState netState) {
+    final ip = netState.hostIp ?? '...';
+    final port = netState.hostPort?.toString() ?? '...';
+    final roomDisplay = netState.status == MultiplayerStatus.hosting ? '$ip:$port' : 'Starting...';
     return Row(
       children: [
         Expanded(
@@ -350,7 +365,7 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'ROOM ID',
+                  'ROOM ADDRESS',
                   style: GoogleFonts.manrope(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -360,33 +375,22 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  roomId,
+                  roomDisplay,
                   style: GoogleFonts.epilogue(
-                    fontSize: 32,
+                    fontSize: 20,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
-                    letterSpacing: 2,
+                    letterSpacing: 1,
                   ),
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.copy_rounded,
-                      size: 12,
-                      color: AppColors.primaryPink,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'COPY LINK',
-                      style: GoogleFonts.manrope(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.primaryPink,
-                      ),
-                    ),
-                  ],
+                Text(
+                  'LOCAL WIFI · AUTO-DISCOVERABLE',
+                  style: GoogleFonts.manrope(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.primaryPink.withOpacity(0.6),
+                  ),
                 ),
               ],
             ),
@@ -396,14 +400,26 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
         Container(
           width: 120,
           height: 120,
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white70,
+            color: AppColors.surfaceContainerHigh.withOpacity(0.3),
             borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white10),
           ),
-          child: Image.network(
-            'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=H7K9',
-            color: Colors.black,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.wifi_tethering, color: AppColors.gold, size: 36),
+              const SizedBox(height: 8),
+              Text(
+                'WiFi LAN',
+                style: GoogleFonts.manrope(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.gold.withOpacity(0.6),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -461,7 +477,9 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
     );
   }
 
-  Widget _buildPlayersGrid(List<Map<String, dynamic>> players) {
+  Widget _buildPlayersGrid(List<String> connectedPlayers) {
+    // +1 for the host (this device)
+    final totalCount = connectedPlayers.length + 1;
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -471,10 +489,13 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
         mainAxisSpacing: 16,
         childAspectRatio: 0.85,
       ),
-      itemCount: 6, // 4 players + 2 waiting slots
+      itemCount: totalCount < 4 ? 4 : totalCount,
       itemBuilder: (context, index) {
-        if (index < players.length) {
-          return _buildPlayerCard(players[index]);
+        if (index == 0) {
+          return _buildPlayerCard({'name': 'You (Host)', 'status': 'READY', 'isHost': true});
+        }
+        if (index < totalCount) {
+          return _buildPlayerCard({'name': connectedPlayers[index - 1], 'status': 'JOINED', 'isHost': false});
         }
         return _buildWaitingSlot();
       },
@@ -593,26 +614,59 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
     );
   }
 
-  Widget _buildStartButton() {
+  Widget _buildStartButton(BuildContext context, MultiplayerState netState) {
+    final bool canStart = netState.status == MultiplayerStatus.hosting;
     return SizedBox(
       width: double.infinity,
       child: Column(
         children: [
-          Container(
-            width: double.infinity,
-            height: 72,
-            decoration: BoxDecoration(
-              color: AppColors.primaryPink.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              'ጀምር (START GAME)',
-              style: GoogleFonts.manrope(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: Colors.black.withOpacity(0.8),
-                letterSpacing: 0.5,
+          GestureDetector(
+            onTap: canStart
+                ? () async {
+                    // Tell all clients game is starting
+                    context.read<MultiplayerCubit>().broadcastToClients(
+                          NetworkMessage(
+                            type: NetworkMessageType.action,
+                            payload: {'action': 'START_GAME', 'category': 'food'},
+                          ).encode(),
+                        );
+                    // Init host's game with a real random word
+                    await context.read<GameCubit>().init(6);
+                    if (context.mounted) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SecretRevealPage()),
+                      );
+                    }
+                  }
+                : null,
+            child: Container(
+              width: double.infinity,
+              height: 72,
+              decoration: BoxDecoration(
+                color: canStart
+                    ? AppColors.primaryPink.withOpacity(0.85)
+                    : AppColors.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: canStart
+                    ? [
+                        BoxShadow(
+                          color: AppColors.primaryPink.withOpacity(0.2),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        )
+                      ]
+                    : null,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                'ጀምር (START GAME)',
+                style: GoogleFonts.manrope(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: canStart ? Colors.black.withOpacity(0.8) : Colors.white24,
+                  letterSpacing: 0.5,
+                ),
               ),
             ),
           ),
