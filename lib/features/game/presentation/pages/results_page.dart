@@ -371,13 +371,15 @@ class ResultsPage extends StatelessWidget {
           label: 'PLAY AGAIN',
           color: AppColors.primaryRed,
           icon: Icons.refresh,
-          onTap: () {
-            context.read<GameCubit>().resetGame();
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const SecretRevealPage()),
-              (route) => false,
-            );
+          onTap: () async {
+            await context.read<GameCubit>().resetGame();
+            if (context.mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const SecretRevealPage()),
+                (route) => false,
+              );
+            }
           },
         ),
         const SizedBox(height: 16),
