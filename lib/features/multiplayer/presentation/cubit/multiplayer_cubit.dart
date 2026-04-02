@@ -22,9 +22,17 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
   final Map<WebSocketChannel, String> _connectedClients = {};
   final Set<String> _readyPlayers = {};
   final Map<String, String> _playerVotes = {};
+  bool _votingRoundResolved = false;
   final NetworkInfo _networkInfo = NetworkInfo();
 
   MultiplayerCubit({required this.gameCubit}) : super(const MultiplayerState());
+
+  /// Clears per-round readiness/votes before host calls [GameCubit.init].
+  void prepareNewSession() {
+    _readyPlayers.clear();
+    _playerVotes.clear();
+    _votingRoundResolved = false;
+  }
 
   /// IP shown to joiners + mDNS. When the phone is the hotspot AP, [NetworkInfo.getWifiIP]
   /// is often null/wrong because that API targets station (client) Wi‑Fi, not the soft‑AP.
@@ -87,12 +95,9 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
     try {
       emit(state.copyWith(status: MultiplayerStatus.hosting, playerName: playerName));
 
-      // 1. Address clients use (hotspot AP is not the same as "Wi‑Fi client IP").
       final ip = await _resolveAdvertisedHostIp();
 
-      // 2. Listen on all interfaces — binding to one NIC's IP often fails when the AP is up.
       final handler = webSocketHandler((webSocket, _) {
-        // We don't add to map until they send JOIN
         webSocket.stream.listen((message) {
           _handleClientMessage(webSocket, message);
         }, onDone: () {
@@ -107,7 +112,6 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
       _server = await shelf_io.serve(handler, InternetAddress.anyIPv4, 0);
       final port = _server!.port;
 
-      // 3. Broadcast Service via mDNS
       _service = BonsoirService(
         name: "$playerName's Room",
         type: '_hiddenword._tcp',
@@ -119,17 +123,25 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
       await _broadcast!.initialize();
       await _broadcast!.start();
 
-      // Listen for local game state changes to broadcast to clients
-      _gameSubscription = gameCubit.stream.listen((gameState) {
-        broadcastToClients(NetworkMessage(
-          type: NetworkMessageType.phaseSync,
-          payload: gameState.toJson(),
-        ).encode());
-      });
+      _gameSubscription = gameCubit.stream.listen(_onGameStateForHostAndClients);
 
       emit(state.copyWith(status: MultiplayerStatus.hosting, hostIp: ip, hostPort: port));
     } catch (e) {
       emit(state.copyWith(status: MultiplayerStatus.error, errorMessage: e.toString()));
+    }
+  }
+
+  void _onGameStateForHostAndClients(GameState gameState) {
+    broadcastToClients(NetworkMessage(
+      type: NetworkMessageType.phaseSync,
+      payload: gameState.toJson(),
+    ).encode());
+
+    if (state.status != MultiplayerStatus.hosting) return;
+    if (gameState.phase == GamePhase.voting &&
+        gameState.timerSeconds == 0 &&
+        !_votingRoundResolved) {
+      _tallyVotesAndFinish();
     }
   }
 
@@ -167,7 +179,7 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
   Future<void> connectToHost(BonsoirService service) async {
     try {
       emit(state.copyWith(status: MultiplayerStatus.connecting));
-      
+
       final ip = service.attributes['ip'] ?? 'localhost';
       final port = service.port;
       final url = Uri.parse("ws://$ip:$port");
@@ -175,14 +187,12 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
       _clientChannel = WebSocketChannel.connect(url);
       await _clientChannel!.ready;
 
-      // Automatically send JOIN action
       _clientChannel!.sink.add(NetworkMessage(
         type: NetworkMessageType.action,
         payload: {'action': 'JOIN', 'playerName': state.playerName},
       ).encode());
 
       _clientChannel!.stream.listen((message) {
-        // Handle state sync from host
         _handleHostMessage(message);
       }, onDone: () => stopMultiplayer());
 
@@ -203,24 +213,69 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
         if (action == 'JOIN') {
           _connectedClients[client] = playerName;
           _broadcastRosterUpdate();
-        } 
-        else if (action == 'READY') {
-          _readyPlayers.add(playerName);
-          if (_readyPlayers.length == _connectedClients.length) {
-            // Everyone is ready -> start discussion phase (Only Host counts down)
-            gameCubit.startDiscussion(isHost: true);
-          }
-        } 
-        else if (action == 'VOTE') {
+        } else if (action == 'READY') {
+          _addReadyPlayer(playerName);
+        } else if (action == 'VOTE') {
           final votedPlayerName = networkMessage.payload['votedPlayerName'] as String?;
           if (votedPlayerName != null) {
             _playerVotes[playerName] = votedPlayerName;
-            if (_playerVotes.length == _connectedClients.length) {
+            if (_allVotesIn()) {
               _tallyVotesAndFinish();
             }
           }
         }
       }
+    }
+  }
+
+  void _addReadyPlayer(String playerName) {
+    _readyPlayers.add(playerName);
+    gameCubit.setPlayersReadyCount(_readyPlayers.length);
+    if (_allPlayersReady()) {
+      gameCubit.startDiscussion(isHost: true);
+    }
+  }
+
+  bool _allPlayersReady() {
+    final roster = gameCubit.state.connectedPlayers;
+    if (roster.isEmpty) return false;
+    return roster.length == _readyPlayers.length && roster.every(_readyPlayers.contains);
+  }
+
+  bool _allVotesIn() {
+    final roster = gameCubit.state.connectedPlayers;
+    if (roster.isEmpty) return false;
+    return roster.every((name) => _playerVotes.containsKey(name));
+  }
+
+  /// Host or client: registers readiness. Host applies locally; clients message the host.
+  void submitReady(String playerName) {
+    if (state.status == MultiplayerStatus.hosting) {
+      _addReadyPlayer(playerName);
+    } else {
+      sendToHost(NetworkMessage(
+        type: NetworkMessageType.action,
+        payload: {'action': 'READY', 'playerName': playerName},
+      ).encode());
+    }
+  }
+
+  /// Host or client: submit vote for tally. Host applies locally; clients message the host.
+  void submitVote(String voterName, String votedPlayerName) {
+    if (state.status == MultiplayerStatus.hosting) {
+      _playerVotes[voterName] = votedPlayerName;
+      if (_allVotesIn()) {
+        _tallyVotesAndFinish();
+      }
+    } else {
+      sendToHost(NetworkMessage(
+        type: NetworkMessageType.action,
+        payload: {
+          'action': 'VOTE',
+          'playerName': voterName,
+          'votedPlayerName': votedPlayerName,
+        },
+      ).encode());
     }
   }
 
@@ -234,6 +289,9 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
   }
 
   void _tallyVotesAndFinish() {
+    if (_votingRoundResolved) return;
+    _votingRoundResolved = true;
+
     final Map<String, int> counts = {};
     for (final vote in _playerVotes.values) {
       counts[vote] = (counts[vote] ?? 0) + 1;
@@ -248,8 +306,8 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
       }
     });
 
-    final spyName = gameCubit.state.spyPlayerName;
-    final spyCaught = (majorityName != null && majorityName == spyName);
+    final spies = gameCubit.state.spyPlayerNames;
+    final spyCaught = majorityName != null && spies.contains(majorityName);
     gameCubit.startResults(spyCaught, majorityName);
   }
 
@@ -261,9 +319,9 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
         gameCubit.syncState(incomingState);
       } else if (networkMessage.type == NetworkMessageType.action) {
         final action = networkMessage.payload['action'];
-        
+
         if (action == 'START_GAME') {
-          // handled dynamically by clients observing GameState
+          // Session state arrives via phaseSync.
         } else if (action == 'ROSTER_SYNC') {
           final roster = List<String>.from(networkMessage.payload['connectedPlayers'] ?? []);
           emit(state.copyWith(connectedPlayers: roster));
@@ -295,6 +353,7 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
     _connectedClients.clear();
     _readyPlayers.clear();
     _playerVotes.clear();
+    _votingRoundResolved = false;
     emit(const MultiplayerState());
   }
 
