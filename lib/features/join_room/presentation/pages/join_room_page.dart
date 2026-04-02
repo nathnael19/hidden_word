@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/join_room/presentation/cubit/join_room_cubit.dart';
 import 'package:hidden_word/features/join_room/presentation/cubit/join_room_state.dart';
+import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
+import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
 
 class JoinRoomPage extends StatefulWidget {
   const JoinRoomPage({super.key});
@@ -34,75 +36,60 @@ class _JoinRoomPageState extends State<JoinRoomPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.obsidian,
-      appBar: _buildAppBar(),
-      body: BlocBuilder<JoinRoomCubit, JoinRoomState>(
-        builder: (context, state) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(state.isScanning),
-                const SizedBox(height: 32),
-                _buildScannerCard(),
-                const SizedBox(height: 32),
-                _buildRoomCodeCard(),
-                const SizedBox(height: 24),
-                _buildSecretTip(),
-                const SizedBox(height: 48),
-                _buildNearbyGamesHeader(),
-                const SizedBox(height: 24),
-                _buildNearbyGamesList(state.nearbyGames),
-                const SizedBox(height: 40),
-              ],
-            ),
-          );
-        },
-      ),
+    return BlocBuilder<JoinRoomCubit, JoinRoomState>(
+      builder: (context, state) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildBackNavigation(),
+              const SizedBox(height: 24),
+              _buildHeader(state.isScanning),
+              const SizedBox(height: 32),
+              _buildScannerCard(),
+              const SizedBox(height: 32),
+              _buildRoomCodeCard(),
+              const SizedBox(height: 24),
+              _buildSecretTip(),
+              const SizedBox(height: 48),
+              _buildNearbyGamesHeader(),
+              const SizedBox(height: 24),
+              _buildNearbyGamesList(state.nearbyGames),
+              const SizedBox(height: 40),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      centerTitle: true,
-      title: Row(
+  Widget _buildBackNavigation() {
+    return GestureDetector(
+      onTap: () {
+        context.read<HomeCubit>().setConnectViewMode(ConnectViewMode.main);
+      },
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          const Icon(Icons.arrow_back, color: Colors.white70, size: 20),
+          const SizedBox(width: 8),
           Text(
-            'ስውር',
-            style: GoogleFonts.epilogue(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            'ቃል',
-            style: GoogleFonts.epilogue(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primaryPink,
+            'BACK TO LOBBY',
+            style: GoogleFonts.manrope(
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              color: Colors.white70,
+              letterSpacing: 1,
             ),
           ),
         ],
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16.0),
-          child: CircleAvatar(
-            radius: 18,
-            backgroundColor: AppColors.surfaceContainerHigh,
-            backgroundImage: const AssetImage('assets/ritualist_avatar.png'),
-          ),
-        ),
-      ],
     );
   }
+
+
+
 
   Widget _buildHeader(bool isScanning) {
     return Column(
