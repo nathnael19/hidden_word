@@ -1,21 +1,35 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'game_state.dart';
+import 'package:hidden_word/features/game/data/repositories/word_repository.dart';
 
 class GameCubit extends Cubit<GameState> {
   Timer? _gameTimer;
 
   GameCubit() : super(const GameState());
 
-  void init(int playersCount) {
-    emit(state.copyWith(
+  /// Picks a random spy among all players.
+  int _pickSpyIndex(int totalPlayers) {
+    return Random().nextInt(totalPlayers) + 1;
+  }
+
+  /// Initialises the game. Fetches a random word from [categoryId].
+  /// If no category is given, defaults to 'food'.
+  Future<void> init(int playersCount, {String categoryId = 'food'}) async {
+    final secretWord = await WordRepository.pickRandomWord(categoryId);
+    final spyIndex = _pickSpyIndex(playersCount);
+
+    emit(GameState(
       totalPlayers: playersCount,
       currentPlayerIndex: 1,
       phase: GamePhase.reveal,
       isRevealed: false,
       isReady: false,
       isVotingReady: false,
-      clearVotedPlayer: true,
+      secretWord: secretWord,
+      isSpy: 1 == spyIndex, // will be overridden per device in a real session
+      spyCaught: false,
     ));
   }
 
@@ -72,16 +86,20 @@ class GameCubit extends Cubit<GameState> {
     _gameTimer?.cancel();
     emit(state.copyWith(
       phase: GamePhase.results,
-      spyCaught: true, // Simulated result
+      spyCaught: true, // TODO: replace with actual vote tally
     ));
   }
 
-  void resetGame() {
-    init(state.totalPlayers);
+  Future<void> resetGame() async {
+    await init(state.totalPlayers);
   }
 
   void togglePeeking() {
     emit(state.copyWith(isPeeking: !state.isPeeking));
+  }
+
+  void syncState(GameState incomingState) {
+    emit(incomingState);
   }
 
   @override
