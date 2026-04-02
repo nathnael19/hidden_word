@@ -7,7 +7,6 @@ class GameState extends Equatable {
   final bool isRevealed;
   final int totalPlayers;
   final String secretWord;
-  final bool isSpy;
   final bool isReady;
   final GamePhase phase;
   final int timerSeconds;
@@ -15,20 +14,25 @@ class GameState extends Equatable {
   final int? votedPlayerIndex;
   final bool isVotingReady;
   final bool spyCaught;
+  final String? spyPlayerName;
+  final List<String> connectedPlayers;
+  final String? majorityVotedName;
 
   const GameState({
     this.currentPlayerIndex = 1,
     this.isRevealed = false,
     this.totalPlayers = 6,
     this.secretWord = 'BUNA',
-    this.isSpy = false,
     this.isReady = false,
     this.phase = GamePhase.reveal,
     this.timerSeconds = 105,
     this.isPeeking = false,
     this.votedPlayerIndex,
     this.isVotingReady = false,
-    this.spyCaught = true,
+    this.spyCaught = false,
+    this.spyPlayerName,
+    this.connectedPlayers = const [],
+    this.majorityVotedName,
   });
 
   factory GameState.fromJson(Map<String, dynamic> json) {
@@ -37,7 +41,6 @@ class GameState extends Equatable {
       isRevealed: json['isRevealed'] as bool,
       totalPlayers: json['totalPlayers'] as int,
       secretWord: json['secretWord'] as String,
-      isSpy: json['isSpy'] as bool,
       isReady: json['isReady'] as bool,
       phase: GamePhase.values.firstWhere((e) => e.name == json['phase']),
       timerSeconds: json['timerSeconds'] as int,
@@ -45,6 +48,9 @@ class GameState extends Equatable {
       votedPlayerIndex: json['votedPlayerIndex'] as int?,
       isVotingReady: json['isVotingReady'] as bool,
       spyCaught: json['spyCaught'] as bool,
+      spyPlayerName: json['spyPlayerName'] as String?,
+      connectedPlayers: List<String>.from(json['connectedPlayers'] ?? []),
+      majorityVotedName: json['majorityVotedName'] as String?,
     );
   }
 
@@ -54,7 +60,6 @@ class GameState extends Equatable {
       'isRevealed': isRevealed,
       'totalPlayers': totalPlayers,
       'secretWord': secretWord,
-      'isSpy': isSpy,
       'isReady': isReady,
       'phase': phase.name,
       'timerSeconds': timerSeconds,
@@ -62,6 +67,9 @@ class GameState extends Equatable {
       'votedPlayerIndex': votedPlayerIndex,
       'isVotingReady': isVotingReady,
       'spyCaught': spyCaught,
+      'spyPlayerName': spyPlayerName,
+      'connectedPlayers': connectedPlayers,
+      'majorityVotedName': majorityVotedName,
     };
   }
 
@@ -70,7 +78,6 @@ class GameState extends Equatable {
     bool? isRevealed,
     int? totalPlayers,
     String? secretWord,
-    bool? isSpy,
     bool? isReady,
     GamePhase? phase,
     int? timerSeconds,
@@ -78,6 +85,9 @@ class GameState extends Equatable {
     int? votedPlayerIndex,
     bool? isVotingReady,
     bool? spyCaught,
+    String? spyPlayerName,
+    List<String>? connectedPlayers,
+    String? majorityVotedName,
     bool clearVotedPlayer = false,
   }) {
     return GameState(
@@ -85,7 +95,6 @@ class GameState extends Equatable {
       isRevealed: isRevealed ?? this.isRevealed,
       totalPlayers: totalPlayers ?? this.totalPlayers,
       secretWord: secretWord ?? this.secretWord,
-      isSpy: isSpy ?? this.isSpy,
       isReady: isReady ?? this.isReady,
       phase: phase ?? this.phase,
       timerSeconds: timerSeconds ?? this.timerSeconds,
@@ -93,6 +102,9 @@ class GameState extends Equatable {
       votedPlayerIndex: clearVotedPlayer ? null : (votedPlayerIndex ?? this.votedPlayerIndex),
       isVotingReady: isVotingReady ?? this.isVotingReady,
       spyCaught: spyCaught ?? this.spyCaught,
+      spyPlayerName: spyPlayerName ?? this.spyPlayerName,
+      connectedPlayers: connectedPlayers ?? this.connectedPlayers,
+      majorityVotedName: majorityVotedName ?? this.majorityVotedName,
     );
   }
 
@@ -102,7 +114,6 @@ class GameState extends Equatable {
         isRevealed,
         totalPlayers,
         secretWord,
-        isSpy,
         isReady,
         phase,
         timerSeconds,
@@ -110,5 +121,8 @@ class GameState extends Equatable {
         votedPlayerIndex,
         isVotingReady,
         spyCaught,
+        spyPlayerName,
+        connectedPlayers,
+        majorityVotedName,
       ];
 }
