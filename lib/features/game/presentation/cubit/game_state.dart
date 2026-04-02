@@ -14,15 +14,24 @@ class GameState extends Equatable {
   final int? votedPlayerIndex;
   final bool isVotingReady;
   final bool spyCaught;
-  final String? spyPlayerName;
+  /// All players who are spies for this round.
+  final List<String> spyPlayerNames;
   final List<String> connectedPlayers;
   final String? majorityVotedName;
+  /// True after [GameCubit.init] has run for an active round (host or synced client).
+  final bool sessionActive;
+  /// Word category id used for this session (words.json).
+  final String categoryId;
+  /// Number of spies configured for this session.
+  final int spyCount;
+  /// How many players have pressed ready (host-authoritative, synced).
+  final int playersReadyCount;
 
   const GameState({
     this.currentPlayerIndex = 1,
     this.isRevealed = false,
     this.totalPlayers = 6,
-    this.secretWord = 'BUNA',
+    this.secretWord = '',
     this.isReady = false,
     this.phase = GamePhase.reveal,
     this.timerSeconds = 105,
@@ -30,12 +39,25 @@ class GameState extends Equatable {
     this.votedPlayerIndex,
     this.isVotingReady = false,
     this.spyCaught = false,
-    this.spyPlayerName,
+    this.spyPlayerNames = const [],
     this.connectedPlayers = const [],
     this.majorityVotedName,
+    this.sessionActive = false,
+    this.categoryId = 'food',
+    this.spyCount = 1,
+    this.playersReadyCount = 0,
   });
 
   factory GameState.fromJson(Map<String, dynamic> json) {
+    List<String> parseSpyNames() {
+      if (json['spyPlayerNames'] != null) {
+        return List<String>.from(json['spyPlayerNames'] as List);
+      }
+      final legacy = json['spyPlayerName'] as String?;
+      if (legacy != null && legacy.isNotEmpty) return [legacy];
+      return const [];
+    }
+
     return GameState(
       currentPlayerIndex: json['currentPlayerIndex'] as int,
       isRevealed: json['isRevealed'] as bool,
@@ -48,9 +70,13 @@ class GameState extends Equatable {
       votedPlayerIndex: json['votedPlayerIndex'] as int?,
       isVotingReady: json['isVotingReady'] as bool,
       spyCaught: json['spyCaught'] as bool,
-      spyPlayerName: json['spyPlayerName'] as String?,
+      spyPlayerNames: parseSpyNames(),
       connectedPlayers: List<String>.from(json['connectedPlayers'] ?? []),
       majorityVotedName: json['majorityVotedName'] as String?,
+      sessionActive: json['sessionActive'] as bool? ?? false,
+      categoryId: json['categoryId'] as String? ?? 'food',
+      spyCount: json['spyCount'] as int? ?? 1,
+      playersReadyCount: json['playersReadyCount'] as int? ?? 0,
     );
   }
 
@@ -67,9 +93,13 @@ class GameState extends Equatable {
       'votedPlayerIndex': votedPlayerIndex,
       'isVotingReady': isVotingReady,
       'spyCaught': spyCaught,
-      'spyPlayerName': spyPlayerName,
+      'spyPlayerNames': spyPlayerNames,
       'connectedPlayers': connectedPlayers,
       'majorityVotedName': majorityVotedName,
+      'sessionActive': sessionActive,
+      'categoryId': categoryId,
+      'spyCount': spyCount,
+      'playersReadyCount': playersReadyCount,
     };
   }
 
@@ -85,9 +115,13 @@ class GameState extends Equatable {
     int? votedPlayerIndex,
     bool? isVotingReady,
     bool? spyCaught,
-    String? spyPlayerName,
+    List<String>? spyPlayerNames,
     List<String>? connectedPlayers,
     String? majorityVotedName,
+    bool? sessionActive,
+    String? categoryId,
+    int? spyCount,
+    int? playersReadyCount,
     bool clearVotedPlayer = false,
   }) {
     return GameState(
@@ -102,9 +136,13 @@ class GameState extends Equatable {
       votedPlayerIndex: clearVotedPlayer ? null : (votedPlayerIndex ?? this.votedPlayerIndex),
       isVotingReady: isVotingReady ?? this.isVotingReady,
       spyCaught: spyCaught ?? this.spyCaught,
-      spyPlayerName: spyPlayerName ?? this.spyPlayerName,
+      spyPlayerNames: spyPlayerNames ?? this.spyPlayerNames,
       connectedPlayers: connectedPlayers ?? this.connectedPlayers,
       majorityVotedName: majorityVotedName ?? this.majorityVotedName,
+      sessionActive: sessionActive ?? this.sessionActive,
+      categoryId: categoryId ?? this.categoryId,
+      spyCount: spyCount ?? this.spyCount,
+      playersReadyCount: playersReadyCount ?? this.playersReadyCount,
     );
   }
 
@@ -121,8 +159,12 @@ class GameState extends Equatable {
         votedPlayerIndex,
         isVotingReady,
         spyCaught,
-        spyPlayerName,
+        spyPlayerNames,
         connectedPlayers,
         majorityVotedName,
+        sessionActive,
+        categoryId,
+        spyCount,
+        playersReadyCount,
       ];
 }
