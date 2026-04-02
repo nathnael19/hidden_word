@@ -14,7 +14,8 @@ class GameLobbyPage extends StatefulWidget {
   State<GameLobbyPage> createState() => _GameLobbyPageState();
 }
 
-class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProviderStateMixin {
+class _GameLobbyPageState extends State<GameLobbyPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
 
   @override
@@ -77,9 +78,23 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('ስውር', style: GoogleFonts.epilogue(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(
+            'ስውር',
+            style: GoogleFonts.epilogue(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
           const SizedBox(width: 4),
-          Text('ቃል', style: GoogleFonts.epilogue(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryPink)),
+          Text(
+            'ቃል',
+            style: GoogleFonts.epilogue(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryPink,
+            ),
+          ),
         ],
       ),
       actions: [
@@ -101,9 +116,25 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
       children: [
         Row(
           children: [
-            Text('ስውር', style: GoogleFonts.epilogue(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.2)),
+            Text(
+              'ስውር',
+              style: GoogleFonts.epilogue(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                letterSpacing: 1.2,
+              ),
+            ),
             const SizedBox(width: 4),
-            Text('ቃል', style: GoogleFonts.epilogue(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.primaryPink, letterSpacing: 1.2)),
+            Text(
+              'ቃል',
+              style: GoogleFonts.epilogue(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: AppColors.primaryPink,
+                letterSpacing: 1.2,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -129,7 +160,11 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
           color: AppColors.primaryRed.withOpacity(0.9),
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
-            BoxShadow(color: AppColors.primaryRed.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10)),
+            BoxShadow(
+              color: AppColors.primaryRed.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
           ],
         ),
         child: Stack(
@@ -148,11 +183,28 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.fort_rounded, color: AppColors.gold, size: 32),
+                  const Icon(
+                    Icons.fort_rounded,
+                    color: AppColors.gold,
+                    size: 32,
+                  ),
                   const SizedBox(height: 12),
-                  Text('Host a Game', style: GoogleFonts.epilogue(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text(
+                    'Host a Game',
+                    style: GoogleFonts.epilogue(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Create a room for others to join.', style: GoogleFonts.beVietnamPro(fontSize: 13, color: Colors.white.withOpacity(0.8))),
+                  Text(
+                    'Create a room for others to join.',
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 13,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -178,30 +230,67 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('YOUR DEVICE', style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white30, letterSpacing: 1)),
+                  Text(
+                    'YOUR DEVICE',
+                    style: GoogleFonts.manrope(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white30,
+                      letterSpacing: 1,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text("Abebe's Phone", style: GoogleFonts.epilogue(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text(
+                    "Abebe's Phone",
+                    style: GoogleFonts.epilogue(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
               ),
               _buildStatusBadge('WAITING', Colors.green),
             ],
           ),
           const SizedBox(height: 24),
-          Text('Waiting for players...', style: GoogleFonts.beVietnamPro(fontSize: 14, color: Colors.white60)),
+          Text(
+            'Waiting for players...',
+            style: GoogleFonts.beVietnamPro(
+              fontSize: 14,
+              color: Colors.white60,
+            ),
+          ),
           const SizedBox(height: 16),
           Container(
             height: 100,
             width: double.infinity,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.white10, width: 1.5, style: BorderStyle.solid),
+              border: Border.all(
+                color: Colors.white10,
+                width: 1.5,
+                style: BorderStyle.solid,
+              ),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.person_add_alt_1_outlined, color: Colors.white24, size: 32),
+                Icon(
+                  Icons.person_add_alt_1_outlined,
+                  color: Colors.white24,
+                  size: 32,
+                ),
                 const SizedBox(height: 8),
-                Text('NO PLAYERS JOINED YET', style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white12, letterSpacing: 1)),
+                Text(
+                  'NO PLAYERS JOINED YET',
+                  style: GoogleFonts.manrope(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white12,
+                    letterSpacing: 1,
+                  ),
+                ),
               ],
             ),
           ),
@@ -231,7 +320,11 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
               top: -20,
               child: Opacity(
                 opacity: 0.05,
-                child: Icon(Icons.travel_explore_rounded, size: 160, color: Colors.white),
+                child: Icon(
+                  Icons.travel_explore_rounded,
+                  size: 160,
+                  color: Colors.white,
+                ),
               ),
             ),
             Padding(
@@ -240,11 +333,28 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.sensors, color: AppColors.primaryRed, size: 32),
+                  const Icon(
+                    Icons.sensors,
+                    color: AppColors.primaryRed,
+                    size: 32,
+                  ),
                   const SizedBox(height: 12),
-                  Text('Join a Game', style: GoogleFonts.epilogue(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text(
+                    'Join a Game',
+                    style: GoogleFonts.epilogue(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Scan the local network for games.', style: GoogleFonts.beVietnamPro(fontSize: 13, color: Colors.white60)),
+                  Text(
+                    'Scan the local network for games.',
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 13,
+                      color: Colors.white60,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -261,10 +371,24 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Nearby Games', style: GoogleFonts.epilogue(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            Text(
+              'Nearby Games',
+              style: GoogleFonts.epilogue(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
             Row(
               children: [
-                Text('Auto-scanning', style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white24)),
+                Text(
+                  'Auto-scanning',
+                  style: GoogleFonts.manrope(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white24,
+                  ),
+                ),
                 const SizedBox(width: 4),
                 const Icon(Icons.sync, size: 14, color: Colors.white24),
               ],
@@ -273,9 +397,17 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
         ),
         const SizedBox(height: 16),
         if (state is GameLobbyScanning)
-          const Center(child: Padding(padding: EdgeInsets.all(20.0), child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.gold)))
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.gold,
+              ),
+            ),
+          )
         else if (state is GameLobbyReady)
-          ...state.nearbyGames.map((game) => _buildGameItem(game)).toList(),
+          ...state.nearbyGames.map((game) => _buildGameItem(game)),
       ],
     );
   }
@@ -292,9 +424,14 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Icon(
-              game['host']!.contains('Yonas') ? Icons.door_front_door_outlined : Icons.sports_esports_outlined,
+              game['host']!.contains('Yonas')
+                  ? Icons.door_front_door_outlined
+                  : Icons.sports_esports_outlined,
               color: AppColors.primaryPink.withOpacity(0.8),
             ),
           ),
@@ -303,9 +440,24 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(game['host']!, style: GoogleFonts.epilogue(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text(
+                  game['host']!,
+                  style: GoogleFonts.epilogue(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(game['status']!, style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white24, letterSpacing: 0.5)),
+                Text(
+                  game['status']!,
+                  style: GoogleFonts.manrope(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white24,
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ],
             ),
           ),
@@ -333,11 +485,26 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
           Expanded(
             child: RichText(
               text: TextSpan(
-                style: GoogleFonts.beVietnamPro(fontSize: 12, color: Colors.white60, height: 1.5),
+                style: GoogleFonts.beVietnamPro(
+                  fontSize: 12,
+                  color: Colors.white60,
+                  height: 1.5,
+                ),
                 children: [
-                  const TextSpan(text: 'Ensure all players are connected to the '),
-                  TextSpan(text: 'same WiFi network', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  const TextSpan(text: ' or mobile hotspot to discover nearby games instantly.'),
+                  const TextSpan(
+                    text: 'Ensure all players are connected to the ',
+                  ),
+                  TextSpan(
+                    text: 'same WiFi network',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const TextSpan(
+                    text:
+                        ' or mobile hotspot to discover nearby games instantly.',
+                  ),
                 ],
               ),
             ),
@@ -359,9 +526,21 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
         ),
         child: Row(
           children: [
-            Container(width: 6, height: 6, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
             const SizedBox(width: 8),
-            Text(label, style: GoogleFonts.manrope(fontSize: 9, fontWeight: FontWeight.w900, color: color, letterSpacing: 1)),
+            Text(
+              label,
+              style: GoogleFonts.manrope(
+                fontSize: 9,
+                fontWeight: FontWeight.w900,
+                color: color,
+                letterSpacing: 1,
+              ),
+            ),
           ],
         ),
       ),
