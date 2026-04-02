@@ -4,8 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/game_lobby/presentation/cubit/game_lobby_cubit.dart';
 import 'package:hidden_word/features/game_lobby/presentation/cubit/game_lobby_state.dart';
-import 'package:hidden_word/features/join_room/presentation/pages/join_room_page.dart';
-import 'package:hidden_word/features/room_lobby/presentation/pages/room_lobby_page.dart';
+import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
+import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
 
 class GameLobbyPage extends StatefulWidget {
   const GameLobbyPage({super.key});
@@ -36,79 +36,34 @@ class _GameLobbyPageState extends State<GameLobbyPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.obsidian,
-      appBar: _buildAppBar(),
-      body: BlocBuilder<GameLobbyCubit, GameLobbyState>(
-        builder: (context, state) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 32),
-                _buildHostCard(),
-                const SizedBox(height: 24),
-                _buildDeviceStatusSection(),
-                const SizedBox(height: 32),
-                _buildJoinCard(),
-                const SizedBox(height: 24),
-                _buildNearbyGamesSection(state),
-                const SizedBox(height: 32),
-                _buildWifiInfoAlert(),
-                const SizedBox(height: 40),
-              ],
-            ),
-          );
-        },
-      ),
+    return BlocBuilder<GameLobbyCubit, GameLobbyState>(
+      builder: (context, state) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 32),
+              _buildHostCard(),
+              const SizedBox(height: 24),
+              _buildDeviceStatusSection(),
+              const SizedBox(height: 32),
+              _buildJoinCard(),
+              const SizedBox(height: 24),
+              _buildNearbyGamesSection(state),
+              const SizedBox(height: 32),
+              _buildWifiInfoAlert(),
+              const SizedBox(height: 40),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      centerTitle: true,
-      leading: IconButton(
-        icon: const Icon(Icons.sort, color: Colors.white70),
-        onPressed: () => Navigator.pop(context),
-      ),
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'ስውር',
-            style: GoogleFonts.epilogue(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            'ቃል',
-            style: GoogleFonts.epilogue(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primaryPink,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16.0),
-          child: CircleAvatar(
-            radius: 18,
-            backgroundColor: AppColors.surfaceContainerHigh,
-            backgroundImage: const AssetImage('assets/ritualist_avatar.png'),
-          ),
-        ),
-      ],
-    );
-  }
+  // Removed _buildAppBar as headers are handled differently in full immersion
+
 
   Widget _buildHeader() {
     return Column(
@@ -149,10 +104,7 @@ class _GameLobbyPageState extends State<GameLobbyPage>
   Widget _buildHostCard() {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const RoomLobbyPage()),
-        );
+        context.read<HomeCubit>().setConnectViewMode(ConnectViewMode.host);
       },
       child: Container(
         width: double.infinity,
@@ -302,10 +254,7 @@ class _GameLobbyPageState extends State<GameLobbyPage>
   Widget _buildJoinCard() {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const JoinRoomPage()),
-        );
+        context.read<HomeCubit>().setConnectViewMode(ConnectViewMode.join);
       },
       child: Container(
         width: double.infinity,
