@@ -6,6 +6,8 @@ import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
+import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
+import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
 import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
 
 class JoinRoomPage extends StatefulWidget {
@@ -37,16 +39,23 @@ class _JoinRoomPageState extends State<JoinRoomPage>
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<MultiplayerCubit, MultiplayerState>(
-      listener: (context, state) {
-        if (state.status == MultiplayerStatus.connected) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const SecretRevealPage()),
-          );
-        }
-      },
-      builder: (context, state) {
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<GameCubit, GameState>(
+          listenWhen: (prev, curr) =>
+              !prev.sessionActive &&
+              curr.sessionActive &&
+              curr.phase == GamePhase.reveal,
+          listener: (context, state) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SecretRevealPage()),
+            );
+          },
+        ),
+      ],
+      child: BlocBuilder<MultiplayerCubit, MultiplayerState>(
+        builder: (context, state) {
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: Column(
@@ -65,7 +74,8 @@ class _JoinRoomPageState extends State<JoinRoomPage>
             ],
           ),
         );
-      },
+        },
+      ),
     );
   }
 
