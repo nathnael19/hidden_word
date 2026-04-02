@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
+import 'package:hidden_word/features/game/presentation/pages/results_page.dart';
 
 class VotingPage extends StatelessWidget {
   const VotingPage({super.key});
@@ -12,7 +13,21 @@ class VotingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.obsidian,
-      body: BlocBuilder<GameCubit, GameState>(
+      body: BlocConsumer<GameCubit, GameState>(
+        listener: (context, state) {
+          if (state.isVotingReady && state.phase == GamePhase.voting) {
+            // Simulate waiting for all players for 2 seconds
+            Future.delayed(const Duration(seconds: 2), () {
+              if (context.mounted) {
+                context.read<GameCubit>().startResults();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ResultsPage()),
+                );
+              }
+            });
+          }
+        },
         builder: (context, state) {
           return SafeArea(
             child: Stack(
@@ -32,10 +47,35 @@ class VotingPage extends StatelessWidget {
                   ),
                 ),
                 _buildStatusDashboard(context, state),
+                if (state.isVotingReady) _buildWaitingOverlay(),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildWaitingOverlay() {
+    return Container(
+      color: Colors.black.withOpacity(0.85),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
+            const SizedBox(height: 24),
+            Text(
+              'WAITING FOR OTHERS...',
+              style: GoogleFonts.manrope(
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                color: AppColors.gold,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
