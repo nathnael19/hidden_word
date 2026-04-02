@@ -713,6 +713,7 @@ class _ThemeCard extends StatelessWidget {
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Icon(
                   icon,
@@ -721,7 +722,6 @@ class _ThemeCard extends StatelessWidget {
                       : AppColors.onSurface.withOpacity(0.5),
                   size: 30,
                 ),
-                const Spacer(),
                 Text(
                   title,
                   style: GoogleFonts.epilogue(
