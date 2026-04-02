@@ -10,6 +10,7 @@ import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
 import 'package:hidden_word/features/multiplayer/data/models/network_message.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
+import 'package:hidden_word/core/game/lobby_category_mapping.dart';
 import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
 
 class RoomLobbyPage extends StatefulWidget {
@@ -666,21 +667,32 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
           GestureDetector(
             onTap: canStart
                 ? () async {
-                    // Tell all clients game is starting
+                    final lobbyState = context.read<RoomLobbyCubit>().state;
+                    final categoryId = resolveCategoryIdFromLobby(
+                      lobbyState.selectedCategories,
+                    );
+                    context.read<MultiplayerCubit>().prepareNewSession();
                     context.read<MultiplayerCubit>().broadcastToClients(
                           NetworkMessage(
                             type: NetworkMessageType.action,
-                            payload: {'action': 'START_GAME', 'category': 'food'},
+                            payload: {
+                              'action': 'START_GAME',
+                              'category': categoryId,
+                              'spyCount': lobbyState.spyCount,
+                            },
                           ).encode(),
                         );
-                    // Init host's game with a real random word and roster
-                    final connectedPlayers = context.read<MultiplayerCubit>().state.connectedPlayers;
-                    final hostName = context.read<MultiplayerCubit>().state.playerName;
+                    final connectedPlayers =
+                        context.read<MultiplayerCubit>().state.connectedPlayers;
+                    final hostName =
+                        context.read<MultiplayerCubit>().state.playerName;
                     final totalRoster = [hostName, ...connectedPlayers];
 
                     await context.read<GameCubit>().init(
-                      totalRoster.length, 
+                      totalRoster.length,
+                      categoryId: categoryId,
                       connectedPlayers: totalRoster,
+                      spyCount: lobbyState.spyCount,
                     );
                     if (context.mounted) {
                       Navigator.push(
