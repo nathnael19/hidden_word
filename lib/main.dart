@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hidden_word/core/style/app_theme.dart';
 import 'package:hidden_word/features/game_lobby/presentation/cubit/game_lobby_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
+import 'package:hidden_word/features/room_lobby/presentation/cubit/room_lobby_cubit.dart';
 import 'package:hidden_word/features/splash/presentation/pages/splash_page.dart';
 import 'injection_container.dart' as di;
 
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (_) => di.sl<HomeCubit>()),
         BlocProvider(create: (_) => di.sl<GameLobbyCubit>()),
+        BlocProvider(create: (_) => di.sl<RoomLobbyCubit>()),
       ],
       child: MaterialApp(
         title: 'Hidden Word',
