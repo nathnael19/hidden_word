@@ -16,4 +16,11 @@ class HomeCubit extends Cubit<HomeState> {
       emit(currentState.copyWith(selectedTheme: theme));
     }
   }
+
+  void setTabIndex(int index) {
+    final currentState = state;
+    if (currentState is HomeLoaded) {
+      emit(currentState.copyWith(currentTabIndex: index));
+    }
+  }
 }
