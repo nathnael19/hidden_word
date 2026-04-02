@@ -35,7 +35,7 @@ class DiscussionPage extends StatelessWidget {
                     const SizedBox(height: 48),
                     _buildTimerSection(state.timerSeconds),
                     const SizedBox(height: 64),
-                    _buildActivePlayersSection(context, state.totalPlayers),
+                    _buildActivePlayersSection(context, state),
                     const SizedBox(height: 120), // Placeholder for bottom bar
                   ],
                 ),
@@ -164,7 +164,7 @@ class DiscussionPage extends StatelessWidget {
     );
   }
 
-  Widget _buildActivePlayersSection(BuildContext context, int count) {
+  Widget _buildActivePlayersSection(BuildContext context, GameState state) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Column(
@@ -188,7 +188,7 @@ class DiscussionPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  '$count ONLINE',
+                  '${state.totalPlayers} ONLINE',
                   style: GoogleFonts.manrope(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -208,11 +208,12 @@ class DiscussionPage extends StatelessWidget {
               crossAxisSpacing: 16,
               childAspectRatio: 1.3,
             ),
-            itemCount: count,
+            itemCount: state.totalPlayers,
             itemBuilder: (context, index) {
               return _PlayerCard(
-                name: ['Lidya', 'Amanuel', 'Dawit', 'Hana', 'Abel', 'Sara'][index % 6],
-                isHost: index == 1,
+                name: state.connectedPlayers.isNotEmpty ? state.connectedPlayers[index % state.connectedPlayers.length] : 'Unknown',
+                // First player in list is host
+                isHost: index == 0,
               );
             },
           ),
