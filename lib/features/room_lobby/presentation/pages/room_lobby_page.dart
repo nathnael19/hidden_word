@@ -630,8 +630,15 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                             payload: {'action': 'START_GAME', 'category': 'food'},
                           ).encode(),
                         );
-                    // Init host's game with a real random word
-                    await context.read<GameCubit>().init(6);
+                    // Init host's game with a real random word and roster
+                    final connectedPlayers = context.read<MultiplayerCubit>().state.connectedPlayers;
+                    final hostName = context.read<MultiplayerCubit>().state.playerName;
+                    final totalRoster = [hostName, ...connectedPlayers];
+
+                    await context.read<GameCubit>().init(
+                      totalRoster.length, 
+                      connectedPlayers: totalRoster,
+                    );
                     if (context.mounted) {
                       Navigator.push(
                         context,
