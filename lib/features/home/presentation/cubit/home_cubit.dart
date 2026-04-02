@@ -30,4 +30,25 @@ class HomeCubit extends Cubit<HomeState> {
       emit(currentState.copyWith(connectViewMode: mode));
     }
   }
+
+  void updatePlayersCount(int count) {
+    final currentState = state;
+    if (currentState is HomeLoaded) {
+      emit(currentState.copyWith(playersCount: count.clamp(3, 10)));
+    }
+  }
+
+  void updateTimer(int seconds) {
+    final currentState = state;
+    if (currentState is HomeLoaded) {
+      emit(currentState.copyWith(timerSeconds: seconds));
+    }
+  }
+
+  void updateRounds(int count) {
+    final currentState = state;
+    if (currentState is HomeLoaded) {
+      emit(currentState.copyWith(roundsCount: count));
+    }
+  }
 }
