@@ -274,7 +274,7 @@ class _JoinRoomPageState extends State<JoinRoomPage>
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 40),
           child: Text(
-            'No rooms found nearby.\nMake sure you\'re on the same WiFi.',
+            'No rooms found nearby.\nMake sure you\'re on the same WiFi or the\nHost\'s Mobile Hotspot.',
             textAlign: TextAlign.center,
             style: GoogleFonts.beVietnamPro(
               fontSize: 14,
@@ -337,7 +337,7 @@ class _JoinRoomPageState extends State<JoinRoomPage>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'OPEN · LOCAL WIFI',
+                  'OPEN · WIFI & HOTSPOT',
                   style: GoogleFonts.manrope(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
