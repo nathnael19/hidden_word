@@ -6,6 +6,8 @@ import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
 import 'package:hidden_word/features/home/presentation/widgets/connect_section.dart';
 import 'package:hidden_word/features/settings/presentation/pages/settings_page.dart';
+import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
+import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -444,8 +446,15 @@ class _HomeSection extends StatelessWidget {
   Widget _buildStartAction(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.read<HomeCubit>().setTabIndex(1);
-        context.read<HomeCubit>().setConnectViewMode(ConnectViewMode.main);
+        // Initialize GameCubit with current player count
+        final playersCount = homeLoaded.playersCount;
+        context.read<GameCubit>().init(playersCount);
+
+        // Navigate to Secret Reveal Page
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SecretRevealPage()),
+        );
       },
       child: Container(
         width: double.infinity,
