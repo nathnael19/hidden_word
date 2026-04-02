@@ -5,6 +5,7 @@ import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
 import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
+import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
 
 class ResultsPage extends StatelessWidget {
   const ResultsPage({super.key});
@@ -374,6 +375,7 @@ class ResultsPage extends StatelessWidget {
           color: AppColors.primaryRed,
           icon: Icons.refresh,
           onTap: () async {
+            context.read<MultiplayerCubit>().prepareNewSession();
             await context.read<GameCubit>().resetGame();
             if (context.mounted) {
               Navigator.pushAndRemoveUntil(
