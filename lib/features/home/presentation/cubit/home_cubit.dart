@@ -23,4 +23,11 @@ class HomeCubit extends Cubit<HomeState> {
       emit(currentState.copyWith(currentTabIndex: index));
     }
   }
+
+  void setConnectViewMode(ConnectViewMode mode) {
+    final currentState = state;
+    if (currentState is HomeLoaded) {
+      emit(currentState.copyWith(connectViewMode: mode));
+    }
+  }
 }
