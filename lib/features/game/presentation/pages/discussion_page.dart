@@ -16,8 +16,7 @@ class DiscussionPage extends StatelessWidget {
       appBar: _buildAppBar(context),
       body: BlocConsumer<GameCubit, GameState>(
         listener: (context, state) {
-          if (state.timerSeconds == 0 && state.phase == GamePhase.discussion) {
-            context.read<GameCubit>().startVoting();
+          if (state.phase == GamePhase.voting) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const VotingPage()),
