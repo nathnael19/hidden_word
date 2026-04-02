@@ -5,6 +5,8 @@ import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
 import 'package:hidden_word/features/game/presentation/pages/results_page.dart';
+import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
+import 'package:hidden_word/features/multiplayer/data/models/network_message.dart';
 
 class VotingPage extends StatelessWidget {
   const VotingPage({super.key});
@@ -15,17 +17,11 @@ class VotingPage extends StatelessWidget {
       backgroundColor: AppColors.obsidian,
       body: BlocConsumer<GameCubit, GameState>(
         listener: (context, state) {
-          if (state.isVotingReady && state.phase == GamePhase.voting) {
-            // Simulate waiting for all players for 2 seconds
-            Future.delayed(const Duration(seconds: 2), () {
-              if (context.mounted) {
-                context.read<GameCubit>().startResults();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ResultsPage()),
-                );
-              }
-            });
+          if (state.phase == GamePhase.results) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const ResultsPage()),
+            );
           }
         },
         builder: (context, state) {
@@ -164,8 +160,6 @@ class VotingPage extends StatelessWidget {
   }
 
   Widget _buildVotingGrid(BuildContext context, GameState state) {
-    final names = ['Dawit', 'Helen', 'Yonas', 'Sara', 'Abel', 'Sara'];
-    
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -175,11 +169,19 @@ class VotingPage extends StatelessWidget {
       ),
       itemCount: state.totalPlayers,
       itemBuilder: (context, index) {
+        final targetName = state.connectedPlayers.isNotEmpty ? state.connectedPlayers[index % state.connectedPlayers.length] : 'Unknown';
         final isSelected = state.votedPlayerIndex == index;
         return _VotingCard(
-          name: names[index % names.length],
+          name: targetName,
           isSelected: isSelected,
-          onTap: () => context.read<GameCubit>().selectVote(index),
+          onTap: () {
+            context.read<GameCubit>().selectVote(index);
+            final myName = context.read<MultiplayerCubit>().state.playerName;
+            context.read<MultiplayerCubit>().sendToHost(NetworkMessage(
+              type: NetworkMessageType.action,
+              payload: {'action': 'VOTE', 'playerName': myName, 'votedPlayerName': targetName},
+            ).encode());
+          },
         );
       },
     );
