@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/game_lobby/presentation/cubit/game_lobby_cubit.dart';
 import 'package:hidden_word/features/game_lobby/presentation/cubit/game_lobby_state.dart';
+import 'package:hidden_word/features/join_room/presentation/pages/join_room_page.dart';
 import 'package:hidden_word/features/room_lobby/presentation/pages/room_lobby_page.dart';
 
 class GameLobbyPage extends StatefulWidget {
@@ -210,37 +211,45 @@ class _GameLobbyPageState extends State<GameLobbyPage> with SingleTickerProvider
   }
 
   Widget _buildJoinCard() {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: -20,
-            top: -20,
-            child: Opacity(
-              opacity: 0.05,
-              child: Icon(Icons.travel_explore_rounded, size: 160, color: Colors.white),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const JoinRoomPage()),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -20,
+              top: -20,
+              child: Opacity(
+                opacity: 0.05,
+                child: Icon(Icons.travel_explore_rounded, size: 160, color: Colors.white),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.sensors, color: AppColors.primaryRed, size: 32),
-                const SizedBox(height: 12),
-                Text('Join a Game', style: GoogleFonts.epilogue(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-                const SizedBox(height: 4),
-                Text('Scan the local network for games.', style: GoogleFonts.beVietnamPro(fontSize: 13, color: Colors.white60)),
-              ],
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.sensors, color: AppColors.primaryRed, size: 32),
+                  const SizedBox(height: 12),
+                  Text('Join a Game', style: GoogleFonts.epilogue(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                  const SizedBox(height: 4),
+                  Text('Scan the local network for games.', style: GoogleFonts.beVietnamPro(fontSize: 13, color: Colors.white60)),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
