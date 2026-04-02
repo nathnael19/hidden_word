@@ -12,18 +12,24 @@ class HomeLoading extends HomeState {}
 
 class HomeLoaded extends HomeState {
   final String selectedTheme;
-  const HomeLoaded({this.selectedTheme = 'Food'});
+  final int currentTabIndex;
+  const HomeLoaded({
+    this.selectedTheme = 'Food',
+    this.currentTabIndex = 0,
+  });
 
   HomeLoaded copyWith({
     String? selectedTheme,
+    int? currentTabIndex,
   }) {
     return HomeLoaded(
       selectedTheme: selectedTheme ?? this.selectedTheme,
+      currentTabIndex: currentTabIndex ?? this.currentTabIndex,
     );
   }
 
   @override
-  List<Object> get props => [selectedTheme];
+  List<Object> get props => [selectedTheme, currentTabIndex];
 }
 
 class HomeError extends HomeState {
