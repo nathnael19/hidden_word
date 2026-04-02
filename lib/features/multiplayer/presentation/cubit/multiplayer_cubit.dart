@@ -26,16 +26,71 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
 
   MultiplayerCubit({required this.gameCubit}) : super(const MultiplayerState());
 
+  /// IP shown to joiners + mDNS. When the phone is the hotspot AP, [NetworkInfo.getWifiIP]
+  /// is often null/wrong because that API targets station (client) Wi‑Fi, not the soft‑AP.
+  Future<String> _resolveAdvertisedHostIp() async {
+    String? ip;
+    try {
+      ip = await _networkInfo
+          .getWifiIP()
+          .timeout(const Duration(seconds: 3), onTimeout: () => null);
+    } catch (_) {}
+    if (ip != null && ip.isNotEmpty) return ip;
+
+    try {
+      ip = await _networkInfo.getWifiGatewayIP();
+      if (ip != null && ip.isNotEmpty) return ip;
+    } catch (_) {}
+
+    final interfaces = await NetworkInterface.list(
+      type: InternetAddressType.IPv4,
+      includeLoopback: false,
+    );
+
+    bool looksLikeAp(NetworkInterface i) {
+      final n = i.name.toLowerCase();
+      return n.contains('ap') ||
+          n.contains('wlan') ||
+          n.contains('softap') ||
+          n.contains('p2p');
+    }
+
+    for (final iface in interfaces) {
+      if (!looksLikeAp(iface)) continue;
+      for (final a in iface.addresses) {
+        if (!a.isLoopback && a.type == InternetAddressType.IPv4) {
+          return a.address;
+        }
+      }
+    }
+
+    for (final iface in interfaces) {
+      for (final a in iface.addresses) {
+        if (a.address.startsWith('192.168.43.')) return a.address;
+      }
+    }
+
+    for (final iface in interfaces) {
+      for (final a in iface.addresses) {
+        if (a.isLoopback) continue;
+        if (a.type == InternetAddressType.IPv4) return a.address;
+      }
+    }
+
+    throw Exception(
+      'Could not determine local IP. On hotspot, ensure it is on and try again.',
+    );
+  }
+
   // --- HOSTING ---
   Future<void> startHosting(String playerName) async {
     try {
       emit(state.copyWith(status: MultiplayerStatus.hosting, playerName: playerName));
 
-      // 1. Get Local IP
-      final ip = await _networkInfo.getWifiIP();
-      if (ip == null) throw Exception("Could not get local IP");
+      // 1. Address clients use (hotspot AP is not the same as "Wi‑Fi client IP").
+      final ip = await _resolveAdvertisedHostIp();
 
-      // 2. Start WebSocket Server
+      // 2. Listen on all interfaces — binding to one NIC's IP often fails when the AP is up.
       final handler = webSocketHandler((webSocket, _) {
         // We don't add to map until they send JOIN
         webSocket.stream.listen((message) {
@@ -49,10 +104,10 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
         });
       });
 
-      _server = await shelf_io.serve(handler, ip, 0); // Port 0 for ephemeral
+      _server = await shelf_io.serve(handler, InternetAddress.anyIPv4, 0);
       final port = _server!.port;
 
-      // 3. Broadcast Service
+      // 3. Broadcast Service via mDNS
       _service = BonsoirService(
         name: "$playerName's Room",
         type: '_hiddenword._tcp',
