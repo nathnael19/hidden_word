@@ -5,6 +5,8 @@ import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
 import 'package:hidden_word/features/game/presentation/pages/discussion_page.dart';
+import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
+import 'package:hidden_word/features/multiplayer/data/models/network_message.dart';
 
 class SecretRevealPage extends StatelessWidget {
   const SecretRevealPage({super.key});
@@ -13,8 +15,22 @@ class SecretRevealPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.obsidian,
-      body: BlocBuilder<GameCubit, GameState>(
+      body: BlocConsumer<GameCubit, GameState>(
+        listener: (context, state) {
+          if (state.phase == GamePhase.discussion) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const DiscussionPage()),
+            );
+          }
+        },
         builder: (context, state) {
+          final isWaitingForHost = state.spyPlayerName == null;
+
+          if (isWaitingForHost) {
+            return _buildWaitingForHostState();
+          }
+
           return SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -43,7 +59,7 @@ class SecretRevealPage extends StatelessWidget {
                   _RevealCard(
                     isRevealed: state.isRevealed,
                     secretWord: state.secretWord,
-                    isSpy: state.isSpy,
+                    isSpy: context.read<MultiplayerCubit>().state.playerName == state.spyPlayerName,
                     onTap: () => context.read<GameCubit>().toggleReveal(),
                   ),
                   const Spacer(),
@@ -79,6 +95,36 @@ class SecretRevealPage extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildWaitingForHostState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
+          const SizedBox(height: 32),
+          Text(
+            'WAITING FOR HOST...',
+            style: GoogleFonts.manrope(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              color: AppColors.gold,
+              letterSpacing: 2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'The host is configuring the game settings.',
+            style: GoogleFonts.manrope(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: Colors.white54,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -167,20 +213,13 @@ class SecretRevealPage extends StatelessWidget {
       onTap: () {
         if (state.isRevealed) {
           context.read<GameCubit>().markAsReady();
-
-          // Simulate Host Starting Game after 4 seconds
-          Future.delayed(const Duration(seconds: 4), () {
-            if (context.mounted) {
-              context.read<GameCubit>().startDiscussion();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const DiscussionPage()),
-              );
-            }
-          });
+          
+          final playerName = context.read<MultiplayerCubit>().state.playerName;
+          context.read<MultiplayerCubit>().sendToHost(NetworkMessage(
+            type: NetworkMessageType.action,
+            payload: {'action': 'READY', 'playerName': playerName},
+          ).encode());
         } else {
-          // You could show a message saying "Please reveal the word first" 
-          // or just toggle reveal
           context.read<GameCubit>().toggleReveal();
         }
       },
