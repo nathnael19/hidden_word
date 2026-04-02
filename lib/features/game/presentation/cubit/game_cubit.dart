@@ -12,7 +12,10 @@ class GameCubit extends Cubit<GameState> {
       totalPlayers: playersCount,
       currentPlayerIndex: 1,
       phase: GamePhase.reveal,
+      isRevealed: false,
       isReady: false,
+      isVotingReady: false,
+      clearVotedPlayer: true,
     ));
   }
 
@@ -29,7 +32,6 @@ class GameCubit extends Cubit<GameState> {
     emit(state.copyWith(
       phase: GamePhase.discussion,
       timerSeconds: 105, // 01:45
-      isReady: true,
     ));
 
     _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -37,7 +39,6 @@ class GameCubit extends Cubit<GameState> {
         emit(state.copyWith(timerSeconds: state.timerSeconds - 1));
       } else {
         timer.cancel();
-        // The UI will handle auto-transition to voting phase
       }
     });
   }
@@ -46,8 +47,8 @@ class GameCubit extends Cubit<GameState> {
     _gameTimer?.cancel();
     emit(state.copyWith(
       phase: GamePhase.voting,
-      timerSeconds: 45, // 0:45 for voting session
-      votedPlayerIndex: null, // Reset previous vote
+      timerSeconds: 45,
+      isVotingReady: false,
       clearVotedPlayer: true,
     ));
 
@@ -56,13 +57,27 @@ class GameCubit extends Cubit<GameState> {
         emit(state.copyWith(timerSeconds: state.timerSeconds - 1));
       } else {
         timer.cancel();
-        // Next phase would be reveal results
       }
     });
   }
 
   void selectVote(int index) {
-    emit(state.copyWith(votedPlayerIndex: index));
+    emit(state.copyWith(
+      votedPlayerIndex: index,
+      isVotingReady: true,
+    ));
+  }
+
+  void startResults() {
+    _gameTimer?.cancel();
+    emit(state.copyWith(
+      phase: GamePhase.results,
+      spyCaught: true, // Simulated result
+    ));
+  }
+
+  void resetGame() {
+    init(state.totalPlayers);
   }
 
   void togglePeeking() {
