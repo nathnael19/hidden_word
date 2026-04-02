@@ -63,9 +63,23 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('ስውር', style: GoogleFonts.epilogue(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(
+            'ስውር',
+            style: GoogleFonts.epilogue(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
           const SizedBox(width: 4),
-          Text('ቃል', style: GoogleFonts.epilogue(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primaryPink)),
+          Text(
+            'ቃል',
+            style: GoogleFonts.epilogue(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryPink,
+            ),
+          ),
         ],
       ),
       actions: [
@@ -103,9 +117,23 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
         const SizedBox(height: 8),
         Row(
           children: [
-            Text('ስውር', style: GoogleFonts.epilogue(fontSize: 40, fontWeight: FontWeight.w900, color: Colors.white)),
+            Text(
+              'ስውር',
+              style: GoogleFonts.epilogue(
+                fontSize: 40,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+              ),
+            ),
             const SizedBox(width: 12),
-            Text('ቅዱሳን', style: GoogleFonts.epilogue(fontSize: 40, fontWeight: FontWeight.w900, color: AppColors.primaryRed)),
+            Text(
+              'ቅዱሳን',
+              style: GoogleFonts.epilogue(
+                fontSize: 40,
+                fontWeight: FontWeight.w900,
+                color: AppColors.primaryRed,
+              ),
+            ),
           ],
         ),
       ],
@@ -123,11 +151,23 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: Colors.green,
+              shape: BoxShape.circle,
+            ),
+          ),
           const SizedBox(width: 8),
           Text(
             'CONNECTION STABLE',
-            style: GoogleFonts.manrope(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.green, letterSpacing: 0.5),
+            style: GoogleFonts.manrope(
+              fontSize: 8,
+              fontWeight: FontWeight.w900,
+              color: Colors.green,
+              letterSpacing: 0.5,
+            ),
           ),
         ],
       ),
@@ -162,10 +202,26 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
             spacing: 8,
             runSpacing: 12,
             children: [
-              _buildCategoryChip(context, 'Traditional Food', state.selectedCategories.contains('Traditional Food')),
-              _buildCategoryChip(context, 'Heritage Sites', state.selectedCategories.contains('Heritage Sites')),
-              _buildCategoryChip(context, 'Ethiopian Culture', state.selectedCategories.contains('Ethiopian Culture')),
-              _buildCategoryChip(context, 'Sports', state.selectedCategories.contains('Sports')),
+              _buildCategoryChip(
+                context,
+                'Traditional Food',
+                state.selectedCategories.contains('Traditional Food'),
+              ),
+              _buildCategoryChip(
+                context,
+                'Heritage Sites',
+                state.selectedCategories.contains('Heritage Sites'),
+              ),
+              _buildCategoryChip(
+                context,
+                'Ethiopian Culture',
+                state.selectedCategories.contains('Ethiopian Culture'),
+              ),
+              _buildCategoryChip(
+                context,
+                'Sports',
+                state.selectedCategories.contains('Sports'),
+              ),
             ],
           ),
           const SizedBox(height: 32),
@@ -182,7 +238,12 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
         const SizedBox(width: 8),
         Text(
           label,
-          style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white24, letterSpacing: 1),
+          style: GoogleFonts.manrope(
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            color: Colors.white24,
+            letterSpacing: 1,
+          ),
         ),
       ],
     );
@@ -195,7 +256,9 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
         child: Container(
           height: 60,
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primaryRed : Colors.white.withOpacity(0.05),
+            color: isSelected
+                ? AppColors.primaryRed
+                : Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(16),
             border: isSelected ? Border.all(color: Colors.white24) : null,
           ),
@@ -213,7 +276,11 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
     );
   }
 
-  Widget _buildCategoryChip(BuildContext context, String label, bool isSelected) {
+  Widget _buildCategoryChip(
+    BuildContext context,
+    String label,
+    bool isSelected,
+  ) {
     return GestureDetector(
       onTap: () => context.read<RoomLobbyCubit>().toggleCategory(label),
       child: Container(
@@ -225,7 +292,8 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (isSelected) const Icon(Icons.check_circle, size: 14, color: Colors.black),
+            if (isSelected)
+              const Icon(Icons.check_circle, size: 14, color: Colors.black),
             if (isSelected) const SizedBox(width: 8),
             Text(
               label,
@@ -258,11 +326,18 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
               children: [
                 Text(
                   '60s Discussion Timer',
-                  style: GoogleFonts.epilogue(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: GoogleFonts.epilogue(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
                 Text(
                   'Keep the pressure high',
-                  style: GoogleFonts.beVietnamPro(fontSize: 11, color: Colors.white30),
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 11,
+                    color: Colors.white30,
+                  ),
                 ),
               ],
             ),
@@ -270,7 +345,7 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
           Switch(
             value: isEnabled,
             onChanged: (val) => context.read<RoomLobbyCubit>().toggleTimer(val),
-            activeColor: AppColors.primaryRed,
+            activeThumbColor: AppColors.primaryRed,
           ),
         ],
       ),
@@ -291,16 +366,43 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('ROOM ID', style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white24, letterSpacing: 1)),
+                Text(
+                  'ROOM ID',
+                  style: GoogleFonts.manrope(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white24,
+                    letterSpacing: 1,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text(roomId, style: GoogleFonts.epilogue(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 2)),
+                Text(
+                  roomId,
+                  style: GoogleFonts.epilogue(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 2,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.copy_rounded, size: 12, color: AppColors.primaryPink),
+                    const Icon(
+                      Icons.copy_rounded,
+                      size: 12,
+                      color: AppColors.primaryPink,
+                    ),
                     const SizedBox(width: 4),
-                    Text('COPY LINK', style: GoogleFonts.manrope(fontSize: 9, fontWeight: FontWeight.w900, color: AppColors.primaryPink)),
+                    Text(
+                      'COPY LINK',
+                      style: GoogleFonts.manrope(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primaryPink,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -331,16 +433,45 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
       children: [
         Row(
           children: [
-            Text('ተጫዋቾች', style: GoogleFonts.epilogue(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+            Text(
+              'ተጫዋቾች',
+              style: GoogleFonts.epilogue(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
             const SizedBox(width: 8),
-            Text('($count/10)', style: GoogleFonts.beVietnamPro(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.white30)),
+            Text(
+              '($count/10)',
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Colors.white30,
+              ),
+            ),
           ],
         ),
         Row(
           children: [
-            Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
+            Container(
+              width: 6,
+              height: 6,
+              decoration: const BoxDecoration(
+                color: Colors.green,
+                shape: BoxShape.circle,
+              ),
+            ),
             const SizedBox(width: 8),
-            Text('AWAITING CONNECTIONS...', style: GoogleFonts.manrope(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.green, letterSpacing: 0.5)),
+            Text(
+              'AWAITING CONNECTIONS...',
+              style: GoogleFonts.manrope(
+                fontSize: 8,
+                fontWeight: FontWeight.w900,
+                color: Colors.green,
+                letterSpacing: 0.5,
+              ),
+            ),
           ],
         ),
       ],
@@ -373,7 +504,12 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerHigh.withOpacity(0.5),
         borderRadius: BorderRadius.circular(24),
-        border: isHost ? Border.all(color: AppColors.primaryPink.withOpacity(0.5), width: 1.5) : null,
+        border: isHost
+            ? Border.all(
+                color: AppColors.primaryPink.withOpacity(0.5),
+                width: 1.5,
+              )
+            : null,
       ),
       child: Stack(
         alignment: Alignment.topCenter,
@@ -382,9 +518,22 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
             Positioned(
               top: -8,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                decoration: BoxDecoration(color: AppColors.primaryPink, borderRadius: BorderRadius.circular(8)),
-                child: Text('HOST', style: GoogleFonts.manrope(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryPink,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'HOST',
+                  style: GoogleFonts.manrope(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           Padding(
@@ -395,17 +544,28 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                 CircleAvatar(
                   radius: 36,
                   backgroundColor: Colors.white10,
-                  backgroundImage: const AssetImage('assets/ritualist_avatar.png'),
+                  backgroundImage: const AssetImage(
+                    'assets/ritualist_avatar.png',
+                  ),
                 ),
                 const SizedBox(height: 12),
-                Text(player['name'], style: GoogleFonts.epilogue(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text(
+                  player['name'],
+                  style: GoogleFonts.epilogue(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   player['status'],
                   style: GoogleFonts.manrope(
                     fontSize: 9,
                     fontWeight: FontWeight.w900,
-                    color: player['status'] == 'READY' ? Colors.green : Colors.white24,
+                    color: player['status'] == 'READY'
+                        ? Colors.green
+                        : Colors.white24,
                     letterSpacing: 1,
                   ),
                 ),
@@ -422,21 +582,36 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.02),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.05), style: BorderStyle.solid),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.05),
+          style: BorderStyle.solid,
+        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.person_add_alt_1_outlined, color: Colors.white12, size: 30),
+          Icon(
+            Icons.person_add_alt_1_outlined,
+            color: Colors.white12,
+            size: 30,
+          ),
           const SizedBox(height: 12),
-          Text('WAITING...', style: GoogleFonts.manrope(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white12, letterSpacing: 1)),
+          Text(
+            'WAITING...',
+            style: GoogleFonts.manrope(
+              fontSize: 9,
+              fontWeight: FontWeight.w900,
+              color: Colors.white12,
+              letterSpacing: 1,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildStartButton() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Column(
         children: [
@@ -450,13 +625,23 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
             alignment: Alignment.center,
             child: Text(
               'ጀምር (START GAME)',
-              style: GoogleFonts.manrope(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.black.withOpacity(0.8), letterSpacing: 0.5),
+              style: GoogleFonts.manrope(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: Colors.black.withOpacity(0.8),
+                letterSpacing: 0.5,
+              ),
             ),
           ),
           const SizedBox(height: 16),
           Text(
             'ALL PLAYERS MUST BE READY BEFORE THE HUNT BEGINS',
-            style: GoogleFonts.manrope(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.white12, letterSpacing: 0.5),
+            style: GoogleFonts.manrope(
+              fontSize: 9,
+              fontWeight: FontWeight.w800,
+              color: Colors.white12,
+              letterSpacing: 0.5,
+            ),
           ),
         ],
       ),
