@@ -6,7 +6,17 @@ import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
 import 'package:hidden_word/features/game/presentation/pages/discussion_page.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
-import 'package:hidden_word/features/multiplayer/data/models/network_message.dart';
+import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
+
+bool _isLocalPlayerSpy(GameState state, MultiplayerState mp) {
+  if (state.spyPlayerNames.isEmpty) return false;
+  if (mp.status == MultiplayerStatus.hosting ||
+      mp.status == MultiplayerStatus.connected) {
+    return state.spyPlayerNames.contains(mp.playerName);
+  }
+  if (state.connectedPlayers.isEmpty) return false;
+  return state.spyPlayerNames.contains(state.connectedPlayers.first);
+}
 
 class SecretRevealPage extends StatelessWidget {
   const SecretRevealPage({super.key});
@@ -25,7 +35,8 @@ class SecretRevealPage extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          final isWaitingForHost = state.spyPlayerName == null;
+          final isWaitingForHost =
+              !state.sessionActive || state.spyPlayerNames.isEmpty;
 
           if (isWaitingForHost) {
             return _buildWaitingForHostState();
@@ -59,16 +70,19 @@ class SecretRevealPage extends StatelessWidget {
                   _RevealCard(
                     isRevealed: state.isRevealed,
                     secretWord: state.secretWord,
-                    isSpy: context.read<MultiplayerCubit>().state.playerName == state.spyPlayerName,
+                    isSpy: _isLocalPlayerSpy(
+                      state,
+                      context.read<MultiplayerCubit>().state,
+                    ),
                     onTap: () => context.read<GameCubit>().toggleReveal(),
                   ),
                   const Spacer(),
                   // Player Progress Dots
-                  _buildProgressDots(state.currentPlayerIndex, state.totalPlayers),
+                  _buildProgressDots(state.playersReadyCount, state.totalPlayers),
                   const SizedBox(height: 16),
                   // Readiness Text
                   Text(
-                    '${state.currentPlayerIndex} of ${state.totalPlayers} ተጫዋችች ተዘጋጅተዋል',
+                    '${state.playersReadyCount} of ${state.totalPlayers} ተጫዋችች ተዘጋጅተዋል',
                     style: GoogleFonts.manrope(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -210,15 +224,17 @@ class SecretRevealPage extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () {
+        onTap: () {
         if (state.isRevealed) {
           context.read<GameCubit>().markAsReady();
-          
-          final playerName = context.read<MultiplayerCubit>().state.playerName;
-          context.read<MultiplayerCubit>().sendToHost(NetworkMessage(
-            type: NetworkMessageType.action,
-            payload: {'action': 'READY', 'playerName': playerName},
-          ).encode());
+          final mp = context.read<MultiplayerCubit>();
+          final mpState = mp.state;
+          if (mpState.status == MultiplayerStatus.hosting ||
+              mpState.status == MultiplayerStatus.connected) {
+            mp.submitReady(mpState.playerName);
+          } else {
+            context.read<GameCubit>().startDiscussion(isHost: true);
+          }
         } else {
           context.read<GameCubit>().toggleReveal();
         }
