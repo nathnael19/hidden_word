@@ -42,7 +42,10 @@ class _HomePageState extends State<HomePage> {
               : IndexedStack(
                   index: currentIndex,
                   children: [
-                    _HomeSection(selectedTheme: selectedTheme),
+                    _HomeSection(
+                      selectedTheme: selectedTheme,
+                      homeLoaded: state as HomeLoaded,
+                    ),
                     const ConnectSection(),
                     const _PlaceholderSection(title: 'RULES'),
                     const SettingsPage(),
@@ -56,7 +59,8 @@ class _HomePageState extends State<HomePage> {
 
 class _HomeSection extends StatelessWidget {
   final String selectedTheme;
-  const _HomeSection({required this.selectedTheme});
+  final HomeLoaded homeLoaded;
+  const _HomeSection({required this.selectedTheme, required this.homeLoaded});
 
   @override
   Widget build(BuildContext context) {
@@ -75,11 +79,12 @@ class _HomeSection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 54),
+                  const SizedBox(height: 32),
                   _buildHeroSection(),
-                  const SizedBox(height: 54),
+                  const SizedBox(height: 48),
                   _buildThemeSection(context, selectedTheme),
-                  _buildStartButton(context),
+                  const SizedBox(height: 24), // Reduced from 48
+                  _buildConfigSection(context, homeLoaded),
                   const SizedBox(height: 140), // Space for fixed BottomNav
                 ],
               ),
@@ -140,6 +145,358 @@ class _HomeSection extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConfigSection(BuildContext context, HomeLoaded state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'READY TO FIND THE ',
+                style: GoogleFonts.manrope(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.onSurface.withOpacity(0.3),
+                  letterSpacing: 1,
+                ),
+              ),
+              Text(
+                'SECRET WORD?',
+                style: GoogleFonts.manrope(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.gold.withOpacity(0.6),
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 40), // Spacing below CTA text
+        _buildSectionHeader('Players'),
+        const SizedBox(height: 20),
+        _buildPlayerCountSelector(context, state.playersCount),
+        const SizedBox(height: 24),
+        _buildSettingsGrid(context, state.timerSeconds, state.roundsCount),
+        const SizedBox(height: 32),
+        _buildStartAction(context),
+        const SizedBox(height: 12),
+        Center(
+          child: Text(
+            'PREPARE YOUR POKER FACE',
+            style: GoogleFonts.manrope(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: AppColors.onSurface.withOpacity(0.3),
+              letterSpacing: 2,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Row(
+      children: [
+        Text(
+          title.toUpperCase(),
+          style: GoogleFonts.manrope(
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+            color: AppColors.onSurface,
+            letterSpacing: 1.5,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Container(
+            height: 1,
+            color: AppColors.onSurface.withOpacity(0.1),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlayerCountSelector(BuildContext context, int count) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(
+          color: AppColors.onSurface.withOpacity(0.05),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildRoundIconButton(
+                icon: Icons.remove,
+                onTap: () =>
+                    context.read<HomeCubit>().updatePlayersCount(count - 1),
+                isDisabled: count <= 3,
+              ),
+              Column(
+                children: [
+                  Text(
+                    '$count',
+                    style: GoogleFonts.epilogue(
+                      fontSize: 64,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    'FRIENDS JOINED',
+                    style: GoogleFonts.manrope(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.onSurface.withOpacity(0.5),
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
+              ),
+              _buildRoundIconButton(
+                icon: Icons.add,
+                onTap: () =>
+                    context.read<HomeCubit>().updatePlayersCount(count + 1),
+                isDisabled: count >= 10,
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildLimitLabel('MIN 3'),
+              Row(
+                children: List.generate(8, (index) {
+                  final dotValue = index + 3;
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: dotValue == count
+                          ? AppColors.primaryPink
+                          : AppColors.onSurface.withOpacity(
+                              dotValue < count ? 0.4 : 0.1,
+                            ),
+                    ),
+                  );
+                }),
+              ),
+              _buildLimitLabel('MAX 10'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRoundIconButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    bool isDisabled = false,
+  }) {
+    return GestureDetector(
+      onTap: isDisabled ? null : onTap,
+      child: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.surfaceContainerHigh.withOpacity(
+            isDisabled ? 0.3 : 1,
+          ),
+        ),
+        child: Icon(
+          icon,
+          color: Colors.white.withOpacity(isDisabled ? 0.2 : 0.8),
+          size: 24,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLimitLabel(String text) {
+    return Text(
+      text,
+      style: GoogleFonts.manrope(
+        fontSize: 9,
+        fontWeight: FontWeight.w900,
+        color: AppColors.onSurface.withOpacity(0.3),
+        letterSpacing: 0.5,
+      ),
+    );
+  }
+
+  Widget _buildSettingsGrid(BuildContext context, int timer, int rounds) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildSettingCard(
+            label: 'TIMER',
+            value: '${timer}s',
+            icon: Icons.timer,
+            iconColor: Colors.green,
+            onTap: () {
+              // Cycle through common times: 45, 60, 90, 120
+              final times = [45, 60, 90, 120];
+              final currentIndex = times.indexOf(timer);
+              final nextIndex = (currentIndex + 1) % times.length;
+              context.read<HomeCubit>().updateTimer(times[nextIndex]);
+            },
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildSettingCard(
+            label: 'ROUNDS',
+            value: '$rounds Wins',
+            icon: Icons.military_tech,
+            iconColor: AppColors.primaryRed,
+            onTap: () {
+              // Cycle through: 3, 5, 7, 10
+              final roundsList = [3, 5, 7, 10];
+              final currentIndex = roundsList.indexOf(rounds);
+              final nextIndex = (currentIndex + 1) % roundsList.length;
+              context.read<HomeCubit>().updateRounds(roundsList[nextIndex]);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSettingCard({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: AppColors.onSurface.withOpacity(0.05),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.manrope(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.onSurface.withOpacity(0.3),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: GoogleFonts.manrope(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStartAction(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        context.read<HomeCubit>().setTabIndex(1);
+        context.read<HomeCubit>().setConnectViewMode(ConnectViewMode.main);
+      },
+      child: Container(
+        width: double.infinity,
+        height: 72,
+        decoration: BoxDecoration(
+          color: AppColors.primaryPink.withOpacity(0.85),
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primaryPink.withOpacity(0.25),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'START GAME',
+              style: GoogleFonts.manrope(
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                color: Colors.black.withOpacity(0.7),
+                letterSpacing: 1,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Container(
+                width: 1,
+                height: 24,
+                color: Colors.black.withOpacity(0.1),
+              ),
+            ),
+            Text(
+              'ጨዋታ ጀምር',
+              style: GoogleFonts.epilogue(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: Colors.black.withOpacity(0.7),
+                letterSpacing: 1,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Icon(
+              Icons.arrow_forward_rounded,
+              color: Colors.black.withOpacity(0.7),
+              size: 24,
+            ),
+          ],
         ),
       ),
     );
@@ -275,76 +632,6 @@ class _HomeSection extends StatelessWidget {
               icon: Icons.school,
               isSelected: currentTheme == 'Student',
               onTap: () => context.read<HomeCubit>().selectTheme('Student'),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStartButton(BuildContext context) {
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: () {
-            context.read<HomeCubit>().setTabIndex(1);
-            context.read<HomeCubit>().setConnectViewMode(ConnectViewMode.main);
-          },
-          child: Container(
-            width: double.infinity,
-            height: 64,
-            decoration: BoxDecoration(
-              color: AppColors.primaryRed,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryRed.withOpacity(0.2),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'START GAME',
-                  style: GoogleFonts.manrope(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Icon(
-                  Icons.play_arrow_rounded,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'READY TO FIND THE ',
-              style: GoogleFonts.manrope(
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                color: AppColors.onSurface.withOpacity(0.3),
-              ),
-            ),
-            Text(
-              'SECRET WORD?',
-              style: GoogleFonts.manrope(
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                color: AppColors.gold.withOpacity(0.6),
-              ),
             ),
           ],
         ),
