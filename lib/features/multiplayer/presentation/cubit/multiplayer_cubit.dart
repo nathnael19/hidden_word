@@ -132,6 +132,13 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
   }
 
   void _onGameStateForHostAndClients(GameState gameState) {
+    // New round returns to reveal; reset so timer-based tally can run again.
+    if (state.status == MultiplayerStatus.hosting &&
+        gameState.phase == GamePhase.reveal &&
+        gameState.sessionActive) {
+      _votingRoundResolved = false;
+    }
+
     broadcastToClients(NetworkMessage(
       type: NetworkMessageType.phaseSync,
       payload: gameState.toJson(),
