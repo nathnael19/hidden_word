@@ -41,6 +41,12 @@ dependencies:
   dartz: ^0.10.1
   get_it: ^7.7.0
   google_fonts: ^6.1.0
+  bonsoir: ^6.0.2
+  shelf: ^1.4.2
+  shelf_web_socket: ^3.0.0
+  connectivity_plus: ^7.1.0
+  network_info_plus: ^7.0.0
+  web_socket_channel: ^3.0.3
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +74,7 @@ flutter:
     - assets/
     - assets/splash_bg.png
     - assets/ritualist_avatar.png
+    - assets/words.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
