@@ -445,16 +445,24 @@ class _HomeSection extends StatelessWidget {
 
   Widget _buildStartAction(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // Initialize GameCubit with current player count
+      onTap: () async {
         final playersCount = homeLoaded.playersCount;
-        context.read<GameCubit>().init(playersCount);
+        // Map home theme display name -> words.json category id
+        final themeToCategory = {
+          'Food': 'food',
+          'Transport': 'transport',
+          'Culture': 'culture',
+          'Student': 'student',
+        };
+        final categoryId = themeToCategory[homeLoaded.selectedTheme] ?? 'food';
+        await context.read<GameCubit>().init(playersCount, categoryId: categoryId);
 
-        // Navigate to Secret Reveal Page
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const SecretRevealPage()),
-        );
+        if (context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SecretRevealPage()),
+          );
+        }
       },
       child: Container(
         width: double.infinity,
