@@ -19,7 +19,9 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
   BonsoirDiscovery? _discovery;
   HttpServer? _server;
   WebSocketChannel? _clientChannel;
-  final List<WebSocketChannel> _connectedClients = [];
+  final Map<WebSocketChannel, String> _connectedClients = {};
+  final Set<String> _readyPlayers = {};
+  final Map<String, String> _playerVotes = {};
   final NetworkInfo _networkInfo = NetworkInfo();
 
   MultiplayerCubit({required this.gameCubit}) : super(const MultiplayerState());
@@ -35,11 +37,16 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
 
       // 2. Start WebSocket Server
       final handler = webSocketHandler((webSocket, _) {
-        _connectedClients.add(webSocket);
+        // We don't add to map until they send JOIN
         webSocket.stream.listen((message) {
-          // Handle incoming actions from clients (e.g., 'READY')
           _handleClientMessage(webSocket, message);
-        }, onDone: () => _connectedClients.remove(webSocket));
+        }, onDone: () {
+          final name = _connectedClients[webSocket];
+          _connectedClients.remove(webSocket);
+          if (name != null) {
+            _broadcastRosterUpdate();
+          }
+        });
       });
 
       _server = await shelf_io.serve(handler, ip, 0); // Port 0 for ephemeral
@@ -113,6 +120,12 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
       _clientChannel = WebSocketChannel.connect(url);
       await _clientChannel!.ready;
 
+      // Automatically send JOIN action
+      _clientChannel!.sink.add(NetworkMessage(
+        type: NetworkMessageType.action,
+        payload: {'action': 'JOIN', 'playerName': state.playerName},
+      ).encode());
+
       _clientChannel!.stream.listen((message) {
         // Handle state sync from host
         _handleHostMessage(message);
@@ -126,7 +139,63 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
 
   // --- MESSAGE HANDLING ---
   void _handleClientMessage(WebSocketChannel client, dynamic message) {
-    // Logic to update master GameCubit or player list
+    if (message is String) {
+      final networkMessage = NetworkMessage.decode(message);
+      if (networkMessage.type == NetworkMessageType.action) {
+        final action = networkMessage.payload['action'];
+        final playerName = networkMessage.payload['playerName'] as String? ?? 'Unknown';
+
+        if (action == 'JOIN') {
+          _connectedClients[client] = playerName;
+          _broadcastRosterUpdate();
+        } 
+        else if (action == 'READY') {
+          _readyPlayers.add(playerName);
+          if (_readyPlayers.length == _connectedClients.length) {
+            // Everyone is ready -> start discussion phase (Only Host counts down)
+            gameCubit.startDiscussion(isHost: true);
+          }
+        } 
+        else if (action == 'VOTE') {
+          final votedPlayerName = networkMessage.payload['votedPlayerName'] as String?;
+          if (votedPlayerName != null) {
+            _playerVotes[playerName] = votedPlayerName;
+            if (_playerVotes.length == _connectedClients.length) {
+              _tallyVotesAndFinish();
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void _broadcastRosterUpdate() {
+    final roster = _connectedClients.values.toList();
+    emit(state.copyWith(connectedPlayers: roster));
+    broadcastToClients(NetworkMessage(
+      type: NetworkMessageType.action,
+      payload: {'action': 'ROSTER_SYNC', 'connectedPlayers': roster},
+    ).encode());
+  }
+
+  void _tallyVotesAndFinish() {
+    final Map<String, int> counts = {};
+    for (final vote in _playerVotes.values) {
+      counts[vote] = (counts[vote] ?? 0) + 1;
+    }
+
+    String? majorityName;
+    int maxVotes = 0;
+    counts.forEach((name, count) {
+      if (count > maxVotes) {
+        maxVotes = count;
+        majorityName = name;
+      }
+    });
+
+    final spyName = gameCubit.state.spyPlayerName;
+    final spyCaught = (majorityName != null && majorityName == spyName);
+    gameCubit.startResults(spyCaught, majorityName);
   }
 
   void _handleHostMessage(dynamic message) {
@@ -137,18 +206,19 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
         gameCubit.syncState(incomingState);
       } else if (networkMessage.type == NetworkMessageType.action) {
         final action = networkMessage.payload['action'];
+        
         if (action == 'START_GAME') {
-          final category = networkMessage.payload['category'] as String? ?? 'food';
-          gameCubit.init(6, categoryId: category).then((_) {
-            emit(state.copyWith(status: MultiplayerStatus.connected));
-          });
+          // handled dynamically by clients observing GameState
+        } else if (action == 'ROSTER_SYNC') {
+          final roster = List<String>.from(networkMessage.payload['connectedPlayers'] ?? []);
+          emit(state.copyWith(connectedPlayers: roster));
         }
       }
     }
   }
 
   void broadcastToClients(String encodedMessage) {
-    for (final client in _connectedClients) {
+    for (final client in _connectedClients.keys) {
       client.sink.add(encodedMessage);
     }
   }
@@ -164,10 +234,12 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
     await _discovery?.stop();
     await _server?.close();
     await _clientChannel?.sink.close();
-    for (final client in _connectedClients) {
+    for (final client in _connectedClients.keys) {
       await client.sink.close();
     }
     _connectedClients.clear();
+    _readyPlayers.clear();
+    _playerVotes.clear();
     emit(const MultiplayerState());
   }
 
