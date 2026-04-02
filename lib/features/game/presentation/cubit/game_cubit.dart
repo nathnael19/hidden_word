@@ -9,16 +9,20 @@ class GameCubit extends Cubit<GameState> {
 
   GameCubit() : super(const GameState());
 
-  /// Picks a random spy among all players.
-  int _pickSpyIndex(int totalPlayers) {
-    return Random().nextInt(totalPlayers) + 1;
-  }
-
   /// Initialises the game. Fetches a random word from [categoryId].
   /// If no category is given, defaults to 'food'.
-  Future<void> init(int playersCount, {String categoryId = 'food'}) async {
+  Future<void> init(int playersCount, {
+    String categoryId = 'food',
+    String? spyPlayerName,
+    List<String> connectedPlayers = const [],
+  }) async {
     final secretWord = await WordRepository.pickRandomWord(categoryId);
-    final spyIndex = _pickSpyIndex(playersCount);
+
+    String? finalSpyName = spyPlayerName;
+    if (finalSpyName == null && connectedPlayers.isNotEmpty) {
+      final spyIndex = Random().nextInt(connectedPlayers.length);
+      finalSpyName = connectedPlayers[spyIndex];
+    }
 
     emit(GameState(
       totalPlayers: playersCount,
@@ -28,8 +32,9 @@ class GameCubit extends Cubit<GameState> {
       isReady: false,
       isVotingReady: false,
       secretWord: secretWord,
-      isSpy: 1 == spyIndex, // will be overridden per device in a real session
       spyCaught: false,
+      spyPlayerName: finalSpyName,
+      connectedPlayers: connectedPlayers,
     ));
   }
 
@@ -41,23 +46,25 @@ class GameCubit extends Cubit<GameState> {
     emit(state.copyWith(isReady: true));
   }
 
-  void startDiscussion() {
+  void startDiscussion({bool isHost = false}) {
     _gameTimer?.cancel();
     emit(state.copyWith(
       phase: GamePhase.discussion,
       timerSeconds: 105, // 01:45
     ));
 
-    _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (state.timerSeconds > 0) {
-        emit(state.copyWith(timerSeconds: state.timerSeconds - 1));
-      } else {
-        timer.cancel();
-      }
-    });
+    if (isHost) {
+      _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (state.timerSeconds > 0) {
+          emit(state.copyWith(timerSeconds: state.timerSeconds - 1));
+        } else {
+          timer.cancel();
+        }
+      });
+    }
   }
 
-  void startVoting() {
+  void startVoting({bool isHost = false}) {
     _gameTimer?.cancel();
     emit(state.copyWith(
       phase: GamePhase.voting,
@@ -66,13 +73,15 @@ class GameCubit extends Cubit<GameState> {
       clearVotedPlayer: true,
     ));
 
-    _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (state.timerSeconds > 0) {
-        emit(state.copyWith(timerSeconds: state.timerSeconds - 1));
-      } else {
-        timer.cancel();
-      }
-    });
+    if (isHost) {
+      _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (state.timerSeconds > 0) {
+          emit(state.copyWith(timerSeconds: state.timerSeconds - 1));
+        } else {
+          timer.cancel();
+        }
+      });
+    }
   }
 
   void selectVote(int index) {
@@ -82,11 +91,12 @@ class GameCubit extends Cubit<GameState> {
     ));
   }
 
-  void startResults() {
+  void startResults(bool spyCaught, String? majorityVotedName) {
     _gameTimer?.cancel();
     emit(state.copyWith(
       phase: GamePhase.results,
-      spyCaught: true, // TODO: replace with actual vote tally
+      spyCaught: spyCaught,
+      majorityVotedName: majorityVotedName,
     ));
   }
 
