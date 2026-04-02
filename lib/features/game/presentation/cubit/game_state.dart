@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum GamePhase { reveal, discussion, voting }
+enum GamePhase { reveal, discussion, voting, results }
 
 class GameState extends Equatable {
   final int currentPlayerIndex;
@@ -13,6 +13,8 @@ class GameState extends Equatable {
   final int timerSeconds;
   final bool isPeeking;
   final int? votedPlayerIndex;
+  final bool isVotingReady;
+  final bool spyCaught;
 
   const GameState({
     this.currentPlayerIndex = 1,
@@ -25,6 +27,8 @@ class GameState extends Equatable {
     this.timerSeconds = 105, // Discussion: 01:45
     this.isPeeking = false,
     this.votedPlayerIndex,
+    this.isVotingReady = false,
+    this.spyCaught = true,
   });
 
   GameState copyWith({
@@ -38,6 +42,8 @@ class GameState extends Equatable {
     int? timerSeconds,
     bool? isPeeking,
     int? votedPlayerIndex,
+    bool? isVotingReady,
+    bool? spyCaught,
     bool clearVotedPlayer = false,
   }) {
     return GameState(
@@ -51,6 +57,8 @@ class GameState extends Equatable {
       timerSeconds: timerSeconds ?? this.timerSeconds,
       isPeeking: isPeeking ?? this.isPeeking,
       votedPlayerIndex: clearVotedPlayer ? null : (votedPlayerIndex ?? this.votedPlayerIndex),
+      isVotingReady: isVotingReady ?? this.isVotingReady,
+      spyCaught: spyCaught ?? this.spyCaught,
     );
   }
 
@@ -66,5 +74,7 @@ class GameState extends Equatable {
         timerSeconds,
         isPeeking,
         votedPlayerIndex,
+        isVotingReady,
+        spyCaught,
       ];
 }
