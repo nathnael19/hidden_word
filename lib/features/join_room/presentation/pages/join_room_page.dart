@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
-import 'package:hidden_word/features/join_room/presentation/cubit/join_room_cubit.dart';
-import 'package:hidden_word/features/join_room/presentation/cubit/join_room_state.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
+import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
+import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
+import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
 
 class JoinRoomPage extends StatefulWidget {
   const JoinRoomPage({super.key});
@@ -21,7 +22,7 @@ class _JoinRoomPageState extends State<JoinRoomPage>
   @override
   void initState() {
     super.initState();
-    context.read<JoinRoomCubit>().init();
+    context.read<MultiplayerCubit>().searchHosts();
     _scanController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -36,7 +37,15 @@ class _JoinRoomPageState extends State<JoinRoomPage>
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<JoinRoomCubit, JoinRoomState>(
+    return BlocConsumer<MultiplayerCubit, MultiplayerState>(
+      listener: (context, state) {
+        if (state.status == MultiplayerStatus.connected) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SecretRevealPage()),
+          );
+        }
+      },
       builder: (context, state) {
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -45,17 +54,13 @@ class _JoinRoomPageState extends State<JoinRoomPage>
             children: [
               _buildBackNavigation(),
               const SizedBox(height: 24),
-              _buildHeader(state.isScanning),
+              _buildHeader(state.status == MultiplayerStatus.searching),
               const SizedBox(height: 32),
-              _buildScannerCard(),
-              const SizedBox(height: 32),
-              _buildRoomCodeCard(),
-              const SizedBox(height: 24),
               _buildSecretTip(),
-              const SizedBox(height: 48),
+              const SizedBox(height: 32),
               _buildNearbyGamesHeader(),
               const SizedBox(height: 24),
-              _buildNearbyGamesList(state.nearbyGames),
+              _buildNearbyGamesList(context, state),
               const SizedBox(height: 40),
             ],
           ),
@@ -169,182 +174,6 @@ class _JoinRoomPageState extends State<JoinRoomPage>
     );
   }
 
-  Widget _buildScannerCard() {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(32),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Scan to Join',
-                style: GoogleFonts.epilogue(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const Icon(
-                Icons.qr_code_scanner_rounded,
-                color: AppColors.primaryPink,
-                size: 28,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Point your camera at the host's\nscreen",
-            style: GoogleFonts.beVietnamPro(
-              fontSize: 14,
-              color: Colors.white30,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 32),
-          AspectRatio(
-            aspectRatio: 1,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.black26,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white10),
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Mock Camera Visual
-                  Opacity(
-                    opacity: 0.4,
-                    child: Icon(
-                      Icons.photo_camera_back_outlined,
-                      size: 100,
-                      color: Colors.white,
-                    ),
-                  ),
-                  // Scanning Corners
-                  ..._buildCorners(),
-                  // Scanning Line
-                  _buildScanningLine(),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<Widget> _buildCorners() {
-    return [
-      Positioned(top: 24, left: 24, child: _Corner(angle: 0)),
-      Positioned(top: 24, right: 24, child: _Corner(angle: 90)),
-      Positioned(bottom: 24, left: 24, child: _Corner(angle: 270)),
-      Positioned(bottom: 24, right: 24, child: _Corner(angle: 180)),
-    ];
-  }
-
-  Widget _buildScanningLine() {
-    return AnimatedBuilder(
-      animation: _scanController,
-      builder: (context, child) {
-        return Positioned(
-          top: 40 + (200 * _scanController.value),
-          left: 40,
-          right: 40,
-          child: Container(
-            height: 2,
-            color: AppColors.primaryPink.withOpacity(0.5),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildRoomCodeCard() {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(32),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Room Code',
-            style: GoogleFonts.epilogue(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            decoration: BoxDecoration(
-              color: Colors.black26,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: TextField(
-              style: GoogleFonts.manrope(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-                letterSpacing: 2,
-              ),
-              decoration: InputDecoration(
-                hintText: 'E.G. AX-709',
-                hintStyle: GoogleFonts.manrope(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white10,
-                ),
-                border: InputBorder.none,
-                isCollapsed: true,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            height: 60,
-            decoration: BoxDecoration(
-              color: AppColors.primaryRed,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              'JOIN ROOM',
-              style: GoogleFonts.manrope(
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-                letterSpacing: 1,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'CODES ARE CASE-SENSITIVE AND VALID FOR THE\nCURRENT SESSION ONLY.',
-            style: GoogleFonts.manrope(
-              fontSize: 8,
-              fontWeight: FontWeight.w800,
-              color: Colors.white12,
-              height: 1.5,
-              letterSpacing: 0.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildSecretTip() {
     return Container(
@@ -417,22 +246,61 @@ class _JoinRoomPageState extends State<JoinRoomPage>
     );
   }
 
-  Widget _buildNearbyGamesList(List<Map<String, dynamic>> games) {
-    if (games.isEmpty) {
-      return const Center(
+  Widget _buildNearbyGamesList(BuildContext context, MultiplayerState state) {
+    if (state.status == MultiplayerStatus.searching && state.discoveredServices.isEmpty) {
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(40.0),
-          child: CircularProgressIndicator(color: AppColors.gold),
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Column(
+            children: [
+              const CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
+              const SizedBox(height: 16),
+              Text(
+                'SCANNING FOR NEARBY ROOMS...',
+                style: GoogleFonts.manrope(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.onSurface.withOpacity(0.3),
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    if (state.discoveredServices.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Text(
+            'No rooms found nearby.\nMake sure you\'re on the same WiFi.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.beVietnamPro(
+              fontSize: 14,
+              color: AppColors.onSurface.withOpacity(0.3),
+              height: 1.6,
+            ),
+          ),
         ),
       );
     }
     return Column(
-      children: games.map((game) => _buildNearbyGameTile(game)).toList(),
+      children: state.discoveredServices.map((service) {
+        return _buildNearbyGameTile(
+          context: context,
+          host: service.name,
+          onJoin: () => context.read<MultiplayerCubit>().connectToHost(service),
+        );
+      }).toList(),
     );
   }
 
-  Widget _buildNearbyGameTile(Map<String, dynamic> game) {
-    final bool isFull = game['isFull'] ?? false;
+  Widget _buildNearbyGameTile({
+    required BuildContext context,
+    required String host,
+    required VoidCallback onJoin,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
@@ -449,8 +317,8 @@ class _JoinRoomPageState extends State<JoinRoomPage>
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
-              Icons.home_outlined,
-              color: AppColors.primaryPink.withOpacity(0.8),
+              Icons.wifi,
+              color: Colors.greenAccent.withOpacity(0.8),
               size: 24,
             ),
           ),
@@ -460,7 +328,7 @@ class _JoinRoomPageState extends State<JoinRoomPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  game['host'],
+                  host,
                   style: GoogleFonts.epilogue(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -468,67 +336,40 @@ class _JoinRoomPageState extends State<JoinRoomPage>
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text(
-                      '${game['players']} Players',
-                      style: GoogleFonts.manrope(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white24,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 3,
-                      height: 3,
-                      decoration: const BoxDecoration(
-                        color: Colors.white10,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      game['status'],
-                      style: GoogleFonts.manrope(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: isFull
-                            ? Colors.red.withOpacity(0.5)
-                            : Colors.green.withOpacity(0.5),
-                      ),
-                    ),
-                  ],
+                Text(
+                  'OPEN · LOCAL WIFI',
+                  style: GoogleFonts.manrope(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.greenAccent.withOpacity(0.5),
+                  ),
                 ),
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isFull
-                  ? Colors.white.withOpacity(0.02)
-                  : Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.link,
-                  size: 14,
-                  color: isFull ? Colors.white10 : Colors.white60,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'JOIN',
-                  style: GoogleFonts.manrope(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    color: isFull ? Colors.white10 : Colors.white,
-                    letterSpacing: 1,
+          GestureDetector(
+            onTap: onJoin,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.link, size: 14, color: Colors.white60),
+                  const SizedBox(width: 8),
+                  Text(
+                    'JOIN',
+                    style: GoogleFonts.manrope(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 1,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -537,30 +378,3 @@ class _JoinRoomPageState extends State<JoinRoomPage>
   }
 }
 
-class _Corner extends StatelessWidget {
-  final double angle;
-  const _Corner({required this.angle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Transform.rotate(
-      angle: angle * 3.14159 / 180,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: AppColors.primaryPink.withOpacity(0.5),
-              width: 3,
-            ),
-            left: BorderSide(
-              color: AppColors.primaryPink.withOpacity(0.5),
-              width: 3,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
