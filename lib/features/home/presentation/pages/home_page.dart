@@ -5,6 +5,7 @@ import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/game_lobby/presentation/pages/game_lobby_page.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
+import 'package:hidden_word/features/settings/presentation/pages/settings_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,54 +23,70 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.obsidian,
-      extendBodyBehindAppBar: true,
-      extendBody: true,
-      appBar: const _HomeAppBar(),
-      bottomNavigationBar: const _BottomNavBar(),
-      body: BlocBuilder<HomeCubit, HomeState>(
-        builder: (context, state) {
-          if (state is HomeLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.gold),
-            );
-          }
-          if (state is HomeLoaded) {
-            return Stack(
-              children: [
-                // Cinematic Background Elements (behind scroll view)
-                _buildBackgroundGlows(),
-                _buildEclipseArc(),
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        final currentIndex = (state is HomeLoaded) ? state.currentTabIndex : 0;
+        final selectedTheme = (state is HomeLoaded) ? state.selectedTheme : 'Food';
 
-                // Main Content
-                SafeArea(
-                  bottom: false,
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 54),
-                          _buildHeroSection(),
-                          const SizedBox(height: 54),
-                          _buildThemeSection(context, state.selectedTheme),
-                          _buildStartButton(),
-                          const SizedBox(
-                            height: 140,
-                          ), // Space for fixed BottomNav
-                        ],
-                      ),
-                    ),
-                  ),
+        return Scaffold(
+          backgroundColor: AppColors.obsidian,
+          extendBodyBehindAppBar: true,
+          extendBody: true,
+          bottomNavigationBar: const _BottomNavBar(),
+          body: (state is HomeLoading)
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppColors.gold),
+                )
+              : IndexedStack(
+                  index: currentIndex,
+                  children: [
+                    _HomeSection(selectedTheme: selectedTheme),
+                    const _PlaceholderSection(title: 'HISTORY'),
+                    const _PlaceholderSection(title: 'RULES'),
+                    const SettingsPage(),
+                  ],
                 ),
-              ],
-            );
-          }
-          return const SizedBox();
-        },
-      ),
+        );
+      },
+    );
+  }
+}
+
+class _HomeSection extends StatelessWidget {
+  final String selectedTheme;
+  const _HomeSection({required this.selectedTheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Cinematic Background Elements (behind scroll view)
+        _buildBackgroundGlows(),
+        _buildEclipseArc(),
+
+        // Main Content
+        SafeArea(
+          bottom: false,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 54),
+                  _buildHeroSection(),
+                  const SizedBox(height: 54),
+                  _buildThemeSection(context, selectedTheme),
+                  _buildStartButton(context),
+                  const SizedBox(
+                    height: 140,
+                  ), // Space for fixed BottomNav
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -265,7 +282,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildStartButton() {
+  Widget _buildStartButton(BuildContext context) {
     return Column(
       children: [
         GestureDetector(
@@ -338,49 +355,20 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _HomeAppBar();
-
-  @override
-  Size get preferredSize => const Size.fromHeight(70);
+class _PlaceholderSection extends StatelessWidget {
+  final String title;
+  const _PlaceholderSection({required this.title});
 
   @override
   Widget build(BuildContext context) {
-    // Custom Top App Bar with fixed position
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      centerTitle: true,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 24.0),
-        child: Icon(
-          Icons.sort,
-          color: AppColors.onSurface.withOpacity(0.7),
-          size: 24,
+    return Center(
+      child: Text(
+        title,
+        style: GoogleFonts.epilogue(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: AppColors.onSurface.withOpacity(0.2),
         ),
-      ),
-
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'ስውር',
-            style: GoogleFonts.epilogue(
-              // fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: AppColors.onSurface,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            'ቃል',
-            style: GoogleFonts.epilogue(
-              // fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primaryPink,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -518,24 +506,37 @@ class _BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 84,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow.withOpacity(0.95),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(28),
-          topRight: Radius.circular(28),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildNavItem(context, Icons.home_filled, 'HOME', true),
-          _buildNavItem(context, Icons.history_rounded, 'HISTORY', false),
-          _buildNavItem(context, Icons.menu_book_rounded, 'RULES', false),
-        ],
-      ),
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        final currentIndex = (state is HomeLoaded) ? state.currentTabIndex : 0;
+        return Container(
+          height: 94,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLow.withOpacity(0.98),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(32),
+              topRight: Radius.circular(32),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, -5),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildNavItem(context, Icons.home_filled, 'HOME', currentIndex == 0, 0),
+              _buildNavItem(context, Icons.history_rounded, 'HISTORY', currentIndex == 1, 1),
+              _buildNavItem(context, Icons.menu_book_rounded, 'RULES', currentIndex == 2, 2),
+              _buildNavItem(context, Icons.settings_rounded, 'SETTINGS', currentIndex == 3, 3),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -544,43 +545,63 @@ class _BottomNavBar extends StatelessWidget {
     IconData icon,
     String label,
     bool isActive,
+    int index,
   ) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-          decoration: isActive
-              ? BoxDecoration(
-                  color: AppColors.primaryRed.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(14),
-                )
-              : null,
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                color: isActive
-                    ? AppColors.primaryRed
-                    : AppColors.onSurface.withOpacity(0.3),
-                size: 24,
-              ),
+    return GestureDetector(
+      onTap: () => context.read<HomeCubit>().setTabIndex(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: isActive
+            ? BoxDecoration(
+                color: AppColors.primaryRed,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryRed.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              )
+            : null,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isActive
+                  ? Colors.white
+                  : AppColors.onSurface.withOpacity(0.3),
+              size: 24,
+            ),
+            if (isActive) ...[
               const SizedBox(height: 4),
               Text(
                 label,
                 style: GoogleFonts.manrope(
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
-                  color: isActive
-                      ? AppColors.onSurface
-                      : AppColors.onSurface.withOpacity(0.3),
+                  color: Colors.white,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ] else ...[
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: GoogleFonts.manrope(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.onSurface.withOpacity(0.2),
                   letterSpacing: 0.5,
                 ),
               ),
             ],
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
