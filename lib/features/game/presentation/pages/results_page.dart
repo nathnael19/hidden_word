@@ -216,7 +216,9 @@ class ResultsPage extends StatelessWidget {
                       ],
                     ),
                     child: Text(
-                      state.spyPlayerName?.toUpperCase() ?? 'UNKNOWN',
+                      state.spyPlayerNames.isEmpty
+                          ? 'UNKNOWN'
+                          : state.spyPlayerNames.map((e) => e.toUpperCase()).join(', '),
                       style: GoogleFonts.epilogue(
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
@@ -231,7 +233,7 @@ class ResultsPage extends StatelessWidget {
           const SizedBox(height: 48),
           Text(
             state.spyCaught
-                ? 'Infiltrated the circle but was finally unmasked.\nThe citizens voted correctly for ${state.spyPlayerName}!'
+                ? 'Infiltrated the circle but was finally unmasked.\nThe citizens voted correctly for ${state.spyPlayerNames.join(', ')}!'
                 : 'Infiltrated the circle and escaped undetected.\nThe citizens wrongfully voted for ${state.majorityVotedName ?? 'nobody'}.',
             textAlign: TextAlign.center,
             style: GoogleFonts.manrope(
