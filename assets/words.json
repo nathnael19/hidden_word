@@ -1,0 +1,163 @@
+{
+  "categories": [
+    {
+      "id": "food",
+      "name": "Ethiopian Food",
+      "nameAm": "የኢትዮጵያ ምግብ",
+      "words": [
+        "Injera",
+        "Tibs",
+        "Kitfo",
+        "Doro Wat",
+        "Shiro",
+        "Ful",
+        "Firfir",
+        "Kategna",
+        "Gomen",
+        "Ayib",
+        "Tere Siga",
+        "Bozena Shiro",
+        "Awaze",
+        "Mitmita",
+        "Berbere",
+        "Misir Wat",
+        "Atakilt",
+        "Gored Gored"
+      ]
+    },
+    {
+      "id": "drinks",
+      "name": "Drinks & Coffee",
+      "nameAm": "መጠጦች እና ቡና",
+      "words": [
+        "Buna",
+        "Tej",
+        "Tella",
+        "Areki",
+        "Shameta",
+        "Jebena",
+        "Macchiato",
+        "Kati",
+        "Spris",
+        "Borde",
+        "Gesho"
+      ]
+    },
+    {
+      "id": "transport",
+      "name": "Transport",
+      "nameAm": "ትራንስፖርት",
+      "words": [
+        "Anbessa",
+        "Bajaj",
+        "Lada",
+        "Minibus",
+        "Taxi",
+        "Gebeyaw",
+        "Korashoch",
+        "Keke",
+        "Tuk-Tuk",
+        "Abay",
+        "Sheger",
+        "Addis Raey",
+        "Langano Express"
+      ]
+    },
+    {
+      "id": "culture",
+      "name": "Ethiopian Culture",
+      "nameAm": "የኢትዮጵያ ባህል",
+      "words": [
+        "Timkat",
+        "Meskel",
+        "Genna",
+        "Enkutatash",
+        "Irreecha",
+        "Ashenda",
+        "Fasika",
+        "Buhe",
+        "Leddet",
+        "Eid",
+        "Ramadan"
+      ]
+    },
+    {
+      "id": "places",
+      "name": "Famous Places",
+      "nameAm": "ታዋቂ ቦታዎች",
+      "words": [
+        "Lalibela",
+        "Axum",
+        "Gondar",
+        "Harar",
+        "Simien Mountains",
+        "Omo Valley",
+        "Langano",
+        "Awash Park",
+        "Blue Nile",
+        "Castle",
+        "Entoto",
+        "Merkato",
+        "Bole"
+      ]
+    },
+    {
+      "id": "student",
+      "name": "Campus Life",
+      "nameAm": "የካምፓስ ህይወት",
+      "words": [
+        "Dorm",
+        "Cafeteria",
+        "Exam",
+        "Proctor",
+        "Lecture",
+        "Library",
+        "Semester",
+        "Internship",
+        "Thesis",
+        "Classmate",
+        "Canteen",
+        "Result",
+        "Scholarship",
+        "Assignment"
+      ]
+    },
+    {
+      "id": "sports",
+      "name": "Sports",
+      "nameAm": "ስፖርት",
+      "words": [
+        "Haile Gebrselassie",
+        "Marathon",
+        "Kenenisa",
+        "Tirunesh",
+        "Referee",
+        "Penalty",
+        "Gol",
+        "Derby",
+        "Transfer",
+        "Yellow Card",
+        "Offside"
+      ]
+    },
+    {
+      "id": "animals",
+      "name": "Ethiopian Animals",
+      "nameAm": "የኢትዮጵያ እንስሳት",
+      "words": [
+        "Gelada",
+        "Walia Ibex",
+        "Ethiopian Wolf",
+        "Camel",
+        "Hyena",
+        "Ostrich",
+        "Flamingo",
+        "Crocodile",
+        "Zebra",
+        "Donkey",
+        "Mule",
+        "Nile Perch"
+      ]
+    }
+  ]
+}
