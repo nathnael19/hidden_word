@@ -41,6 +41,12 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                 children: [
                   _buildBackNavigation(),
                   const SizedBox(height: 24),
+                  if (netState.status == MultiplayerStatus.error &&
+                      (netState.errorMessage?.isNotEmpty ?? false))
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _buildHostingErrorBanner(netState.errorMessage!),
+                    ),
                   _buildHeader(netState),
                   const SizedBox(height: 32),
                   _buildSettingsCard(context, roomState),
@@ -89,8 +95,27 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
 
 
 
+  Widget _buildHostingErrorBanner(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.red.withOpacity(0.35)),
+      ),
+      child: Text(
+        message,
+        style: GoogleFonts.beVietnamPro(
+          fontSize: 13,
+          color: Colors.redAccent.shade100,
+          height: 1.35,
+        ),
+      ),
+    );
+  }
+
   Widget _buildHeader(MultiplayerState netState) {
-    final isHosting = netState.status == MultiplayerStatus.hosting;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -106,7 +131,7 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                 letterSpacing: 2,
               ),
             ),
-            _buildConnectionBadge(isHosting),
+            _buildConnectionBadge(netState),
           ],
         ),
         const SizedBox(height: 8),
@@ -135,13 +160,27 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
     );
   }
 
-  Widget _buildConnectionBadge(bool isActive) {
+  Widget _buildConnectionBadge(MultiplayerState netState) {
+    final isReady = netState.status == MultiplayerStatus.hosting &&
+        netState.hostIp != null &&
+        netState.hostPort != null;
+    final isError = netState.status == MultiplayerStatus.error;
+    final color = isError
+        ? Colors.redAccent
+        : isReady
+            ? Colors.green
+            : Colors.orange;
+    final label = isError
+        ? 'FAILED'
+        : isReady
+            ? 'BROADCASTING'
+            : 'STARTING...';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isActive ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isActive ? Colors.green.withOpacity(0.3) : Colors.orange.withOpacity(0.3)),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -150,17 +189,17 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
             width: 6,
             height: 6,
             decoration: BoxDecoration(
-              color: isActive ? Colors.green : Colors.orange,
+              color: color,
               shape: BoxShape.circle,
             ),
           ),
           const SizedBox(width: 8),
           Text(
-            isActive ? 'BROADCASTING' : 'STARTING...',
+            label,
             style: GoogleFonts.manrope(
               fontSize: 8,
               fontWeight: FontWeight.w900,
-              color: isActive ? Colors.green : Colors.orange,
+              color: color,
               letterSpacing: 0.5,
             ),
           ),
@@ -350,7 +389,11 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
   Widget _buildInviteSection(MultiplayerState netState) {
     final ip = netState.hostIp ?? '...';
     final port = netState.hostPort?.toString() ?? '...';
-    final roomDisplay = netState.status == MultiplayerStatus.hosting ? '$ip:$port' : 'Starting...';
+    final roomDisplay = netState.status == MultiplayerStatus.error
+        ? 'Unavailable'
+        : netState.status == MultiplayerStatus.hosting
+            ? '$ip:$port'
+            : 'Starting...';
     return Row(
       children: [
         Expanded(
@@ -385,7 +428,7 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'LOCAL WIFI · AUTO-DISCOVERABLE',
+                  'LOCAL WIFI / HOTSPOT',
                   style: GoogleFonts.manrope(
                     fontSize: 8,
                     fontWeight: FontWeight.w900,
@@ -412,7 +455,7 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
               const Icon(Icons.wifi_tethering, color: AppColors.gold, size: 36),
               const SizedBox(height: 8),
               Text(
-                'WiFi LAN',
+                'LAN / AP',
                 style: GoogleFonts.manrope(
                   fontSize: 9,
                   fontWeight: FontWeight.w900,
