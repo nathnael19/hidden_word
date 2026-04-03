@@ -10,12 +10,13 @@ import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_
 
 bool _isLocalPlayerSpy(GameState state, MultiplayerState mp) {
   if (state.spyPlayerNames.isEmpty) return false;
+  // In a multiplayer session, check using the local player's name.
   if (mp.status == MultiplayerStatus.hosting ||
       mp.status == MultiplayerStatus.connected) {
     return state.spyPlayerNames.contains(mp.playerName);
   }
-  if (state.connectedPlayers.isEmpty) return false;
-  return state.spyPlayerNames.contains(state.connectedPlayers.first);
+  // Single-player / offline — not in a multiplayer session.
+  return false;
 }
 
 class SecretRevealPage extends StatelessWidget {
