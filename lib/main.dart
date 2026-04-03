@@ -7,6 +7,7 @@ import 'package:hidden_word/features/join_room/presentation/cubit/join_room_cubi
 import 'package:hidden_word/features/room_lobby/presentation/cubit/room_lobby_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
+import 'package:hidden_word/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:hidden_word/features/splash/presentation/pages/splash_page.dart';
 import 'injection_container.dart' as di;
 
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => di.sl<JoinRoomCubit>()),
         BlocProvider(create: (_) => di.sl<GameCubit>()),
         BlocProvider(create: (_) => di.sl<MultiplayerCubit>()),
+        BlocProvider(create: (_) => di.sl<SettingsCubit>()),
       ],
       child: MaterialApp(
         title: 'Hidden Word',
