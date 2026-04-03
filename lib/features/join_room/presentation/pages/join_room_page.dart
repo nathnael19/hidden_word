@@ -9,6 +9,8 @@ import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
 import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
+import 'package:hidden_word/features/join_room/presentation/widgets/join_room_hero.dart';
+import 'package:hidden_word/features/join_room/presentation/widgets/nearby_games_list.dart';
 
 class JoinRoomPage extends StatefulWidget {
   const JoinRoomPage({super.key});
@@ -17,8 +19,7 @@ class JoinRoomPage extends StatefulWidget {
   State<JoinRoomPage> createState() => _JoinRoomPageState();
 }
 
-class _JoinRoomPageState extends State<JoinRoomPage>
-    with SingleTickerProviderStateMixin {
+class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderStateMixin {
   late AnimationController _scanController;
   late TextEditingController _playerNameController;
   bool _navigatedToGame = false;
@@ -28,14 +29,12 @@ class _JoinRoomPageState extends State<JoinRoomPage>
     super.initState();
     final cubit = context.read<MultiplayerCubit>();
     cubit.searchHosts();
-    _playerNameController =
-        TextEditingController(text: cubit.state.playerName);
+    _playerNameController = TextEditingController(text: cubit.state.playerName);
     _scanController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat();
 
-    // Sync initial and future player name.
     _playerNameController.addListener(() {
       context.read<MultiplayerCubit>().setPlayerName(_playerNameController.text);
     });
@@ -52,11 +51,8 @@ class _JoinRoomPageState extends State<JoinRoomPage>
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        // Navigate to game only when the host actually starts it
-        // (sessionActive flips to true via phaseSync).
         BlocListener<GameCubit, GameState>(
-          listenWhen: (prev, curr) =>
-              !prev.sessionActive && curr.sessionActive,
+          listenWhen: (prev, curr) => !prev.sessionActive && curr.sessionActive,
           listener: (context, gameState) {
             if (!_navigatedToGame) {
               _navigatedToGame = true;
@@ -70,188 +66,42 @@ class _JoinRoomPageState extends State<JoinRoomPage>
       ],
       child: BlocBuilder<MultiplayerCubit, MultiplayerState>(
         builder: (context, state) {
-        return SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildBackNavigation(),
-                if (state.status == MultiplayerStatus.error &&
-                    (state.errorMessage?.isNotEmpty ?? false))
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _buildErrorBanner(state.errorMessage!),
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildBackNavigation(),
+                  if (state.status == MultiplayerStatus.error &&
+                      (state.errorMessage?.isNotEmpty ?? false))
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _buildErrorBanner(state.errorMessage!),
+                    ),
+                  if (state.status == MultiplayerStatus.connected)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _buildConnectedBanner(),
+                    ),
+                  const SizedBox(height: 12),
+                  const JoinRoomHero(),
+                  const SizedBox(height: 16),
+                  _buildPlayerNameCard(),
+                  const SizedBox(height: 20),
+                  NearbyGamesList(
+                    state: state,
+                    scanAnimation: _scanController,
+                    onJoin: (service) => context.read<MultiplayerCubit>().connectToHost(service),
                   ),
-                if (state.status == MultiplayerStatus.connected)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _buildConnectedBanner(state),
-                  ),
-                const SizedBox(height: 12),
-                _buildHeroSection(state.status == MultiplayerStatus.searching),
-                const SizedBox(height: 16), // Tightened from 24
-                _buildPlayerNameCard(context, state),
-                const SizedBox(height: 20), // Tightened from 32
-                _buildNearbyGamesHeader(),
-                const SizedBox(height: 12), // Tightened from 16
-                _buildNearbyGamesList(context, state),
-                const SizedBox(height: 20), // Tightened from 32
-                _buildConnectivityInfoBanner(),
-                const SizedBox(height: 120), // Clearance for bottom navigation
-              ],
-            ),
-          ),
-        );
-        },
-      ),
-    );
-  }
-
-  Widget _buildConnectedBanner(MultiplayerState state) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          const SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Colors.greenAccent,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Connected! Waiting for the host to start the game...',
-              style: GoogleFonts.beVietnamPro(
-                fontSize: 13,
-                color: Colors.greenAccent.shade100,
-                height: 1.35,
+                  const SizedBox(height: 20),
+                  _buildConnectivityInfoBanner(),
+                  const SizedBox(height: 120),
+                ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPlayerNameCard(BuildContext context, MultiplayerState state) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'AGENT PROFILE',
-                  style: GoogleFonts.manrope(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white.withOpacity(0.4),
-                    letterSpacing: 2,
-                  ),
-                ),
-                Icon(
-                  Icons.fingerprint,
-                  size: 16,
-                  color: AppColors.primaryPink.withOpacity(0.5),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'CODENAME',
-                  style: GoogleFonts.manrope(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.primaryPink.withOpacity(0.5),
-                    letterSpacing: 1,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _playerNameController,
-                  style: GoogleFonts.epilogue(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                  ),
-                  decoration: InputDecoration(
-                    isDense: true,
-                    filled: true,
-                    fillColor: Colors.black.withOpacity(0.2),
-                    hintText: 'IDENTIFY YOURSELF...',
-                    hintStyle: GoogleFonts.epilogue(
-                      color: Colors.white.withOpacity(0.1),
-                      fontWeight: FontWeight.w800,
-                    ),
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: Colors.white12),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: AppColors.primaryPink.withOpacity(0.8)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorBanner(String message) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red.withOpacity(0.35)),
-      ),
-      child: Text(
-        message,
-        style: GoogleFonts.beVietnamPro(
-          fontSize: 13,
-          color: Colors.redAccent.shade100,
-          height: 1.35,
-        ),
+          );
+        },
       ),
     );
   }
@@ -287,65 +137,77 @@ class _JoinRoomPageState extends State<JoinRoomPage>
     );
   }
 
-
-
-
-  Widget _buildHeroSection(bool isScanning) {
+  Widget _buildConnectedBanner() {
     return Container(
       width: double.infinity,
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        color: Colors.green.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.green.withOpacity(0.3)),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
+      child: Row(
         children: [
-          // Subtle Watermark Logo
-          Positioned(
-            right: -20,
-            top: -20,
-            child: Opacity(
-              opacity: 0.05,
-              child: Icon(
-                Icons.search,
-                size: 160,
-                color: Colors.white.withOpacity(0.1),
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.greenAccent),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Connected! Waiting for the host to start the game...',
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 13,
+                color: Colors.greenAccent.shade100,
+                height: 1.35,
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlayerNameCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerHigh.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'AGENT PROFILE',
+                  style: GoogleFonts.manrope(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white.withOpacity(0.4),
+                    letterSpacing: 2,
+                  ),
+                ),
+                Icon(Icons.fingerprint, size: 16, color: AppColors.primaryPink.withOpacity(0.5)),
+              ],
+            ),
+          ),
           Padding(
-            padding: const EdgeInsets.all(32),
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryRed.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const _SignalIcon(),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Join a Game',
-                  style: GoogleFonts.epilogue(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Scan the local network for games.',
-                  style: GoogleFonts.manrope(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white.withOpacity(0.4),
-                  ),
-                ),
+                _buildFieldLabel('CODENAME', AppColors.primaryPink.withOpacity(0.5)),
+                const SizedBox(height: 12),
+                _buildTextField(_playerNameController, AppColors.primaryPink.withOpacity(0.8)),
               ],
             ),
           ),
@@ -354,8 +216,56 @@ class _JoinRoomPageState extends State<JoinRoomPage>
     );
   }
 
+  Widget _buildFieldLabel(String label, Color color) {
+    return Text(
+      label,
+      style: GoogleFonts.manrope(
+        fontSize: 10,
+        fontWeight: FontWeight.w900,
+        color: color,
+        letterSpacing: 1,
+      ),
+    );
+  }
 
+  Widget _buildTextField(TextEditingController controller, Color focusColor) {
+    return TextField(
+      controller: controller,
+      style: GoogleFonts.epilogue(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+      decoration: InputDecoration(
+        isDense: true,
+        filled: true,
+        fillColor: Colors.black.withOpacity(0.2),
+        hintText: 'IDENTIFY YOURSELF...',
+        hintStyle: GoogleFonts.epilogue(color: Colors.white.withOpacity(0.1), fontWeight: FontWeight.w800),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.white12),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: focusColor),
+        ),
+      ),
+    );
+  }
 
+  Widget _buildErrorBanner(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.red.withOpacity(0.35)),
+      ),
+      child: Text(
+        message,
+        style: GoogleFonts.beVietnamPro(fontSize: 13, color: Colors.redAccent.shade100, height: 1.35),
+      ),
+    );
+  }
 
   Widget _buildConnectivityInfoBanner() {
     return Container(
@@ -370,323 +280,27 @@ class _JoinRoomPageState extends State<JoinRoomPage>
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(
-              color: AppColors.gold,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.info_outline_rounded,
-              color: AppColors.obsidian,
-              size: 16,
-            ),
+            decoration: const BoxDecoration(color: AppColors.gold, shape: BoxShape.circle),
+            child: const Icon(Icons.info_outline_rounded, color: AppColors.obsidian, size: 16),
           ),
           const SizedBox(width: 20),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RichText(
-                  text: TextSpan(
-                    style: GoogleFonts.manrope(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.4),
-                      height: 1.5,
-                    ),
-                    children: [
-                      const TextSpan(text: 'Ensure all players are connected to the '),
-                      TextSpan(
-                        text: 'same WiFi network',
-                        style: GoogleFonts.manrope(
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white.withOpacity(0.8),
-                        ),
-                      ),
-                      const TextSpan(text: ' or mobile hotspot to discover nearby games instantly.'),
-                    ],
+            child: RichText(
+              text: TextSpan(
+                style: GoogleFonts.manrope(fontSize: 14, color: Colors.white.withOpacity(0.4), height: 1.5),
+                children: [
+                  const TextSpan(text: 'Ensure all players are connected to the '),
+                  TextSpan(
+                    text: 'same WiFi network',
+                    style: GoogleFonts.manrope(fontWeight: FontWeight.w800, color: Colors.white.withOpacity(0.8)),
                   ),
-                ),
-              ],
+                  const TextSpan(text: ' or mobile hotspot to discover nearby games instantly.'),
+                ],
+              ),
             ),
           ),
         ],
       ),
     );
   }
-
-  Widget _buildNearbyGamesHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          'Nearby Games',
-          style: GoogleFonts.epilogue(
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-            letterSpacing: -0.5,
-          ),
-        ),
-        Row(
-          children: [
-            Text(
-              'Auto-scanning',
-              style: GoogleFonts.manrope(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.white.withOpacity(0.25),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.sync,
-              size: 14,
-              color: Colors.white.withOpacity(0.25),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNearbyGamesList(BuildContext context, MultiplayerState state) {
-    if (state.status == MultiplayerStatus.searching && state.discoveredServices.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 60),
-          child: Column(
-            children: [
-              SizedBox(
-                width: 40,
-                height: 40,
-                child: _RadarScanner(animation: _scanController),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'INTERCEPTING SIGNALS...',
-                style: GoogleFonts.manrope(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.green.withOpacity(0.3),
-                  letterSpacing: 2,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (state.discoveredServices.isEmpty) {
-      return Center(
-        child: Container(
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.02),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
-          ),
-          child: Column(
-            children: [
-              Icon(
-                Icons.signal_cellular_connected_no_internet_4_bar_rounded,
-                size: 48,
-                color: Colors.white.withOpacity(0.05),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'NO ROOMS LOCATED',
-                style: GoogleFonts.epilogue(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white.withOpacity(0.2),
-                  letterSpacing: 1,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Ensure the Host is visible on your\nnetwork or local hotspot.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.manrope(
-                  fontSize: 12,
-                  color: Colors.white.withOpacity(0.15),
-                  height: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Column(
-      children: state.discoveredServices.map((service) {
-        return _buildNearbyGameTile(
-          context: context,
-          host: service.name,
-          onJoin: () => context.read<MultiplayerCubit>().connectToHost(service),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildNearbyGameTile({
-    required BuildContext context,
-    required String host,
-    required VoidCallback onJoin,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onJoin,
-          borderRadius: BorderRadius.circular(24),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    host.toLowerCase().contains('room') ? Icons.door_front_door_rounded : Icons.sports_esports_rounded,
-                    color: Colors.white.withOpacity(0.4),
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        host,
-                        style: GoogleFonts.epilogue(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'SIGNAL STABLE • READY TO DEPLOY',
-                        style: GoogleFonts.manrope(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.greenAccent.withOpacity(0.3),
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 24,
-                  color: Colors.white.withOpacity(0.15),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
-
-class _SignalIcon extends StatelessWidget {
-  const _SignalIcon();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.wifi, size: 16, color: AppColors.primaryRed.withOpacity(0.8)),
-        const SizedBox(width: 4),
-        Container(
-          width: 6,
-          height: 6,
-          decoration: BoxDecoration(
-            color: AppColors.primaryRed.withOpacity(0.8),
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Icon(Icons.wifi, size: 16, color: AppColors.primaryRed.withOpacity(0.8)),
-      ],
-    );
-  }
-}
-
-class _RadarScanner extends StatelessWidget {
-  final Animation<double> animation;
-  const _RadarScanner({required this.animation});
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, child) {
-        return CustomPaint(
-          painter: _RadarPainter(animation.value),
-        );
-      },
-    );
-  }
-}
-
-class _RadarPainter extends CustomPainter {
-  final double progress;
-  _RadarPainter(this.progress);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.green.withOpacity(0.15)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-
-    // Circles
-    canvas.drawCircle(center, radius * 0.4, paint);
-    canvas.drawCircle(center, radius * 0.7, paint);
-    canvas.drawCircle(center, radius, paint);
-
-    // Crosshairs
-    canvas.drawLine(Offset(center.dx - radius, center.dy), Offset(center.dx + radius, center.dy), paint);
-    canvas.drawLine(Offset(center.dx, center.dy - radius), Offset(center.dx, center.dy + radius), paint);
-
-    // Sweep
-    final sweepPaint = Paint()
-      ..shader = SweepGradient(
-        center: Alignment.center,
-        startAngle: 0.0,
-        endAngle: 3.1415926535 * 2,
-        colors: [
-          Colors.green.withOpacity(0.0),
-          Colors.green.withOpacity(0.3),
-        ],
-        stops: const [0.8, 1.0],
-        transform: GradientRotation(progress * 3.1415926535 * 2),
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
-
-    canvas.drawCircle(center, radius, sweepPaint..style = PaintingStyle.fill);
-  }
-
-  @override
-  bool shouldRepaint(covariant _RadarPainter oldDelegate) => true;
-}
-
