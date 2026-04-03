@@ -6,8 +6,6 @@ import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
-import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
-import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
 import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
 
 class JoinRoomPage extends StatefulWidget {
@@ -41,11 +39,10 @@ class _JoinRoomPageState extends State<JoinRoomPage>
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        BlocListener<GameCubit, GameState>(
+        BlocListener<MultiplayerCubit, MultiplayerState>(
           listenWhen: (prev, curr) =>
-              !prev.sessionActive &&
-              curr.sessionActive &&
-              curr.phase == GamePhase.reveal,
+              prev.status != MultiplayerStatus.connected &&
+              curr.status == MultiplayerStatus.connected,
           listener: (context, state) {
             Navigator.push(
               context,
@@ -62,6 +59,12 @@ class _JoinRoomPageState extends State<JoinRoomPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildBackNavigation(),
+              if (state.status == MultiplayerStatus.error &&
+                  (state.errorMessage?.isNotEmpty ?? false))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _buildErrorBanner(state.errorMessage!),
+                ),
               const SizedBox(height: 24),
               _buildHeader(state.status == MultiplayerStatus.searching),
               const SizedBox(height: 32),
@@ -75,6 +78,26 @@ class _JoinRoomPageState extends State<JoinRoomPage>
           ),
         );
         },
+      ),
+    );
+  }
+
+  Widget _buildErrorBanner(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.red.withOpacity(0.35)),
+      ),
+      child: Text(
+        message,
+        style: GoogleFonts.beVietnamPro(
+          fontSize: 13,
+          color: Colors.redAccent.shade100,
+          height: 1.35,
+        ),
       ),
     );
   }
