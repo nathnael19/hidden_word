@@ -1,70 +1,85 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
+import 'package:hidden_word/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:hidden_word/features/settings/presentation/cubit/settings_state.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 15),
-              _buildHeader(),
-              const SizedBox(height: 40),
-              _buildSectionTitle('GAMEPLAY & ACCESSIBILITY'),
-              const SizedBox(height: 16),
-              _buildSettingCard(
-                icon: Icons.language_rounded,
-                title: 'Language',
-                subtitle: 'Amharic / English',
-                trailing: _buildLanguageToggle(),
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, state) {
+        return SafeArea(
+          bottom: false,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 15),
+                  _buildHeader(),
+                  const SizedBox(height: 40),
+                  _buildSectionTitle('GAMEPLAY & ACCESSIBILITY'),
+                  const SizedBox(height: 16),
+                  _buildSettingCard(
+                    icon: Icons.language_rounded,
+                    title: 'Language',
+                    subtitle: state.language == 'am' ? 'ባህላዊ ቋንቋ (አማርኛ)' : 'Mission Language (English)',
+                    trailing: _buildLanguageToggle(context, state.language),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSettingCard(
+                    icon: Icons.volume_up_rounded,
+                    title: 'Sound Effects',
+                    subtitle: 'Immersive ritual sounds',
+                    trailing: _buildSwitch(
+                      value: state.isSoundEnabled,
+                      onChanged: (_) => context.read<SettingsCubit>().toggleSound(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSettingCard(
+                    icon: Icons.vibration_rounded,
+                    title: 'Haptic Feedback',
+                    subtitle: 'Tactile tension cues',
+                    trailing: _buildSwitch(
+                      value: state.isHapticEnabled,
+                      onChanged: (_) => context.read<SettingsCubit>().toggleHaptic(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSettingCard(
+                    icon: Icons.timer_outlined,
+                    title: 'Game Timer',
+                    subtitle: 'Visible countdown during play',
+                    trailing: _buildSwitch(
+                      value: state.isTimerVisible,
+                      onChanged: (_) => context.read<SettingsCubit>().toggleTimer(),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  _buildSectionTitle('KNOWLEDGE BASE'),
+                  const SizedBox(height: 16),
+                  _buildLinkCard(icon: Icons.history_edu_rounded, title: 'Credits'),
+                  const SizedBox(height: 16),
+                  _buildLinkCard(
+                    icon: Icons.groups_rounded,
+                    title: 'About the Developers',
+                  ),
+                  const SizedBox(height: 40),
+                  _buildRitualCard(),
+                  const SizedBox(height: 120), // Bottom nav space
+                ],
               ),
-              const SizedBox(height: 16),
-              _buildSettingCard(
-                icon: Icons.volume_up_rounded,
-                title: 'Sound Effects',
-                subtitle: 'Immersive ritual sounds',
-                trailing: _buildSwitch(true),
-              ),
-              const SizedBox(height: 16),
-              _buildSettingCard(
-                icon: Icons.vibration_rounded,
-                title: 'Haptic Feedback',
-                subtitle: 'Tactile tension cues',
-                trailing: _buildSwitch(true),
-              ),
-              const SizedBox(height: 16),
-              _buildSettingCard(
-                icon: Icons.timer_outlined,
-                title: 'Game Timer',
-                subtitle: 'Visible countdown during play',
-                trailing: _buildSwitch(false),
-              ),
-              const SizedBox(height: 32),
-              _buildSectionTitle('KNOWLEDGE BASE'),
-              const SizedBox(height: 16),
-              _buildLinkCard(icon: Icons.history_edu_rounded, title: 'Credits'),
-              const SizedBox(height: 16),
-              _buildLinkCard(
-                icon: Icons.groups_rounded,
-                title: 'About the Developers',
-              ),
-              const SizedBox(height: 40),
-              _buildRitualCard(),
-              const SizedBox(height: 120), // Bottom nav space
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -202,39 +217,57 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildLanguageToggle() {
+  Widget _buildLanguageToggle(BuildContext context, String currentLang) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: AppColors.obsidian,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.primaryRed.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              'አማርኛ',
-              style: GoogleFonts.beVietnamPro(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryRed,
+          GestureDetector(
+            onTap: () => context.read<SettingsCubit>().setLanguage('am'),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: currentLang == 'am'
+                    ? AppColors.primaryRed.withValues(alpha: 0.2)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'አማርኛ',
+                style: GoogleFonts.beVietnamPro(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: currentLang == 'am'
+                      ? AppColors.primaryRed
+                      : AppColors.onSurface.withValues(alpha: 0.3),
+                ),
               ),
             ),
           ),
           const SizedBox(width: 4),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'EN',
-              style: GoogleFonts.beVietnamPro(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurface.withValues(alpha: 0.3),
+          GestureDetector(
+            onTap: () => context.read<SettingsCubit>().setLanguage('en'),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: currentLang == 'en'
+                    ? AppColors.primaryRed.withValues(alpha: 0.2)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'EN',
+                style: GoogleFonts.beVietnamPro(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: currentLang == 'en'
+                      ? AppColors.primaryRed
+                      : AppColors.onSurface.withValues(alpha: 0.3),
+                ),
               ),
             ),
           ),
@@ -243,10 +276,10 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSwitch(bool value) {
+  Widget _buildSwitch({required bool value, required ValueChanged<bool> onChanged}) {
     return Switch(
       value: value,
-      onChanged: (v) {},
+      onChanged: onChanged,
       activeThumbColor: Colors.white,
       activeTrackColor: AppColors.primaryRed,
       inactiveTrackColor: AppColors.obsidian,
