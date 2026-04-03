@@ -242,10 +242,10 @@ class SecretRevealPage extends StatelessWidget {
       },
       child: Container(
         width: double.infinity,
-        height: 72,
+        height: MediaQuery.of(context).size.height < 700 ? 60 : 72,
         decoration: BoxDecoration(
           color: const Color(0xFF8B0000), // Dark Crimson/Maroon
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(MediaQuery.of(context).size.height < 700 ? 16 : 20),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.3),
@@ -270,15 +270,15 @@ class SecretRevealPage extends StatelessWidget {
 
 class _BoxedText extends StatelessWidget {
   final String text;
-  final double boxSize;
-  final double fontSize;
+  final double? boxSize;
+  final double? fontSize;
   final Color? borderColor;
   final bool isFilled;
 
   const _BoxedText({
     required this.text,
-    this.boxSize = 48,
-    this.fontSize = 24,
+    this.boxSize,
+    this.fontSize,
     this.borderColor,
     this.isFilled = true,
   });
@@ -287,14 +287,19 @@ class _BoxedText extends StatelessWidget {
   Widget build(BuildContext context) {
     // Handling Amharic groups or single chars
     final chars = text.split('');
+    final screenWidth = MediaQuery.of(context).size.width;
+    final effectiveBoxSize = boxSize ?? (screenWidth < 360 ? 36.0 : 48.0);
+    final effectiveFontSize = fontSize ?? (screenWidth < 360 ? 18.0 : 24.0);
+
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 8,
+      runSpacing: 8,
       children: chars.map((char) {
         if (char == ' ') return const SizedBox(width: 12);
         return Container(
-          width: boxSize,
-          height: boxSize,
+          width: effectiveBoxSize,
+          height: effectiveBoxSize,
           decoration: BoxDecoration(
             color: isFilled ? AppColors.surfaceContainerHigh : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
@@ -307,7 +312,7 @@ class _BoxedText extends StatelessWidget {
             child: Text(
               char,
               style: GoogleFonts.epilogue(
-                fontSize: fontSize,
+                fontSize: effectiveFontSize,
                 fontWeight: FontWeight.w900,
                 color: AppColors.onSurface,
               ),
@@ -340,7 +345,9 @@ class _RevealCard extends StatelessWidget {
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
         width: double.infinity,
-        height: MediaQuery.of(context).size.height * 0.45,
+        height: MediaQuery.of(context).size.height < 700 
+            ? MediaQuery.of(context).size.height * 0.4 
+            : MediaQuery.of(context).size.height * 0.45,
         decoration: BoxDecoration(
           color: AppColors.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(40),
