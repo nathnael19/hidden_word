@@ -33,7 +33,7 @@ class VotingPage extends StatelessWidget {
                   child: Column(
                     children: [
                       const SizedBox(height: 32),
-                      _buildHeader(),
+                      _buildHeader(context),
                       const SizedBox(height: 48),
                       Expanded(
                         child: _buildVotingGrid(context, state),
@@ -76,7 +76,7 @@ class VotingPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Stack(
       children: [
         Positioned(
@@ -86,7 +86,7 @@ class VotingPage extends StatelessWidget {
             child: Text(
               '2',
               style: GoogleFonts.epilogue(
-                fontSize: 160,
+                fontSize: MediaQuery.of(context).size.width < 360 ? 120 : 160,
                 fontWeight: FontWeight.w900,
                 color: Colors.white.withOpacity(0.03),
               ),
@@ -137,7 +137,7 @@ class VotingPage extends StatelessWidget {
               'Who is the\nspy?',
               textAlign: TextAlign.center,
               style: GoogleFonts.epilogue(
-                fontSize: 48,
+                fontSize: MediaQuery.of(context).size.width < 360 ? 36 : 48,
                 fontWeight: FontWeight.w900,
                 color: AppColors.onSurface,
                 height: 1.1,
@@ -161,11 +161,11 @@ class VotingPage extends StatelessWidget {
 
   Widget _buildVotingGrid(BuildContext context, GameState state) {
     return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 20,
-        crossAxisSpacing: 20,
-        childAspectRatio: 0.65,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 220,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: MediaQuery.of(context).size.width < 380 ? 0.6 : 0.65,
       ),
       itemCount: state.totalPlayers,
       itemBuilder: (context, index) {
@@ -421,12 +421,15 @@ class _VotingCard extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
-              child: Text(
-                name,
-                style: GoogleFonts.epilogue(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.onSurface,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  name,
+                  style: GoogleFonts.epilogue(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.onSurface,
+                  ),
                 ),
               ),
             ),
