@@ -32,7 +32,7 @@ class DiscussionPage extends StatelessWidget {
                     const SizedBox(height: 24),
                     _buildPhaseHeader(),
                     const SizedBox(height: 48),
-                    _buildTimerSection(state.timerSeconds),
+                    _buildTimerSection(context, state.timerSeconds),
                     const SizedBox(height: 64),
                     _buildActivePlayersSection(context, state),
                     const SizedBox(height: 120), // Placeholder for bottom bar
@@ -117,20 +117,24 @@ class DiscussionPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTimerSection(int seconds) {
+  Widget _buildTimerSection(BuildContext context, int seconds) {
     final minutes = (seconds / 60).floor();
     final remainingSeconds = (seconds % 60).toString().padLeft(2, '0');
     final progress = seconds / 105; // Total duration assumed 105s
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final timerSize = screenWidth < 360 ? 180.0 : 220.0;
+    final timerFontSize = screenWidth < 360 ? 52.0 : 64.0;
 
     return Stack(
       alignment: Alignment.center,
       children: [
         SizedBox(
-          width: 220,
-          height: 220,
+          width: timerSize,
+          height: timerSize,
           child: CircularProgressIndicator(
             value: progress,
-            strokeWidth: 8,
+            strokeWidth: screenWidth < 360 ? 6 : 8,
             backgroundColor: AppColors.onSurface.withOpacity(0.05),
             valueColor: AlwaysStoppedAnimation<Color>(
               seconds < 30 ? AppColors.primaryRed : AppColors.primaryPink.withOpacity(0.8),
@@ -143,7 +147,7 @@ class DiscussionPage extends StatelessWidget {
             Text(
               '0$minutes:$remainingSeconds',
               style: GoogleFonts.manrope(
-                fontSize: 64,
+                fontSize: timerFontSize,
                 fontWeight: FontWeight.w800,
                 color: AppColors.onSurface,
               ),
@@ -201,11 +205,11 @@ class DiscussionPage extends StatelessWidget {
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 200,
               mainAxisSpacing: 16,
               crossAxisSpacing: 16,
-              childAspectRatio: 1.3,
+              childAspectRatio: MediaQuery.of(context).size.width < 380 ? 1.4 : 1.3,
             ),
             itemCount: state.totalPlayers,
             itemBuilder: (context, index) {
