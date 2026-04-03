@@ -85,7 +85,6 @@ class _HomeSection extends StatelessWidget {
                   _buildHeroSection(context),
                   const SizedBox(height: 48),
                   _buildThemeSection(context, selectedTheme),
-                  const SizedBox(height: 24), // Reduced from 48
                   _buildConfigSection(context, homeLoaded),
                   const SizedBox(height: 140), // Space for fixed BottomNav
                 ],
@@ -156,39 +155,9 @@ class _HomeSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'READY TO FIND THE ',
-                style: GoogleFonts.manrope(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.onSurface.withOpacity(0.3),
-                  letterSpacing: 1,
-                ),
-              ),
-              Text(
-                'SECRET WORD?',
-                style: GoogleFonts.manrope(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.gold.withOpacity(0.6),
-                  letterSpacing: 1,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 40), // Spacing below CTA text
-        _buildSectionHeader('Players'),
-        const SizedBox(height: 20),
-        _buildPlayerCountSelector(context, state.playersCount),
-        const SizedBox(height: 24),
         _buildSettingsGrid(context, state.timerSeconds, state.roundsCount),
         const SizedBox(height: 32),
-        _buildStartAction(context),
+        _buildStartAction(context, state.playersCount),
         const SizedBox(height: 12),
         Center(
           child: Text(
@@ -202,148 +171,6 @@ class _HomeSection extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Row(
-      children: [
-        Text(
-          title.toUpperCase(),
-          style: GoogleFonts.manrope(
-            fontSize: 12,
-            fontWeight: FontWeight.w900,
-            color: AppColors.onSurface,
-            letterSpacing: 1.5,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Container(
-            height: 1,
-            color: AppColors.onSurface.withOpacity(0.1),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPlayerCountSelector(BuildContext context, int count) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(
-          color: AppColors.onSurface.withOpacity(0.05),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildRoundIconButton(
-                icon: Icons.remove,
-                onTap: () =>
-                    context.read<HomeCubit>().updatePlayersCount(count - 1),
-                isDisabled: count <= 3,
-              ),
-              Column(
-                children: [
-                  Text(
-                    '$count',
-                    style: GoogleFonts.epilogue(
-                      fontSize: 64,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    'FRIENDS JOINED',
-                    style: GoogleFonts.manrope(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.onSurface.withOpacity(0.5),
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ],
-              ),
-              _buildRoundIconButton(
-                icon: Icons.add,
-                onTap: () =>
-                    context.read<HomeCubit>().updatePlayersCount(count + 1),
-                isDisabled: count >= 10,
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildLimitLabel('MIN 3'),
-              Row(
-                children: List.generate(8, (index) {
-                  final dotValue = index + 3;
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: dotValue == count
-                          ? AppColors.primaryPink
-                          : AppColors.onSurface.withOpacity(
-                              dotValue < count ? 0.4 : 0.1,
-                            ),
-                    ),
-                  );
-                }),
-              ),
-              _buildLimitLabel('MAX 10'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRoundIconButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    bool isDisabled = false,
-  }) {
-    return GestureDetector(
-      onTap: isDisabled ? null : onTap,
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: AppColors.surfaceContainerHigh.withOpacity(
-            isDisabled ? 0.3 : 1,
-          ),
-        ),
-        child: Icon(
-          icon,
-          color: Colors.white.withOpacity(isDisabled ? 0.2 : 0.8),
-          size: 24,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLimitLabel(String text) {
-    return Text(
-      text,
-      style: GoogleFonts.manrope(
-        fontSize: 9,
-        fontWeight: FontWeight.w900,
-        color: AppColors.onSurface.withOpacity(0.3),
-        letterSpacing: 0.5,
-      ),
     );
   }
 
@@ -443,10 +270,9 @@ class _HomeSection extends StatelessWidget {
     );
   }
 
-  Widget _buildStartAction(BuildContext context) {
+  Widget _buildStartAction(BuildContext context, int count) {
     return GestureDetector(
       onTap: () async {
-        final playersCount = homeLoaded.playersCount;
         // Map home theme display name -> words.json category id
         final themeToCategory = {
           'Food': 'food',
@@ -455,7 +281,7 @@ class _HomeSection extends StatelessWidget {
           'Student': 'student',
         };
         final categoryId = themeToCategory[homeLoaded.selectedTheme] ?? 'food';
-        await context.read<GameCubit>().init(playersCount, categoryId: categoryId);
+        await context.read<GameCubit>().init(count, categoryId: categoryId);
 
         if (context.mounted) {
           Navigator.push(
@@ -478,42 +304,57 @@ class _HomeSection extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'START GAME',
-              style: GoogleFonts.manrope(
-                fontSize: 16,
-                fontWeight: FontWeight.w900,
-                color: Colors.black.withOpacity(0.7),
-                letterSpacing: 1,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              // Spacer to center the mission text
+              const SizedBox(width: 80),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    'START MISSION',
+                    style: GoogleFonts.manrope(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black.withOpacity(0.8),
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: Container(
-                width: 1,
-                height: 24,
-                color: Colors.black.withOpacity(0.1),
+              // Compact integrated badge
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '$count',
+                      style: GoogleFonts.epilogue(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.black.withOpacity(0.8),
+                      size: 20,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Text(
-              'ጨዋታ ጀምር',
-              style: GoogleFonts.epilogue(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: Colors.black.withOpacity(0.7),
-                letterSpacing: 1,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Icon(
-              Icons.arrow_forward_rounded,
-              color: Colors.black.withOpacity(0.7),
-              size: 24,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -621,15 +462,34 @@ class _HomeSection extends StatelessWidget {
             maxCrossAxisExtent: 200,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: MediaQuery.of(context).size.width < 360 ? 1.0 : 1.1,
+            childAspectRatio: MediaQuery.of(context).size.width < 360
+                ? 1.0
+                : 1.1,
           ),
           itemCount: 4,
           itemBuilder: (context, index) {
             final themes = [
-              {'title': 'Food', 'keywords': 'Injera, Kitfo,\ncoffee...', 'icon': Icons.restaurant},
-              {'title': 'Transport', 'keywords': 'Anbessa, Bajaj,\nRide...', 'icon': Icons.directions_bus, 'hasStatus': true},
-              {'title': 'Culture', 'keywords': 'Meskel, Timket,\nGenna...', 'icon': Icons.celebration},
-              {'title': 'Student', 'keywords': 'Campus, Exams,\nDorm...', 'icon': Icons.school},
+              {
+                'title': 'Food',
+                'keywords': 'Injera, Kitfo,\ncoffee...',
+                'icon': Icons.restaurant,
+              },
+              {
+                'title': 'Transport',
+                'keywords': 'Anbessa, Bajaj,\nRide...',
+                'icon': Icons.directions_bus,
+                'hasStatus': true,
+              },
+              {
+                'title': 'Culture',
+                'keywords': 'Meskel, Timket,\nGenna...',
+                'icon': Icons.celebration,
+              },
+              {
+                'title': 'Student',
+                'keywords': 'Campus, Exams,\nDorm...',
+                'icon': Icons.school,
+              },
             ];
             final theme = themes[index];
             return _ThemeCard(
@@ -638,7 +498,9 @@ class _HomeSection extends StatelessWidget {
               icon: theme['icon'] as IconData,
               isSelected: currentTheme == theme['title'],
               hasStatus: theme['hasStatus'] == true,
-              onTap: () => context.read<HomeCubit>().selectTheme(theme['title'] as String),
+              onTap: () => context.read<HomeCubit>().selectTheme(
+                theme['title'] as String,
+              ),
             );
           },
         ),
