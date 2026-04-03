@@ -44,7 +44,7 @@ class SecretRevealPage extends StatelessWidget {
           }
 
           return SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -66,7 +66,7 @@ class SecretRevealPage extends StatelessWidget {
                   const SizedBox(height: 32),
                   // Subtitle Label with Line
                   _buildSubHeader(),
-                  const Spacer(),
+                  const SizedBox(height: 32),
                   // Central Reveal Card
                   _RevealCard(
                     isRevealed: state.isRevealed,
@@ -77,7 +77,7 @@ class SecretRevealPage extends StatelessWidget {
                     ),
                     onTap: () => context.read<GameCubit>().toggleReveal(),
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 48),
                   // Player Progress Dots
                   _buildProgressDots(state.playersReadyCount, state.totalPlayers),
                   const SizedBox(height: 16),
