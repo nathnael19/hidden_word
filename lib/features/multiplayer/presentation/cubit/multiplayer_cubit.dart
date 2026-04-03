@@ -163,12 +163,15 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
         if (event is BonsoirDiscoveryServiceFoundEvent ||
             event is BonsoirDiscoveryServiceResolvedEvent) {
           final service = event.service;
-          if (service != null && service.attributes['ip'] != null) {
-            final services = List<BonsoirService>.from(state.discoveredServices)
-              ..removeWhere((s) => s.name == service.name)
-              ..add(service);
-            emit(state.copyWith(discoveredServices: services));
-          }
+          if (service == null) return;
+
+          // Do not require the 'ip' TXT attribute to be present.
+          // Some devices/hotspot networks may omit TXT attributes in resolution,
+          // but `service.host` is still usually available after resolution.
+          final services = List<BonsoirService>.from(state.discoveredServices)
+            ..removeWhere((s) => s.name == service.name)
+            ..add(service);
+          emit(state.copyWith(discoveredServices: services));
         } else if (event is BonsoirDiscoveryServiceLostEvent) {
           final services = List<BonsoirService>.from(state.discoveredServices)
             ..removeWhere((s) => s.name == event.service.name);
@@ -187,7 +190,8 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
     try {
       emit(state.copyWith(status: MultiplayerStatus.connecting));
 
-      final ip = service.attributes['ip'] ?? 'localhost';
+      // Prefer the advertised TXT 'ip'. Fallback to the resolved Bonsoir host.
+      final ip = service.attributes['ip'] ?? service.host ?? 'localhost';
       final port = service.port;
       final url = Uri.parse("ws://$ip:$port");
 
