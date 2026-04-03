@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 
@@ -51,10 +52,7 @@ class SettingsPage extends StatelessWidget {
               const SizedBox(height: 32),
               _buildSectionTitle('KNOWLEDGE BASE'),
               const SizedBox(height: 16),
-              _buildLinkCard(
-                icon: Icons.history_edu_rounded,
-                title: 'Credits',
-              ),
+              _buildLinkCard(icon: Icons.history_edu_rounded, title: 'Credits'),
               const SizedBox(height: 16),
               _buildLinkCard(
                 icon: Icons.groups_rounded,
@@ -93,7 +91,7 @@ class SettingsPage extends StatelessWidget {
               style: GoogleFonts.manrope(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
-                color: AppColors.onSurface.withOpacity(0.4),
+                color: AppColors.onSurface.withValues(alpha: 0.4),
                 letterSpacing: 1.5,
               ),
             ),
@@ -102,7 +100,7 @@ class SettingsPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.primaryRed.withOpacity(0.1),
+            color: AppColors.primaryRed.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: const Icon(
@@ -121,7 +119,7 @@ class SettingsPage extends StatelessWidget {
       style: GoogleFonts.manrope(
         fontSize: 11,
         fontWeight: FontWeight.w900,
-        color: AppColors.onSurface.withOpacity(0.3),
+        color: AppColors.onSurface.withValues(alpha: 0.3),
         letterSpacing: 2,
       ),
     );
@@ -136,7 +134,7 @@ class SettingsPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh.withOpacity(0.6),
+        color: AppColors.surfaceContainerHigh.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Row(
@@ -149,7 +147,7 @@ class SettingsPage extends StatelessWidget {
             ),
             child: Icon(
               icon,
-              color: AppColors.primaryRed.withOpacity(0.8),
+              color: AppColors.primaryRed.withValues(alpha: 0.8),
               size: 24,
             ),
           ),
@@ -170,7 +168,7 @@ class SettingsPage extends StatelessWidget {
                   subtitle,
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 13,
-                    color: AppColors.onSurface.withOpacity(0.4),
+                    color: AppColors.onSurface.withValues(alpha: 0.4),
                   ),
                 ),
               ],
@@ -186,12 +184,12 @@ class SettingsPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh.withOpacity(0.6),
+        color: AppColors.surfaceContainerHigh.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.primaryRed.withOpacity(0.8), size: 24),
+          Icon(icon, color: AppColors.primaryRed.withValues(alpha: 0.8), size: 24),
           const SizedBox(width: 20),
           Expanded(
             child: Text(
@@ -205,7 +203,7 @@ class SettingsPage extends StatelessWidget {
           ),
           Icon(
             Icons.chevron_right_rounded,
-            color: AppColors.onSurface.withOpacity(0.2),
+            color: AppColors.onSurface.withValues(alpha: 0.2),
           ),
         ],
       ),
@@ -224,7 +222,7 @@ class SettingsPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.primaryRed.withOpacity(0.2),
+              color: AppColors.primaryRed.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -244,7 +242,7 @@ class SettingsPage extends StatelessWidget {
               style: GoogleFonts.beVietnamPro(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: AppColors.onSurface.withOpacity(0.3),
+                color: AppColors.onSurface.withValues(alpha: 0.3),
               ),
             ),
           ),
@@ -257,7 +255,7 @@ class SettingsPage extends StatelessWidget {
     return Switch(
       value: value,
       onChanged: (v) {},
-      activeColor: Colors.white,
+      activeThumbColor: Colors.white,
       activeTrackColor: AppColors.primaryRed,
       inactiveTrackColor: AppColors.obsidian,
     );
@@ -268,7 +266,7 @@ class SettingsPage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh.withOpacity(0.6),
+        color: AppColors.surfaceContainerHigh.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(36),
         image: DecorationImage(
           image: const AssetImage(
@@ -276,7 +274,7 @@ class SettingsPage extends StatelessWidget {
           ), // Fallback pattern
           opacity: 0.05,
           colorFilter: ColorFilter.mode(
-            AppColors.primaryRed.withOpacity(0.1),
+            AppColors.primaryRed.withValues(alpha: 0.1),
             BlendMode.srcIn,
           ),
           alignment: Alignment.bottomRight,
@@ -292,7 +290,7 @@ class SettingsPage extends StatelessWidget {
               fontSize: 22,
               fontWeight: FontWeight.w900,
               fontStyle: FontStyle.italic,
-              color: AppColors.gold.withOpacity(0.9),
+              color: AppColors.gold.withValues(alpha: 0.9),
               letterSpacing: -0.5,
             ),
           ),
@@ -301,7 +299,7 @@ class SettingsPage extends StatelessWidget {
             'Your progress is automatically saved to the Vault. Level up your rank to unlock exclusive traditional avatars and hidden word packs.',
             style: GoogleFonts.beVietnamPro(
               fontSize: 15,
-              color: AppColors.onSurface.withOpacity(0.5),
+              color: AppColors.onSurface.withValues(alpha: 0.5),
               height: 1.6,
             ),
           ),
