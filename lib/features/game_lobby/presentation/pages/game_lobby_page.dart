@@ -38,24 +38,25 @@ class _GameLobbyPageState extends State<GameLobbyPage>
   Widget build(BuildContext context) {
     return BlocBuilder<GameLobbyCubit, GameLobbyState>(
       builder: (context, state) {
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 32),
-              _buildHostCard(),
-              const SizedBox(height: 24),
-              _buildDeviceStatusSection(),
-              const SizedBox(height: 32),
-              _buildJoinCard(),
-              const SizedBox(height: 24),
-              _buildNearbyGamesSection(state),
-              const SizedBox(height: 32),
-              _buildWifiInfoAlert(),
-              const SizedBox(height: 40),
-            ],
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 20),
+                _buildHostCard(),
+                const SizedBox(height: 10),
+                const SizedBox(height: 32),
+                _buildJoinCard(),
+                const SizedBox(height: 24),
+                _buildNearbyGamesSection(state),
+                const SizedBox(height: 32),
+                _buildWifiInfoAlert(),
+                const SizedBox(height: 120), // Clearance for bottom navigation
+              ],
+            ),
           ),
         );
       },
@@ -63,7 +64,6 @@ class _GameLobbyPageState extends State<GameLobbyPage>
   }
 
   // Removed _buildAppBar as headers are handled differently in full immersion
-
 
   Widget _buildHeader() {
     return Column(
@@ -162,91 +162,6 @@ class _GameLobbyPageState extends State<GameLobbyPage>
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDeviceStatusSection() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'YOUR DEVICE',
-                    style: GoogleFonts.manrope(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white30,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Abebe's Phone",
-                    style: GoogleFonts.epilogue(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-              _buildStatusBadge('WAITING', Colors.green),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Waiting for players...',
-            style: GoogleFonts.beVietnamPro(
-              fontSize: 14,
-              color: Colors.white60,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            height: 100,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.white10,
-                width: 1.5,
-                style: BorderStyle.solid,
-              ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.person_add_alt_1_outlined,
-                  color: Colors.white24,
-                  size: 32,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'NO PLAYERS JOINED YET',
-                  style: GoogleFonts.manrope(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white12,
-                    letterSpacing: 1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -378,9 +293,7 @@ class _GameLobbyPageState extends State<GameLobbyPage>
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              game['host']!.contains('Yonas')
-                  ? Icons.door_front_door_outlined
-                  : Icons.sports_esports_outlined,
+              Icons.sensors_rounded,
               color: AppColors.primaryPink.withOpacity(0.8),
             ),
           ),
