@@ -27,6 +27,18 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
 
   MultiplayerCubit({required this.gameCubit}) : super(const MultiplayerState());
 
+  Future<String> _resolveToIPv4(String hostOrIp) async {
+    final ipRegex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
+    if (ipRegex.hasMatch(hostOrIp)) return hostOrIp;
+
+    final addrs = await InternetAddress.lookup(hostOrIp)
+        .timeout(const Duration(seconds: 3));
+    for (final a in addrs) {
+      if (a.type == InternetAddressType.IPv4) return a.address;
+    }
+    throw Exception('Could not resolve $hostOrIp to an IPv4 address');
+  }
+
   /// Clears per-round readiness/votes before host calls [GameCubit.init].
   void prepareNewSession() {
     _readyPlayers.clear();
@@ -91,9 +103,9 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
   }
 
   // --- HOSTING ---
-  Future<void> startHosting(String playerName) async {
+  Future<void> startHosting(String roomName) async {
     try {
-      emit(state.copyWith(status: MultiplayerStatus.hosting, playerName: playerName));
+      emit(state.copyWith(status: MultiplayerStatus.hosting));
 
       final ip = await _resolveAdvertisedHostIp();
 
@@ -113,7 +125,8 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
       final port = _server!.port;
 
       _service = BonsoirService(
-        name: "$playerName's Room",
+        // Joiners display this service name directly.
+        name: roomName,
         type: '_hiddenword._tcp',
         port: port,
         attributes: {'ip': ip},
@@ -160,14 +173,22 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
       await _discovery!.initialize();
 
       _discovery!.eventStream!.listen((event) {
-        if (event is BonsoirDiscoveryServiceFoundEvent ||
-            event is BonsoirDiscoveryServiceResolvedEvent) {
+        if (event is BonsoirDiscoveryServiceResolvedEvent) {
           final service = event.service;
-          if (service == null) return;
 
-          // Do not require the 'ip' TXT attribute to be present.
-          // Some devices/hotspot networks may omit TXT attributes in resolution,
-          // but `service.host` is still usually available after resolution.
+          final services = List<BonsoirService>.from(state.discoveredServices)
+            ..removeWhere((s) => s.name == service.name)
+            ..add(service);
+          emit(state.copyWith(discoveredServices: services));
+        } else if (event is BonsoirDiscoveryServiceFoundEvent) {
+          // "Found" can have incomplete host/IP info. Only keep it if we
+          // have something usable to connect.
+          final service = event.service;
+
+          final hasIp = (service.attributes['ip']?.isNotEmpty ?? false);
+          final hasHost = (service.host?.isNotEmpty ?? false);
+          if (!hasIp && !hasHost) return;
+
           final services = List<BonsoirService>.from(state.discoveredServices)
             ..removeWhere((s) => s.name == service.name)
             ..add(service);
@@ -190,8 +211,15 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
     try {
       emit(state.copyWith(status: MultiplayerStatus.connecting));
 
-      // Prefer the advertised TXT 'ip'. Fallback to the resolved Bonsoir host.
-      final ip = service.attributes['ip'] ?? service.host ?? 'localhost';
+      // Prefer the advertised TXT 'ip'. Fallback to resolved Bonsoir host.
+      // If both are missing, refuse to connect (connecting to localhost will fail).
+      final hostOrIp = service.attributes['ip'] ?? service.host;
+      if (hostOrIp == null || hostOrIp.isEmpty) {
+        throw Exception(
+          'Host IP missing from discovery. Please refresh and try again.',
+        );
+      }
+      final ip = await _resolveToIPv4(hostOrIp);
       final port = service.port;
       final url = Uri.parse("ws://$ip:$port");
 
