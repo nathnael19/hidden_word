@@ -28,18 +28,18 @@ class VotingPage extends StatelessWidget {
           return SafeArea(
             child: Stack(
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 32),
-                      _buildHeader(context),
-                      const SizedBox(height: 48),
-                      Expanded(
-                        child: _buildVotingGrid(context, state),
-                      ),
-                      const SizedBox(height: 180), // Space for bottom status card
-                    ],
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 32),
+                        _buildHeader(context),
+                        const SizedBox(height: 16), // Reduced from 48
+                        _buildVotingGrid(context, state),
+                        const SizedBox(height: 180), // Space for bottom status card
+                      ],
+                    ),
                   ),
                 ),
                 _buildStatusDashboard(context, state),
@@ -62,7 +62,7 @@ class VotingPage extends StatelessWidget {
             const CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
             const SizedBox(height: 24),
             Text(
-              'WAITING FOR OTHERS...',
+              'ሌሎች እስኪጨርሱ እየተጠበቀ ነው...',
               style: GoogleFonts.manrope(
                 fontSize: 12,
                 fontWeight: FontWeight.w900,
@@ -119,7 +119,7 @@ class VotingPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'SECRET ACTIVE',
+                        'ሚስጥሩ እንደቀጠለ ነው',
                         style: GoogleFonts.manrope(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
@@ -134,7 +134,7 @@ class VotingPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Who is the\nspy?',
+              'ሰላዩ\nማነው?',
               textAlign: TextAlign.center,
               style: GoogleFonts.epilogue(
                 fontSize: MediaQuery.of(context).size.width < 360 ? 36 : 48,
@@ -145,7 +145,7 @@ class VotingPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'TRUST NO ONE. VOTE WISELY.',
+              'ማንንም አትመን! ታማኝነቱን አረጋግጥ',
               style: GoogleFonts.manrope(
                 fontSize: 12,
                 fontWeight: FontWeight.w900,
@@ -161,15 +161,17 @@ class VotingPage extends StatelessWidget {
 
   Widget _buildVotingGrid(BuildContext context, GameState state) {
     return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 220,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
         childAspectRatio: MediaQuery.of(context).size.width < 380 ? 0.6 : 0.65,
       ),
-      itemCount: state.totalPlayers,
+      itemCount: state.connectedPlayers.length,
       itemBuilder: (context, index) {
-        final targetName = state.connectedPlayers.isNotEmpty ? state.connectedPlayers[index % state.connectedPlayers.length] : 'Unknown';
+        final targetName = state.connectedPlayers[index];
         final isSelected = state.votedPlayerIndex == index;
         return _VotingCard(
           name: targetName,
@@ -227,7 +229,7 @@ class VotingPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'VOTING STATUS',
+                      'የድምፅ መስጠት ሁኔታ',
                       style: GoogleFonts.manrope(
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
@@ -237,7 +239,7 @@ class VotingPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'PLAYERS ARE MAKING THEIR MOVE',
+                      'ተጫዋቾች ምርጫቸውን እያደረጉ ነው',
                       style: GoogleFonts.manrope(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -303,7 +305,7 @@ class VotingPage extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'DECISION IN PROGRESS',
+                      'ውሳኔ እየተሰጠ ነው',
                       style: GoogleFonts.manrope(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
@@ -447,7 +449,7 @@ class _VotingCard extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    isSelected ? 'VOTE CAST' : 'VOTE',
+                    isSelected ? 'ተመርጧል' : 'ምረጥ',
                     style: GoogleFonts.manrope(
                       fontSize: 12,
                       fontWeight: FontWeight.w900,
