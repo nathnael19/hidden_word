@@ -10,11 +10,10 @@ class GameCubit extends Cubit<GameState> {
   GameCubit() : super(const GameState());
 
   /// Builds a roster for spy selection and voting labels. Uses [connectedPlayers]
-  /// when non-empty; otherwise generates placeholder names from [playersCount].
+  /// as the authoritative source.
   static List<String> _resolveRoster(int playersCount, List<String> connectedPlayers) {
     if (connectedPlayers.isNotEmpty) return List<String>.from(connectedPlayers);
-    if (playersCount <= 0) return const [];
-    return List.generate(playersCount, (i) => 'Player ${i + 1}');
+    return const [];
   }
 
   /// Initialises the game. Fetches a random word from [categoryId].
