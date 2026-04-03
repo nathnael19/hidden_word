@@ -619,7 +619,7 @@ class _HomeSection extends StatelessWidget {
           crossAxisCount: 2,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 1.2,
+          childAspectRatio: 1.1,
           children: [
             _ThemeCard(
               title: 'Food',
@@ -713,7 +713,6 @@ class _ThemeCard extends StatelessWidget {
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Icon(
                   icon,
@@ -722,6 +721,7 @@ class _ThemeCard extends StatelessWidget {
                       : AppColors.onSurface.withOpacity(0.5),
                   size: 30,
                 ),
+                const Spacer(),
                 Text(
                   title,
                   style: GoogleFonts.epilogue(
@@ -738,6 +738,8 @@ class _ThemeCard extends StatelessWidget {
                     color: AppColors.onSurface.withOpacity(0.3),
                     height: 1.4,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
