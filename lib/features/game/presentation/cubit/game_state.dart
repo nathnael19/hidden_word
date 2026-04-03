@@ -30,11 +30,11 @@ class GameState extends Equatable {
   const GameState({
     this.currentPlayerIndex = 1,
     this.isRevealed = false,
-    this.totalPlayers = 6,
+    this.totalPlayers = 0,
     this.secretWord = '',
     this.isReady = false,
     this.phase = GamePhase.reveal,
-    this.timerSeconds = 105,
+    this.timerSeconds = 0,
     this.isPeeking = false,
     this.votedPlayerIndex,
     this.isVotingReady = false,
