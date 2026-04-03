@@ -30,6 +30,7 @@ class MultiplayerState extends Equatable {
     int? hostPort,
     String? errorMessage,
     String? playerName,
+    bool clearError = false,
   }) {
     return MultiplayerState(
       status: status ?? this.status,
@@ -37,7 +38,7 @@ class MultiplayerState extends Equatable {
       connectedPlayers: connectedPlayers ?? this.connectedPlayers,
       hostIp: hostIp ?? this.hostIp,
       hostPort: hostPort ?? this.hostPort,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       playerName: playerName ?? this.playerName,
     );
   }
