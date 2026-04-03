@@ -82,7 +82,7 @@ class _HomeSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 32),
-                  _buildHeroSection(),
+                  _buildHeroSection(context),
                   const SizedBox(height: 48),
                   _buildThemeSection(context, selectedTheme),
                   const SizedBox(height: 24), // Reduced from 48
@@ -519,7 +519,7 @@ class _HomeSection extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroSection() {
+  Widget _buildHeroSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -534,22 +534,23 @@ class _HomeSection extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         // Hero Split-Color Amharic Logo (NO BORDERS)
-        Row(
+        Wrap(
+          spacing: 12,
+          runSpacing: 8,
           children: [
             Text(
               'ስውር',
               style: GoogleFonts.epilogue(
-                fontSize: 32,
+                fontSize: MediaQuery.of(context).size.width < 360 ? 28 : 32,
                 fontWeight: FontWeight.w900,
                 color: AppColors.onSurface,
                 letterSpacing: 4,
               ),
             ),
-            const SizedBox(width: 12),
             Text(
               'ቃል',
               style: GoogleFonts.epilogue(
-                fontSize: 32,
+                fontSize: MediaQuery.of(context).size.width < 360 ? 28 : 32,
                 fontWeight: FontWeight.w900,
                 color: AppColors.primaryPink,
                 letterSpacing: 4,
@@ -576,7 +577,7 @@ class _HomeSection extends StatelessWidget {
         Text(
           'Find the spy among you. Speak\ncarefully, trust no one.',
           style: GoogleFonts.beVietnamPro(
-            fontSize: 18,
+            fontSize: MediaQuery.of(context).size.width < 360 ? 16 : 18,
             color: AppColors.onSurface.withOpacity(0.6),
             height: 1.4,
             fontWeight: FontWeight.w400,
@@ -613,44 +614,33 @@ class _HomeSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 24),
-        GridView.count(
+        GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 1.1,
-          children: [
-            _ThemeCard(
-              title: 'Food',
-              keywords: 'Injera, Kitfo,\ncoffee...',
-              icon: Icons.restaurant,
-              isSelected: currentTheme == 'Food',
-              onTap: () => context.read<HomeCubit>().selectTheme('Food'),
-            ),
-            _ThemeCard(
-              title: 'Transport',
-              keywords: 'Anbessa, Bajaj,\nRide...',
-              icon: Icons.directions_bus,
-              isSelected: currentTheme == 'Transport',
-              hasStatus: true,
-              onTap: () => context.read<HomeCubit>().selectTheme('Transport'),
-            ),
-            _ThemeCard(
-              title: 'Culture',
-              keywords: 'Meskel, Timket,\nGenna...',
-              icon: Icons.celebration,
-              isSelected: currentTheme == 'Culture',
-              onTap: () => context.read<HomeCubit>().selectTheme('Culture'),
-            ),
-            _ThemeCard(
-              title: 'Student',
-              keywords: 'Campus, Exams,\nDorm...',
-              icon: Icons.school,
-              isSelected: currentTheme == 'Student',
-              onTap: () => context.read<HomeCubit>().selectTheme('Student'),
-            ),
-          ],
+          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 200,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: MediaQuery.of(context).size.width < 360 ? 1.0 : 1.1,
+          ),
+          itemCount: 4,
+          itemBuilder: (context, index) {
+            final themes = [
+              {'title': 'Food', 'keywords': 'Injera, Kitfo,\ncoffee...', 'icon': Icons.restaurant},
+              {'title': 'Transport', 'keywords': 'Anbessa, Bajaj,\nRide...', 'icon': Icons.directions_bus, 'hasStatus': true},
+              {'title': 'Culture', 'keywords': 'Meskel, Timket,\nGenna...', 'icon': Icons.celebration},
+              {'title': 'Student', 'keywords': 'Campus, Exams,\nDorm...', 'icon': Icons.school},
+            ];
+            final theme = themes[index];
+            return _ThemeCard(
+              title: theme['title'] as String,
+              keywords: theme['keywords'] as String,
+              icon: theme['icon'] as IconData,
+              isSelected: currentTheme == theme['title'],
+              hasStatus: theme['hasStatus'] == true,
+              onTap: () => context.read<HomeCubit>().selectTheme(theme['title'] as String),
+            );
+          },
         ),
       ],
     );
