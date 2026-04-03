@@ -21,12 +21,19 @@ class RoomLobbyPage extends StatefulWidget {
 }
 
 class _RoomLobbyPageState extends State<RoomLobbyPage> {
+  final TextEditingController _roomNameController =
+      TextEditingController(text: 'My Room');
+
   @override
   void initState() {
     super.initState();
     context.read<RoomLobbyCubit>().init();
-    // Start broadcasting the room on the local network immediately
-    context.read<MultiplayerCubit>().startHosting('My Room');
+  }
+
+  @override
+  void dispose() {
+    _roomNameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -49,6 +56,8 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                       child: _buildHostingErrorBanner(netState.errorMessage!),
                     ),
                   _buildHeader(netState),
+                  const SizedBox(height: 16),
+                  _buildRoomNameCard(context, netState),
                   const SizedBox(height: 32),
                   _buildSettingsCard(context, roomState),
                   const SizedBox(height: 32),
@@ -158,6 +167,95 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildRoomNameCard(BuildContext context, MultiplayerState netState) {
+    final canEdit = netState.status != MultiplayerStatus.hosting &&
+        netState.status != MultiplayerStatus.connecting;
+    final roomName = _roomNameController.text.trim();
+    final canStartHosting = canEdit && roomName.isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerHigh.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'ROOM NAME',
+            style: GoogleFonts.manrope(
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              color: Colors.white24,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _roomNameController,
+            enabled: canEdit,
+            style: GoogleFonts.epilogue(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+            decoration: InputDecoration(
+              isDense: true,
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.05),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: Colors.white12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: AppColors.primaryPink.withOpacity(0.8)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 46,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: canStartHosting
+                    ? AppColors.primaryPink.withOpacity(0.85)
+                    : AppColors.surfaceContainerHigh,
+                foregroundColor: canStartHosting ? Colors.black : Colors.white24,
+                disabledBackgroundColor: AppColors.surfaceContainerHigh,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              onPressed: canStartHosting
+                  ? () async {
+                      context
+                          .read<MultiplayerCubit>()
+                          .prepareNewSession();
+                      await context
+                          .read<MultiplayerCubit>()
+                          .startHosting(roomName);
+                    }
+                  : null,
+              child: Text(
+                'HOST ROOM',
+                style: GoogleFonts.manrope(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
