@@ -7,6 +7,8 @@ import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
 import 'package:hidden_word/features/settings/presentation/cubit/settings_cubit.dart';
 
+import 'package:hidden_word/features/multiplayer/domain/services/multiplayer_service.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -17,8 +19,15 @@ Future<void> init() async {
   sl.registerFactory(() => RoomLobbyCubit());
   sl.registerFactory(() => JoinRoomCubit());
   sl.registerLazySingleton(() => GameCubit());
-  sl.registerLazySingleton(() => MultiplayerCubit(gameCubit: sl()));
+  sl.registerLazySingleton(() => MultiplayerCubit(
+    gameCubit: sl(),
+    multiplayerService: sl(),
+  ));
   sl.registerFactory(() => SettingsCubit());
+
+  //! Services
+  sl.registerLazySingleton(() => MultiplayerService());
+
 
   // Use cases
 
