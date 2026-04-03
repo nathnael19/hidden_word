@@ -14,6 +14,7 @@ import 'package:hidden_word/features/multiplayer/data/models/network_message.dar
 class MultiplayerCubit extends Cubit<MultiplayerState> {
   final GameCubit gameCubit;
   StreamSubscription<GameState>? _gameSubscription;
+  StreamSubscription? _discoverySubscription;
   BonsoirService? _service;
   BonsoirBroadcast? _broadcast;
   BonsoirDiscovery? _discovery;
@@ -24,8 +25,15 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
   final Map<String, String> _playerVotes = {};
   bool _votingRoundResolved = false;
   final NetworkInfo _networkInfo = NetworkInfo();
+  static const int kWebSocketPort = 40400;
 
   MultiplayerCubit({required this.gameCubit}) : super(const MultiplayerState());
+
+  /// Sets the local player's display name for roster/voting.
+  void setPlayerName(String name) {
+    if (name.trim().isEmpty) return;
+    emit(state.copyWith(playerName: name.trim()));
+  }
 
   Future<String> _resolveToIPv4(String hostOrIp) async {
     final ipRegex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
@@ -37,6 +45,32 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
       if (a.type == InternetAddressType.IPv4) return a.address;
     }
     throw Exception('Could not resolve $hostOrIp to an IPv4 address');
+  }
+
+  String? _extractIpFromService(BonsoirService service) {
+    final attrs = service.attributes;
+
+    final direct = attrs['ip'] ?? attrs['IP'];
+    if (direct != null && direct.isNotEmpty) return direct;
+
+    // Bonsoir sometimes provides a single "paarams" blob; in your logs it's:
+    // paarams="{\"VERSION\":1,\"IP\":\"192.168.x.y\",...}"
+    final paarams = attrs['paarams'];
+    if (paarams != null && paarams.isNotEmpty) {
+      final m = RegExp(r'"IP"\s*:\s*"([^"]+)"', caseSensitive: false)
+          .firstMatch(paarams);
+      if (m != null && m.group(1) != null && m.group(1)!.isNotEmpty) {
+        return m.group(1);
+      }
+    }
+    return null;
+  }
+
+  int? _extractPortFromService(BonsoirService service) {
+    final direct = service.attributes['port'] ?? service.attributes['PORT'];
+    final parsed = int.tryParse(direct ?? '');
+    if (parsed != null && parsed > 0) return parsed;
+    return null;
   }
 
   /// Clears per-round readiness/votes before host calls [GameCubit.init].
@@ -105,7 +139,12 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
   // --- HOSTING ---
   Future<void> startHosting(String roomName) async {
     try {
-      emit(state.copyWith(status: MultiplayerStatus.hosting));
+      // If we were already hosting (e.g. testing), stop old listeners/broadcast first.
+      if (state.status == MultiplayerStatus.hosting) {
+        await stopMultiplayer();
+      }
+
+      emit(state.copyWith(status: MultiplayerStatus.hosting, clearError: true));
 
       final ip = await _resolveAdvertisedHostIp();
 
@@ -121,15 +160,34 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
         });
       });
 
-      _server = await shelf_io.serve(handler, InternetAddress.anyIPv4, 0);
-      final port = _server!.port;
+      // Try the well-known port first. If it's still held from a hot-restart,
+      // let the OS pick any free port (port 0). The actual port is always
+      // communicated via mDNS TXT attributes, so joiners will find it.
+      HttpServer? server;
+      int port = kWebSocketPort;
+      try {
+        server = await shelf_io.serve(handler, ip, kWebSocketPort);
+        port = server.port;
+      } on SocketException catch (_) {
+        // Fixed port busy — let the OS assign a free one.
+        server = await shelf_io.serve(handler, ip, 0);
+        port = server.port;
+      }
+      _server = server;
+      print('[Multiplayer] WS server listening on $ip:$port');
 
       _service = BonsoirService(
         // Joiners display this service name directly.
         name: roomName,
         type: '_hiddenword._tcp',
         port: port,
-        attributes: {'ip': ip},
+        host: ip,
+        attributes: {
+          'ip': ip,
+          'IP': ip,
+          'port': port.toString(),
+          'PORT': port.toString(),
+        },
       );
 
       _broadcast = BonsoirBroadcast(service: _service!);
@@ -138,7 +196,7 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
 
       _gameSubscription = gameCubit.stream.listen(_onGameStateForHostAndClients);
 
-      emit(state.copyWith(status: MultiplayerStatus.hosting, hostIp: ip, hostPort: port));
+      emit(state.copyWith(status: MultiplayerStatus.hosting, hostIp: ip, hostPort: port, clearError: true));
     } catch (e) {
       emit(state.copyWith(status: MultiplayerStatus.error, errorMessage: e.toString()));
     }
@@ -168,11 +226,21 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
   // --- DISCOVERY ---
   Future<void> searchHosts() async {
     try {
-      emit(state.copyWith(status: MultiplayerStatus.searching));
+      // Clear stale results from previous scans so room name changes show up.
+      emit(state.copyWith(
+        status: MultiplayerStatus.searching,
+        discoveredServices: const [],
+        clearError: true,
+      ));
+
+      // Cancel any previous discovery listener to avoid duplicate entries.
+      await _discoverySubscription?.cancel();
+      _discoverySubscription = null;
+      await _discovery?.stop();
       _discovery = BonsoirDiscovery(type: '_hiddenword._tcp');
       await _discovery!.initialize();
 
-      _discovery!.eventStream!.listen((event) {
+      _discoverySubscription = _discovery!.eventStream!.listen((event) {
         if (event is BonsoirDiscoveryServiceResolvedEvent) {
           final service = event.service;
 
@@ -181,13 +249,10 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
             ..add(service);
           emit(state.copyWith(discoveredServices: services));
         } else if (event is BonsoirDiscoveryServiceFoundEvent) {
-          // "Found" can have incomplete host/IP info. Only keep it if we
-          // have something usable to connect.
+          // "Found" can have incomplete host/IP info, but we still keep the
+          // service so the user can see the room. Connection will still fail
+          // (with an error banner) if we can't determine an IP.
           final service = event.service;
-
-          final hasIp = (service.attributes['ip']?.isNotEmpty ?? false);
-          final hasHost = (service.host?.isNotEmpty ?? false);
-          if (!hasIp && !hasHost) return;
 
           final services = List<BonsoirService>.from(state.discoveredServices)
             ..removeWhere((s) => s.name == service.name)
@@ -209,22 +274,48 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
   // --- CLIENT CONNECTION ---
   Future<void> connectToHost(BonsoirService service) async {
     try {
-      emit(state.copyWith(status: MultiplayerStatus.connecting));
+      emit(state.copyWith(status: MultiplayerStatus.connecting, clearError: true));
 
-      // Prefer the advertised TXT 'ip'. Fallback to resolved Bonsoir host.
-      // If both are missing, refuse to connect (connecting to localhost will fail).
-      final hostOrIp = service.attributes['ip'] ?? service.host;
-      if (hostOrIp == null || hostOrIp.isEmpty) {
-        throw Exception(
-          'Host IP missing from discovery. Please refresh and try again.',
-        );
+      // 1. Resolve IP — TXT attributes first, then service.host, then gateway.
+      final ipRaw =
+          service.attributes['ip'] ?? service.attributes['IP'] ?? service.host ?? _extractIpFromService(service);
+
+      // 2. Resolve port — service.port first, then TXT attributes, then fixed fallback.
+      final port = (service.port != 0)
+          ? service.port
+          : (_extractPortFromService(service) ?? kWebSocketPort);
+
+      String ip;
+      if (ipRaw != null && ipRaw.isNotEmpty) {
+        ip = await _resolveToIPv4(ipRaw);
+      } else {
+        String? gateway = await _networkInfo.getWifiGatewayIP();
+        
+        // If Android fails to give us a gateway (common on offline hotspots), 
+        // fallback to the standard Android Hotspot IP before giving up.
+        if (gateway == null || gateway.isEmpty) {
+          gateway = '192.168.43.1'; 
+          print('[Multiplayer] gateway fetch failed, trying standard hotspot IP: $gateway');
+        }
+        ip = gateway;
       }
-      final ip = await _resolveToIPv4(hostOrIp);
-      final port = service.port;
+
       final url = Uri.parse("ws://$ip:$port");
+      print('[Multiplayer] Connecting to: $url (service.port=${service.port}, attrs=${service.attributes})');
 
       _clientChannel = WebSocketChannel.connect(url);
-      await _clientChannel!.ready;
+
+      // Timeout so the UI doesn't hang if the host is unreachable.
+      await _clientChannel!.ready.timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          _clientChannel?.sink.close();
+          throw Exception(
+            'Connection timed out trying to reach $url. '
+            'Make sure both devices are on the same network.',
+          );
+        },
+      );
 
       _clientChannel!.sink.add(NetworkMessage(
         type: NetworkMessageType.action,
@@ -237,6 +328,7 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
 
       emit(state.copyWith(status: MultiplayerStatus.connected, hostIp: ip, hostPort: port));
     } catch (e) {
+      print('[Multiplayer] connectToHost error: $e');
       emit(state.copyWith(status: MultiplayerStatus.error, errorMessage: e.toString()));
     }
   }
@@ -319,11 +411,15 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
   }
 
   void _broadcastRosterUpdate() {
-    final roster = _connectedClients.values.toList();
-    emit(state.copyWith(connectedPlayers: roster));
+    final clientNames = _connectedClients.values.toList();
+    // Host sees only client names (host card is added by the UI).
+    emit(state.copyWith(connectedPlayers: clientNames));
+    // Clients receive the full roster including the host so they can
+    // display everyone before the game starts.
+    final fullRoster = [state.playerName, ...clientNames];
     broadcastToClients(NetworkMessage(
       type: NetworkMessageType.action,
-      payload: {'action': 'ROSTER_SYNC', 'connectedPlayers': roster},
+      payload: {'action': 'ROSTER_SYNC', 'connectedPlayers': fullRoster},
     ).encode());
   }
 
@@ -359,9 +455,7 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
       } else if (networkMessage.type == NetworkMessageType.action) {
         final action = networkMessage.payload['action'];
 
-        if (action == 'START_GAME') {
-          // Session state arrives via phaseSync.
-        } else if (action == 'ROSTER_SYNC') {
+        if (action == 'ROSTER_SYNC') {
           final roster = List<String>.from(networkMessage.payload['connectedPlayers'] ?? []);
           emit(state.copyWith(connectedPlayers: roster));
         }
@@ -381,7 +475,11 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
 
   // --- CLEANUP ---
   Future<void> stopMultiplayer() async {
+    // Preserve the player name so it survives between sessions.
+    final savedName = state.playerName;
     await _gameSubscription?.cancel();
+    await _discoverySubscription?.cancel();
+    _discoverySubscription = null;
     await _broadcast?.stop();
     await _discovery?.stop();
     await _server?.close();
@@ -393,7 +491,7 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
     _readyPlayers.clear();
     _playerVotes.clear();
     _votingRoundResolved = false;
-    emit(const MultiplayerState());
+    emit(MultiplayerState(playerName: savedName));
   }
 
   @override
