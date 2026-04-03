@@ -20,14 +20,16 @@ class JoinRoomPage extends StatefulWidget {
 class _JoinRoomPageState extends State<JoinRoomPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _scanController;
-  final TextEditingController _playerNameController =
-      TextEditingController(text: 'Player');
+  late TextEditingController _playerNameController;
   bool _navigatedToGame = false;
 
   @override
   void initState() {
     super.initState();
-    context.read<MultiplayerCubit>().searchHosts();
+    final cubit = context.read<MultiplayerCubit>();
+    cubit.searchHosts();
+    _playerNameController =
+        TextEditingController(text: cubit.state.playerName);
     _scanController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -68,35 +70,37 @@ class _JoinRoomPageState extends State<JoinRoomPage>
       ],
       child: BlocBuilder<MultiplayerCubit, MultiplayerState>(
         builder: (context, state) {
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildBackNavigation(),
-              if (state.status == MultiplayerStatus.error &&
-                  (state.errorMessage?.isNotEmpty ?? false))
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildErrorBanner(state.errorMessage!),
-                ),
-              if (state.status == MultiplayerStatus.connected)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildConnectedBanner(state),
-                ),
-              const SizedBox(height: 24),
-              _buildHeader(state.status == MultiplayerStatus.searching),
-              const SizedBox(height: 24),
-              _buildPlayerNameCard(context, state),
-              const SizedBox(height: 32),
-              _buildSecretTip(),
-              const SizedBox(height: 32),
-              _buildNearbyGamesHeader(),
-              const SizedBox(height: 24),
-              _buildNearbyGamesList(context, state),
-              const SizedBox(height: 40),
-            ],
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildBackNavigation(),
+                if (state.status == MultiplayerStatus.error &&
+                    (state.errorMessage?.isNotEmpty ?? false))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildErrorBanner(state.errorMessage!),
+                  ),
+                if (state.status == MultiplayerStatus.connected)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildConnectedBanner(state),
+                  ),
+                const SizedBox(height: 12),
+                _buildHeroSection(state.status == MultiplayerStatus.searching),
+                const SizedBox(height: 16), // Tightened from 24
+                _buildPlayerNameCard(context, state),
+                const SizedBox(height: 20), // Tightened from 32
+                _buildNearbyGamesHeader(),
+                const SizedBox(height: 12), // Tightened from 16
+                _buildNearbyGamesList(context, state),
+                const SizedBox(height: 20), // Tightened from 32
+                _buildConnectivityInfoBanner(),
+                const SizedBox(height: 120), // Clearance for bottom navigation
+              ],
+            ),
           ),
         );
         },
@@ -141,50 +145,90 @@ class _JoinRoomPageState extends State<JoinRoomPage>
 
   Widget _buildPlayerNameCard(BuildContext context, MultiplayerState state) {
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white10),
+        color: AppColors.surfaceContainerHigh.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'YOUR DISPLAY NAME',
-            style: GoogleFonts.manrope(
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              color: Colors.white24,
-              letterSpacing: 1,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'AGENT PROFILE',
+                  style: GoogleFonts.manrope(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white.withOpacity(0.4),
+                    letterSpacing: 2,
+                  ),
+                ),
+                Icon(
+                  Icons.fingerprint,
+                  size: 16,
+                  color: AppColors.primaryPink.withOpacity(0.5),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _playerNameController,
-            style: GoogleFonts.epilogue(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-            ),
-            decoration: InputDecoration(
-              isDense: true,
-              filled: true,
-              fillColor: Colors.white.withOpacity(0.05),
-              hintText: 'Enter your name...',
-              hintStyle: GoogleFonts.epilogue(
-                color: Colors.white24,
-                fontWeight: FontWeight.w600,
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: Colors.white12),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: AppColors.primaryPink.withOpacity(0.8)),
-              ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'CODENAME',
+                  style: GoogleFonts.manrope(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.primaryPink.withOpacity(0.5),
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _playerNameController,
+                  style: GoogleFonts.epilogue(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                  ),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    filled: true,
+                    fillColor: Colors.black.withOpacity(0.2),
+                    hintText: 'IDENTIFY YOURSELF...',
+                    hintStyle: GoogleFonts.epilogue(
+                      color: Colors.white.withOpacity(0.1),
+                      fontWeight: FontWeight.w800,
+                    ),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: Colors.white12),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: AppColors.primaryPink.withOpacity(0.8)),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -217,18 +261,92 @@ class _JoinRoomPageState extends State<JoinRoomPage>
       onTap: () {
         context.read<HomeCubit>().setConnectViewMode(ConnectViewMode.main);
       },
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white.withOpacity(0.5), size: 14),
+            const SizedBox(width: 10),
+            Text(
+              'ABORT MISSION',
+              style: GoogleFonts.manrope(
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                color: Colors.white.withOpacity(0.5),
+                letterSpacing: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+
+
+  Widget _buildHeroSection(bool isScanning) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerHigh.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
         children: [
-          const Icon(Icons.arrow_back, color: Colors.white70, size: 20),
-          const SizedBox(width: 8),
-          Text(
-            'BACK TO LOBBY',
-            style: GoogleFonts.manrope(
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              color: Colors.white70,
-              letterSpacing: 1,
+          // Subtle Watermark Logo
+          Positioned(
+            right: -20,
+            top: -20,
+            child: Opacity(
+              opacity: 0.05,
+              child: Icon(
+                Icons.search,
+                size: 160,
+                color: Colors.white.withOpacity(0.1),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryRed.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const _SignalIcon(),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Join a Game',
+                  style: GoogleFonts.epilogue(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Scan the local network for games.',
+                  style: GoogleFonts.manrope(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withOpacity(0.4),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -239,124 +357,52 @@ class _JoinRoomPageState extends State<JoinRoomPage>
 
 
 
-  Widget _buildHeader(bool isScanning) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Row(
-            children: [
-              _buildLogoBox('ስ'),
-              const SizedBox(width: 4),
-              _buildLogoBox('ው'),
-              const SizedBox(width: 4),
-              _buildLogoBox('ር'),
-              const SizedBox(width: 12),
-              _buildLogoBox('ቃ'),
-              const SizedBox(width: 4),
-              _buildLogoBox('ል'),
-              const SizedBox(width: 4),
-              _buildLogoBox(' '),
-              const SizedBox(width: 4),
-              _buildLogoBox(' '),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          '(JOIN GAME)',
-          style: GoogleFonts.epilogue(
-            fontSize: 28,
-            fontWeight: FontWeight.w900,
-            color: AppColors.primaryPink.withOpacity(0.8),
-            letterSpacing: 1,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            RotationTransition(
-              turns: _scanController,
-              child: const Icon(
-                Icons.lens_blur_rounded,
-                size: 16,
-                color: Colors.green,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'SCANNING FOR NEARBY GAMES...',
-              style: GoogleFonts.manrope(
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                color: Colors.green,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLogoBox(String char) {
+  Widget _buildConnectivityInfoBanner() {
     return Container(
-      width: 32,
-      height: 32,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.white, width: 1.5),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        char,
-        style: GoogleFonts.epilogue(
-          fontSize: 18,
-          fontWeight: FontWeight.w900,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-
-
-  Widget _buildSecretTip() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.green.withOpacity(0.1)),
+        color: AppColors.surfaceContainerHigh.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.lightbulb_outline_rounded,
-            color: Colors.green,
-            size: 24,
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: AppColors.gold,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.info_outline_rounded,
+              color: AppColors.obsidian,
+              size: 16,
+            ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'SECRET TIP',
-                  style: GoogleFonts.manrope(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.green,
-                    letterSpacing: 1,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Keep your identity hidden until the\nmoment of truth.',
-                  style: GoogleFonts.beVietnamPro(
-                    fontSize: 12,
-                    color: Colors.white60,
-                    height: 1.4,
+                RichText(
+                  text: TextSpan(
+                    style: GoogleFonts.manrope(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.4),
+                      height: 1.5,
+                    ),
+                    children: [
+                      const TextSpan(text: 'Ensure all players are connected to the '),
+                      TextSpan(
+                        text: 'same WiFi network',
+                        style: GoogleFonts.manrope(
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                      ),
+                      const TextSpan(text: ' or mobile hotspot to discover nearby games instantly.'),
+                    ],
                   ),
                 ),
               ],
@@ -375,35 +421,28 @@ class _JoinRoomPageState extends State<JoinRoomPage>
           'Nearby Games',
           style: GoogleFonts.epilogue(
             fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w900,
             color: Colors.white,
+            letterSpacing: -0.5,
           ),
         ),
-        GestureDetector(
-          onTap: () => context.read<MultiplayerCubit>().searchHosts(),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.white10),
+        Row(
+          children: [
+            Text(
+              'Auto-scanning',
+              style: GoogleFonts.manrope(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.white.withOpacity(0.25),
+              ),
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.refresh, size: 12, color: Colors.white38),
-                const SizedBox(width: 6),
-                Text(
-                  'REFRESH',
-                  style: GoogleFonts.manrope(
-                    fontSize: 8,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white38,
-                    letterSpacing: 1,
-                  ),
-                ),
-              ],
+            const SizedBox(width: 8),
+            Icon(
+              Icons.sync,
+              size: 14,
+              color: Colors.white.withOpacity(0.25),
             ),
-          ),
+          ],
         ),
       ],
     );
@@ -413,18 +452,22 @@ class _JoinRoomPageState extends State<JoinRoomPage>
     if (state.status == MultiplayerStatus.searching && state.discoveredServices.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40),
+          padding: const EdgeInsets.symmetric(vertical: 60),
           child: Column(
             children: [
-              const CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
-              const SizedBox(height: 16),
+              SizedBox(
+                width: 40,
+                height: 40,
+                child: _RadarScanner(animation: _scanController),
+              ),
+              const SizedBox(height: 24),
               Text(
-                'SCANNING FOR NEARBY ROOMS...',
+                'INTERCEPTING SIGNALS...',
                 style: GoogleFonts.manrope(
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
-                  color: AppColors.onSurface.withOpacity(0.3),
-                  letterSpacing: 1.5,
+                  color: Colors.green.withOpacity(0.3),
+                  letterSpacing: 2,
                 ),
               ),
             ],
@@ -432,22 +475,49 @@ class _JoinRoomPageState extends State<JoinRoomPage>
         ),
       );
     }
+
     if (state.discoveredServices.isEmpty) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40),
-          child: Text(
-            'No rooms found nearby.\nMake sure you\'re on the same WiFi or the\nHost\'s Mobile Hotspot.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.beVietnamPro(
-              fontSize: 14,
-              color: AppColors.onSurface.withOpacity(0.3),
-              height: 1.6,
-            ),
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.02),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                Icons.signal_cellular_connected_no_internet_4_bar_rounded,
+                size: 48,
+                color: Colors.white.withOpacity(0.05),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'NO ROOMS LOCATED',
+                style: GoogleFonts.epilogue(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white.withOpacity(0.2),
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Ensure the Host is visible on your\nnetwork or local hotspot.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.manrope(
+                  fontSize: 12,
+                  color: Colors.white.withOpacity(0.15),
+                  height: 1.5,
+                ),
+              ),
+            ],
           ),
         ),
       );
     }
+
     return Column(
       children: state.discoveredServices.map((service) {
         return _buildNearbyGameTile(
@@ -465,79 +535,158 @@ class _JoinRoomPageState extends State<JoinRoomPage>
     required VoidCallback onJoin,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh.withOpacity(0.3),
+        color: AppColors.surfaceContainerHigh.withOpacity(0.5),
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              Icons.wifi,
-              color: Colors.greenAccent.withOpacity(0.8),
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onJoin,
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                Text(
-                  host,
-                  style: GoogleFonts.epilogue(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    host.toLowerCase().contains('room') ? Icons.door_front_door_rounded : Icons.sports_esports_rounded,
+                    color: Colors.white.withOpacity(0.4),
+                    size: 24,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'OPEN · WIFI & HOTSPOT',
-                  style: GoogleFonts.manrope(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.greenAccent.withOpacity(0.5),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        host,
+                        style: GoogleFonts.epilogue(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'SIGNAL STABLE • READY TO DEPLOY',
+                        style: GoogleFonts.manrope(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.greenAccent.withOpacity(0.3),
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 24,
+                  color: Colors.white.withOpacity(0.15),
                 ),
               ],
             ),
           ),
-          GestureDetector(
-            onTap: onJoin,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.link, size: 14, color: Colors.white60),
-                  const SizedBox(width: 8),
-                  Text(
-                    'JOIN',
-                    style: GoogleFonts.manrope(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
+}
+
+class _SignalIcon extends StatelessWidget {
+  const _SignalIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.wifi, size: 16, color: AppColors.primaryRed.withOpacity(0.8)),
+        const SizedBox(width: 4),
+        Container(
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(
+            color: AppColors.primaryRed.withOpacity(0.8),
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Icon(Icons.wifi, size: 16, color: AppColors.primaryRed.withOpacity(0.8)),
+      ],
+    );
+  }
+}
+
+class _RadarScanner extends StatelessWidget {
+  final Animation<double> animation;
+  const _RadarScanner({required this.animation});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        return CustomPaint(
+          painter: _RadarPainter(animation.value),
+        );
+      },
+    );
+  }
+}
+
+class _RadarPainter extends CustomPainter {
+  final double progress;
+  _RadarPainter(this.progress);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.green.withOpacity(0.15)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+
+    // Circles
+    canvas.drawCircle(center, radius * 0.4, paint);
+    canvas.drawCircle(center, radius * 0.7, paint);
+    canvas.drawCircle(center, radius, paint);
+
+    // Crosshairs
+    canvas.drawLine(Offset(center.dx - radius, center.dy), Offset(center.dx + radius, center.dy), paint);
+    canvas.drawLine(Offset(center.dx, center.dy - radius), Offset(center.dx, center.dy + radius), paint);
+
+    // Sweep
+    final sweepPaint = Paint()
+      ..shader = SweepGradient(
+        center: Alignment.center,
+        startAngle: 0.0,
+        endAngle: 3.1415926535 * 2,
+        colors: [
+          Colors.green.withOpacity(0.0),
+          Colors.green.withOpacity(0.3),
+        ],
+        stops: const [0.8, 1.0],
+        transform: GradientRotation(progress * 3.1415926535 * 2),
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
+
+    canvas.drawCircle(center, radius, sweepPaint..style = PaintingStyle.fill);
+  }
+
+  @override
+  bool shouldRepaint(covariant _RadarPainter oldDelegate) => true;
 }
 
