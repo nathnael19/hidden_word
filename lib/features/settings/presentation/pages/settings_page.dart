@@ -17,7 +17,7 @@ class SettingsPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 54),
+              const SizedBox(height: 15),
               _buildHeader(),
               const SizedBox(height: 40),
               _buildSectionTitle('GAMEPLAY & ACCESSIBILITY'),
@@ -79,7 +79,7 @@ class SettingsPage extends StatelessWidget {
             Text(
               'Settings',
               style: GoogleFonts.epilogue(
-                fontSize: 42,
+                fontSize: 30,
                 fontWeight: FontWeight.w900,
                 color: AppColors.onSurface,
                 letterSpacing: -1,
@@ -89,25 +89,13 @@ class SettingsPage extends StatelessWidget {
             Text(
               'PERSONALIZE YOUR RITUAL',
               style: GoogleFonts.manrope(
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: FontWeight.w800,
                 color: AppColors.onSurface.withValues(alpha: 0.4),
                 letterSpacing: 1.5,
               ),
             ),
           ],
-        ),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.primaryRed.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.settings_rounded,
-            color: AppColors.primaryRed,
-            size: 32,
-          ),
         ),
       ],
     );
@@ -189,7 +177,11 @@ class SettingsPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.primaryRed.withValues(alpha: 0.8), size: 24),
+          Icon(
+            icon,
+            color: AppColors.primaryRed.withValues(alpha: 0.8),
+            size: 24,
+          ),
           const SizedBox(width: 20),
           Expanded(
             child: Text(
