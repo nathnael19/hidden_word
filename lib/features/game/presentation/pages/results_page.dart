@@ -46,10 +46,6 @@ class ResultsPage extends StatelessWidget {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.menu, color: AppColors.onSurface),
-        onPressed: () {},
-      ),
       centerTitle: true,
       title: _buildBoxedTitle(),
       actions: [
@@ -104,7 +100,7 @@ class ResultsPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'MISSION CONCLUDED',
+              'ተልዕኮው ተጠናቋል',
               style: GoogleFonts.manrope(
                 fontSize: 10,
                 fontWeight: FontWeight.w800,
@@ -134,9 +130,9 @@ class ResultsPage extends StatelessWidget {
               height: 1,
             ),
             children: [
-              const TextSpan(text: 'THE TRUTH\n'),
+              const TextSpan(text: 'እውነቱ\n'),
               TextSpan(
-                text: 'REVEALED',
+                text: 'ታውቋል',
                 style: TextStyle(color: AppColors.gold),
               ),
             ],
@@ -167,10 +163,14 @@ class ResultsPage extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.security, color: AppColors.primaryRed, size: 14),
+                const Icon(
+                  Icons.security,
+                  color: AppColors.primaryRed,
+                  size: 14,
+                ),
                 const SizedBox(width: 8),
                 Text(
-                  'THE SPY!',
+                  'ሰላዩ!',
                   style: GoogleFonts.manrope(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -191,7 +191,10 @@ class ResultsPage extends StatelessWidget {
                 height: 160,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(32),
-                  border: Border.all(color: AppColors.gold.withOpacity(0.3), width: 2),
+                  border: Border.all(
+                    color: AppColors.gold.withOpacity(0.3),
+                    width: 2,
+                  ),
                   image: const DecorationImage(
                     image: AssetImage('assets/ritualist_avatar.png'),
                     fit: BoxFit.cover,
@@ -207,7 +210,10 @@ class ResultsPage extends StatelessWidget {
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.6,
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.gold,
                       borderRadius: BorderRadius.circular(12),
@@ -223,8 +229,10 @@ class ResultsPage extends StatelessWidget {
                       fit: BoxFit.scaleDown,
                       child: Text(
                         state.spyPlayerNames.isEmpty
-                            ? 'UNKNOWN'
-                            : state.spyPlayerNames.map((e) => e.toUpperCase()).join(', '),
+                            ? 'ያልታወቀ'
+                            : state.spyPlayerNames
+                                  .map((e) => e.toUpperCase())
+                                  .join(', '),
                         style: GoogleFonts.epilogue(
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
@@ -240,8 +248,8 @@ class ResultsPage extends StatelessWidget {
           const SizedBox(height: 48),
           Text(
             state.spyCaught
-                ? 'Infiltrated the circle but was finally unmasked.\nThe citizens voted correctly for ${state.spyPlayerNames.join(', ')}!'
-                : 'Infiltrated the circle and escaped undetected.\nThe citizens wrongfully voted for ${state.majorityVotedName ?? 'nobody'}.',
+                ? 'ሰላዩ በዜጎች ተለይቷል\nዜጎች ለ ${state.spyPlayerNames.join(', ')} ድምፃቸውን በትክክል ሰጥተዋል።'
+                : 'ሰላዩ ሳይታወቅ በሰላም አምልጧል።\nዜጎች በስህተት ለ ${state.majorityVotedName ?? 'ማንም'} ድምፃቸውን ሰጥተዋል።',
             textAlign: TextAlign.center,
             style: GoogleFonts.manrope(
               fontSize: 14,
@@ -260,10 +268,14 @@ class ResultsPage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: spyCaught ? Colors.green.withOpacity(0.1) : AppColors.primaryRed.withOpacity(0.1),
+        color: spyCaught
+            ? Colors.green.withOpacity(0.1)
+            : AppColors.primaryRed.withOpacity(0.1),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: spyCaught ? Colors.green.withOpacity(0.3) : AppColors.primaryRed.withOpacity(0.3),
+          color: spyCaught
+              ? Colors.green.withOpacity(0.3)
+              : AppColors.primaryRed.withOpacity(0.3),
         ),
       ),
       child: Row(
@@ -271,7 +283,9 @@ class ResultsPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: spyCaught ? Colors.green.withOpacity(0.2) : AppColors.primaryRed.withOpacity(0.2),
+              color: spyCaught
+                  ? Colors.green.withOpacity(0.2)
+                  : AppColors.primaryRed.withOpacity(0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -287,20 +301,24 @@ class ResultsPage extends StatelessWidget {
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    spyCaught ? 'The citizens win!' : 'The spy wins!',
+                    spyCaught ? 'ዜጎች አሸንፈዋል!' : 'ሰላዩ አሸንፏል!',
                     style: GoogleFonts.epilogue(
                       fontSize: 20,
                       fontWeight: FontWeight.w900,
-                      color: spyCaught ? Colors.greenAccent : AppColors.primaryRed,
+                      color: spyCaught
+                          ? Colors.greenAccent
+                          : AppColors.primaryRed,
                     ),
                   ),
                 ),
                 Text(
-                  spyCaught ? 'JUSTICE RESTORED' : 'MISSION COMPROMISED',
+                  spyCaught ? 'ፍትህ ሰፍኗል' : 'ተልዕኮው ተሰናክሏል',
                   style: GoogleFonts.manrope(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
-                    color: (spyCaught ? Colors.greenAccent : AppColors.primaryRed).withOpacity(0.5),
+                    color:
+                        (spyCaught ? Colors.greenAccent : AppColors.primaryRed)
+                            .withOpacity(0.5),
                     letterSpacing: 1,
                   ),
                 ),
@@ -323,7 +341,7 @@ class ResultsPage extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'SECRET WORD',
+            'ሚስጥራዊ ቃል',
             style: GoogleFonts.manrope(
               fontSize: 10,
               fontWeight: FontWeight.w900,
@@ -352,15 +370,18 @@ class ResultsPage extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(3, (index) => Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: 4,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                shape: BoxShape.circle,
+            children: List.generate(
+              3,
+              (index) => Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: 4,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
               ),
-            )),
+            ),
           ),
         ],
       ),
@@ -383,7 +404,7 @@ class ResultsPage extends StatelessWidget {
       children: [
         _buildLargeButton(
           context: context,
-          label: 'PLAY AGAIN',
+          label: 'እንደገና ተጫወት',
           color: AppColors.primaryRed,
           icon: Icons.refresh,
           onTap: () async {
@@ -392,7 +413,9 @@ class ResultsPage extends StatelessWidget {
             if (context.mounted) {
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => const SecretRevealPage()),
+                MaterialPageRoute(
+                  builder: (context) => const SecretRevealPage(),
+                ),
                 (route) => false,
               );
             }
@@ -401,7 +424,7 @@ class ResultsPage extends StatelessWidget {
         const SizedBox(height: 16),
         _buildLargeButton(
           context: context,
-          label: 'MAIN MENU',
+          label: 'ዋና ማውጫ',
           color: AppColors.surfaceContainerHigh,
           onTap: () {
             Navigator.of(context).popUntil((route) => route.isFirst);
@@ -432,7 +455,7 @@ class ResultsPage extends StatelessWidget {
                     color: color.withOpacity(0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
-                  )
+                  ),
                 ]
               : null,
         ),
