@@ -52,16 +52,9 @@ class DiscussionPage extends StatelessWidget {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.menu, color: AppColors.onSurface),
-        onPressed: () {},
-      ),
       centerTitle: true,
       title: const _SmallBoxedTitle(),
-      actions: [
-        _buildLiveSessionPill(),
-        const SizedBox(width: 16),
-      ],
+      actions: [_buildLiveSessionPill(), const SizedBox(width: 16)],
     );
   }
 
@@ -76,10 +69,14 @@ class DiscussionPage extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.timer_outlined, size: 14, color: AppColors.primaryRed.withOpacity(0.8)),
+          Icon(
+            Icons.timer_outlined,
+            size: 14,
+            color: AppColors.primaryRed.withOpacity(0.8),
+          ),
           const SizedBox(width: 6),
           Text(
-            'LIVE SESSION',
+            'የቀጥታ ስብሰባ',
             style: GoogleFonts.manrope(
               fontSize: 10,
               fontWeight: FontWeight.w800,
@@ -96,7 +93,7 @@ class DiscussionPage extends StatelessWidget {
     return Column(
       children: [
         Text(
-          'DISCUSSION PHASE',
+          'የውይይት ምዕራፍ',
           style: GoogleFonts.manrope(
             fontSize: 12,
             fontWeight: FontWeight.w900,
@@ -106,7 +103,7 @@ class DiscussionPage extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          'Who is the Spy?',
+          'ሰላዩ ማነው?',
           style: GoogleFonts.epilogue(
             fontSize: 32,
             fontWeight: FontWeight.bold,
@@ -120,7 +117,8 @@ class DiscussionPage extends StatelessWidget {
   Widget _buildTimerSection(BuildContext context, int seconds) {
     final minutes = (seconds / 60).floor();
     final remainingSeconds = (seconds % 60).toString().padLeft(2, '0');
-    final progress = seconds / 105; // Total duration assumed 105s
+    const totalDiscussionTime = 105; // Matches GameCubit.startDiscussion
+    final progress = seconds / totalDiscussionTime;
 
     final screenWidth = MediaQuery.of(context).size.width;
     final timerSize = screenWidth < 360 ? 180.0 : 220.0;
@@ -137,7 +135,9 @@ class DiscussionPage extends StatelessWidget {
             strokeWidth: screenWidth < 360 ? 6 : 8,
             backgroundColor: AppColors.onSurface.withOpacity(0.05),
             valueColor: AlwaysStoppedAnimation<Color>(
-              seconds < 30 ? AppColors.primaryRed : AppColors.primaryPink.withOpacity(0.8),
+              seconds < 30
+                  ? AppColors.primaryRed
+                  : AppColors.primaryPink.withOpacity(0.8),
             ),
           ),
         ),
@@ -153,7 +153,7 @@ class DiscussionPage extends StatelessWidget {
               ),
             ),
             Text(
-              'TIME LEFT',
+              'ቀሪ ጊዜ',
               style: GoogleFonts.manrope(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -176,7 +176,7 @@ class DiscussionPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'ACTIVE PLAYERS',
+                'ተሳታፊዎች',
                 style: GoogleFonts.manrope(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
@@ -191,7 +191,7 @@ class DiscussionPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  '${state.totalPlayers} ONLINE',
+                  '${state.connectedPlayers.length} በመስመር ላይ',
                   style: GoogleFonts.manrope(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -211,10 +211,10 @@ class DiscussionPage extends StatelessWidget {
               crossAxisSpacing: 16,
               childAspectRatio: MediaQuery.of(context).size.width < 380 ? 1.4 : 1.3,
             ),
-            itemCount: state.totalPlayers,
+            itemCount: state.connectedPlayers.length,
             itemBuilder: (context, index) {
               return _PlayerCard(
-                name: state.connectedPlayers.isNotEmpty ? state.connectedPlayers[index % state.connectedPlayers.length] : 'Unknown',
+                name: state.connectedPlayers[index],
                 // First player in list is host
                 isHost: index == 0,
               );
@@ -240,7 +240,9 @@ class DiscussionPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: AppColors.surfaceContainerHigh.withOpacity(0.9),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
               border: Border.all(color: Colors.white.withOpacity(0.05)),
             ),
             child: state.isPeeking
@@ -256,7 +258,7 @@ class DiscussionPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'YOUR WORD IS:',
+                        'ሚስጥራዊ ቃልህ:',
                         style: GoogleFonts.manrope(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -314,7 +316,7 @@ class DiscussionPage extends StatelessWidget {
                     const Icon(Icons.remove_red_eye, color: Colors.white),
                     const SizedBox(width: 12),
                     Text(
-                      'TAP TO PEEK WORD',
+                      'ቃሉን ለማየት ይጫኑ',
                       style: GoogleFonts.manrope(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
@@ -340,23 +342,15 @@ class _SmallBoxedTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: 'ሚስጥራዊ '.split('').map((char) {
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 1),
-          height: 24,
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.primaryRed, width: 1.5),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Center(
-            child: Text(
-              char,
-              style: GoogleFonts.epilogue(
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                color: AppColors.primaryRed,
-              ),
+      children: 'ሚስጥራዊ'.split('').map((char) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: Text(
+            char,
+            style: GoogleFonts.epilogue(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              color: AppColors.primaryRed,
             ),
           ),
         );
@@ -412,7 +406,10 @@ class _PlayerCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.greenAccent,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.surfaceContainerHigh, width: 2),
+                        border: Border.all(
+                          color: AppColors.surfaceContainerHigh,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ],
