@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'package:bonsoir/bonsoir.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:network_info_plus/network_info_plus.dart';
@@ -27,7 +28,25 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
   final NetworkInfo _networkInfo = NetworkInfo();
   static const int kWebSocketPort = 40400;
 
-  MultiplayerCubit({required this.gameCubit}) : super(const MultiplayerState());
+  MultiplayerCubit({required this.gameCubit})
+      : super(MultiplayerState(playerName: _generateRandomAgentName()));
+
+  static String _generateRandomAgentName() {
+    final names = [
+      'SHADOW', 'ECHO', 'SILENT', 'SPECTER', 'GHOST',
+      'VIPER', 'NOVA', 'RAVEN', 'CIPHER', 'ORACLE',
+      'COBRA', 'PHANTOM', 'NEON', 'TITAN', 'ZENITH'
+    ];
+    final suffixes = [
+      'AGENT', 'OPERATOR', 'WALKER', 'BLADE', 'SOUL',
+      'MIND', 'ZERO', 'HUNTER', 'STRIKER', 'VANGUARD'
+    ];
+    final rand = Random();
+    final name = names[rand.nextInt(names.length)];
+    final suffix = suffixes[rand.nextInt(suffixes.length)];
+    final id = rand.nextInt(900) + 100; // 100-999
+    return '$name $suffix $id';
+  }
 
   /// Sets the local player's display name for roster/voting.
   void setPlayerName(String name) {
