@@ -5,6 +5,7 @@ import 'package:hidden_word/features/join_room/presentation/cubit/join_room_cubi
 import 'package:hidden_word/features/room_lobby/presentation/cubit/room_lobby_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
+import 'package:hidden_word/features/settings/presentation/cubit/settings_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -17,6 +18,7 @@ Future<void> init() async {
   sl.registerFactory(() => JoinRoomCubit());
   sl.registerLazySingleton(() => GameCubit());
   sl.registerLazySingleton(() => MultiplayerCubit(gameCubit: sl()));
+  sl.registerFactory(() => SettingsCubit());
 
   // Use cases
 
