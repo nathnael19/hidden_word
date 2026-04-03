@@ -16,7 +16,7 @@ Future<void> init() async {
   sl.registerFactory(() => RoomLobbyCubit());
   sl.registerFactory(() => JoinRoomCubit());
   sl.registerLazySingleton(() => GameCubit());
-  sl.registerFactory(() => MultiplayerCubit(gameCubit: sl()));
+  sl.registerLazySingleton(() => MultiplayerCubit(gameCubit: sl()));
 
   // Use cases
 
