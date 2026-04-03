@@ -19,7 +19,7 @@ class MultiplayerState extends Equatable {
     this.hostIp,
     this.hostPort,
     this.errorMessage,
-    this.playerName = 'Player',
+    this.playerName = '',
   });
 
   MultiplayerState copyWith({
