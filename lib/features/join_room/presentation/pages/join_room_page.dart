@@ -243,22 +243,25 @@ class _JoinRoomPageState extends State<JoinRoomPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            _buildLogoBox('ስ'),
-            const SizedBox(width: 4),
-            _buildLogoBox('ው'),
-            const SizedBox(width: 4),
-            _buildLogoBox('ር'),
-            const SizedBox(width: 12),
-            _buildLogoBox('ቃ'),
-            const SizedBox(width: 4),
-            _buildLogoBox('ል'),
-            const SizedBox(width: 4),
-            _buildLogoBox(' '),
-            const SizedBox(width: 4),
-            _buildLogoBox(' '),
-          ],
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            children: [
+              _buildLogoBox('ስ'),
+              const SizedBox(width: 4),
+              _buildLogoBox('ው'),
+              const SizedBox(width: 4),
+              _buildLogoBox('ር'),
+              const SizedBox(width: 12),
+              _buildLogoBox('ቃ'),
+              const SizedBox(width: 4),
+              _buildLogoBox('ል'),
+              const SizedBox(width: 4),
+              _buildLogoBox(' '),
+              const SizedBox(width: 4),
+              _buildLogoBox(' '),
+            ],
+          ),
         ),
         const SizedBox(height: 12),
         Text(
