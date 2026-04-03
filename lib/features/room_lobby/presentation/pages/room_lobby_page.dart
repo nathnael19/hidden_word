@@ -8,7 +8,6 @@ import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
-import 'package:hidden_word/features/multiplayer/data/models/network_message.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/core/game/lobby_category_mapping.dart';
 import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
@@ -23,16 +22,23 @@ class RoomLobbyPage extends StatefulWidget {
 class _RoomLobbyPageState extends State<RoomLobbyPage> {
   final TextEditingController _roomNameController =
       TextEditingController(text: 'My Room');
+  final TextEditingController _playerNameController =
+      TextEditingController(text: 'Player');
 
   @override
   void initState() {
     super.initState();
     context.read<RoomLobbyCubit>().init();
+    // Sync initial player name.
+    _playerNameController.addListener(() {
+      context.read<MultiplayerCubit>().setPlayerName(_playerNameController.text);
+    });
   }
 
   @override
   void dispose() {
     _roomNameController.dispose();
+    _playerNameController.dispose();
     super.dispose();
   }
 
@@ -58,6 +64,8 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                   _buildHeader(netState),
                   const SizedBox(height: 16),
                   _buildRoomNameCard(context, netState),
+                  const SizedBox(height: 16),
+                  _buildPlayerNameCard(context, netState),
                   const SizedBox(height: 32),
                   _buildSettingsCard(context, roomState),
                   const SizedBox(height: 32),
@@ -171,10 +179,12 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
   }
 
   Widget _buildRoomNameCard(BuildContext context, MultiplayerState netState) {
-    final canEdit = netState.status != MultiplayerStatus.hosting &&
-        netState.status != MultiplayerStatus.connecting;
+    // Allow renaming while hosting (helps when testing/hot-reload keeps
+    // the old broadcast running).
+    final canEdit = netState.status != MultiplayerStatus.connecting;
     final roomName = _roomNameController.text.trim();
     final canStartHosting = canEdit && roomName.isNotEmpty;
+    final isAlreadyHosting = netState.status == MultiplayerStatus.hosting;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -220,6 +230,16 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
             ),
           ),
           const SizedBox(height: 14),
+          Text(
+            'Will advertise: $roomName',
+            style: GoogleFonts.manrope(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: Colors.white30,
+              letterSpacing: 0.3,
+            ),
+          ),
+          const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
             height: 46,
@@ -245,12 +265,65 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                     }
                   : null,
               child: Text(
-                'HOST ROOM',
+                isAlreadyHosting ? 'UPDATE ROOM NAME' : 'HOST ROOM',
                 style: GoogleFonts.manrope(
                   fontSize: 14,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 0.5,
                 ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlayerNameCard(BuildContext context, MultiplayerState netState) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerHigh.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'YOUR NAME',
+            style: GoogleFonts.manrope(
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              color: Colors.white24,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _playerNameController,
+            style: GoogleFonts.epilogue(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+            decoration: InputDecoration(
+              isDense: true,
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.05),
+              hintText: 'Enter your name...',
+              hintStyle: GoogleFonts.epilogue(
+                color: Colors.white24,
+                fontWeight: FontWeight.w600,
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: Colors.white12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: AppColors.gold.withOpacity(0.8)),
               ),
             ),
           ),
@@ -770,16 +843,6 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                       lobbyState.selectedCategories,
                     );
                     context.read<MultiplayerCubit>().prepareNewSession();
-                    context.read<MultiplayerCubit>().broadcastToClients(
-                          NetworkMessage(
-                            type: NetworkMessageType.action,
-                            payload: {
-                              'action': 'START_GAME',
-                              'category': categoryId,
-                              'spyCount': lobbyState.spyCount,
-                            },
-                          ).encode(),
-                        );
                     final connectedPlayers =
                         context.read<MultiplayerCubit>().state.connectedPlayers;
                     final hostName =
