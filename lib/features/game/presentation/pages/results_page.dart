@@ -25,7 +25,7 @@ class ResultsPage extends StatelessWidget {
                   const SizedBox(height: 24),
                   _buildMissionTitle(),
                   const SizedBox(height: 48),
-                  _buildSpyUnmaskedCard(state),
+                  _buildSpyUnmaskedCard(context, state),
                   const SizedBox(height: 32),
                   _buildVictoryBanner(state.spyCaught),
                   const SizedBox(height: 32),
@@ -146,7 +146,7 @@ class ResultsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSpyUnmaskedCard(GameState state) {
+  Widget _buildSpyUnmaskedCard(BuildContext context, GameState state) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -200,10 +200,13 @@ class ResultsPage extends StatelessWidget {
               ),
               Positioned(
                 bottom: 10,
-                left: -20,
+                left: -10,
                 child: Transform.rotate(
                   angle: -0.1,
                   child: Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.6,
+                    ),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     decoration: BoxDecoration(
                       color: AppColors.gold,
@@ -216,14 +219,17 @@ class ResultsPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Text(
-                      state.spyPlayerNames.isEmpty
-                          ? 'UNKNOWN'
-                          : state.spyPlayerNames.map((e) => e.toUpperCase()).join(', '),
-                      style: GoogleFonts.epilogue(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.obsidian,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        state.spyPlayerNames.isEmpty
+                            ? 'UNKNOWN'
+                            : state.spyPlayerNames.map((e) => e.toUpperCase()).join(', '),
+                        style: GoogleFonts.epilogue(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.obsidian,
+                        ),
                       ),
                     ),
                   ),
@@ -274,27 +280,32 @@ class ResultsPage extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                spyCaught ? 'The citizens win!' : 'The spy wins!',
-                style: GoogleFonts.epilogue(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: spyCaught ? Colors.greenAccent : AppColors.primaryRed,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    spyCaught ? 'The citizens win!' : 'The spy wins!',
+                    style: GoogleFonts.epilogue(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: spyCaught ? Colors.greenAccent : AppColors.primaryRed,
+                    ),
+                  ),
                 ),
-              ),
-              Text(
-                spyCaught ? 'JUSTICE RESTORED' : 'MISSION COMPROMISED',
-                style: GoogleFonts.manrope(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: (spyCaught ? Colors.greenAccent : AppColors.primaryRed).withOpacity(0.5),
-                  letterSpacing: 1,
+                Text(
+                  spyCaught ? 'JUSTICE RESTORED' : 'MISSION COMPROMISED',
+                  style: GoogleFonts.manrope(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: (spyCaught ? Colors.greenAccent : AppColors.primaryRed).withOpacity(0.5),
+                    letterSpacing: 1,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -371,6 +382,7 @@ class ResultsPage extends StatelessWidget {
     return Column(
       children: [
         _buildLargeButton(
+          context: context,
           label: 'PLAY AGAIN',
           color: AppColors.primaryRed,
           icon: Icons.refresh,
@@ -388,6 +400,7 @@ class ResultsPage extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         _buildLargeButton(
+          context: context,
           label: 'MAIN MENU',
           color: AppColors.surfaceContainerHigh,
           onTap: () {
@@ -399,6 +412,7 @@ class ResultsPage extends StatelessWidget {
   }
 
   Widget _buildLargeButton({
+    required BuildContext context,
     required String label,
     required Color color,
     IconData? icon,
@@ -408,7 +422,7 @@ class ResultsPage extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: 64,
+        height: MediaQuery.of(context).size.height < 700 ? 56 : 64,
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(32),
@@ -428,7 +442,7 @@ class ResultsPage extends StatelessWidget {
             Text(
               label,
               style: GoogleFonts.manrope(
-                fontSize: 16,
+                fontSize: MediaQuery.of(context).size.width < 360 ? 14 : 16,
                 fontWeight: FontWeight.w900,
                 color: Colors.white,
                 letterSpacing: 1,
