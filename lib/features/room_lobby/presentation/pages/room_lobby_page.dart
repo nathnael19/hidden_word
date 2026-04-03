@@ -566,30 +566,37 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
         : netState.status == MultiplayerStatus.hosting
             ? '$ip:$port'
             : 'Starting...';
-    return Row(
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
       children: [
-        Expanded(
-          child: Container(
-            height: 120,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainerHigh.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white10),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'ROOM ADDRESS',
-                  style: GoogleFonts.manrope(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white24,
-                    letterSpacing: 1,
-                  ),
+        Container(
+          width: MediaQuery.of(context).size.width > 400 ? null : double.infinity,
+          constraints: BoxConstraints(
+            minWidth: MediaQuery.of(context).size.width > 400 ? 200 : double.infinity,
+          ),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerHigh.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'ROOM ADDRESS',
+                style: GoogleFonts.manrope(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white24,
+                  letterSpacing: 1,
                 ),
-                const SizedBox(height: 8),
-                Text(
+              ),
+              const SizedBox(height: 8),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
                   roomDisplay,
                   style: GoogleFonts.epilogue(
                     fontSize: 20,
@@ -598,23 +605,22 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                     letterSpacing: 1,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'LOCAL WIFI / HOTSPOT',
-                  style: GoogleFonts.manrope(
-                    fontSize: 8,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.primaryPink.withOpacity(0.6),
-                  ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'LOCAL WIFI / HOTSPOT',
+                style: GoogleFonts.manrope(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.primaryPink.withOpacity(0.6),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(width: 16),
         Container(
-          width: 120,
-          height: 120,
+          width: MediaQuery.of(context).size.width > 400 ? 120 : double.infinity,
+          height: MediaQuery.of(context).size.width > 400 ? 120 : 80,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppColors.surfaceContainerHigh.withOpacity(0.3),
@@ -624,7 +630,11 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.wifi_tethering, color: AppColors.gold, size: 36),
+              Icon(
+                Icons.wifi_tethering,
+                color: AppColors.gold,
+                size: MediaQuery.of(context).size.width > 400 ? 36 : 24,
+              ),
               const SizedBox(height: 8),
               Text(
                 'LAN / AP',
@@ -698,11 +708,11 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 220,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 0.85,
+        childAspectRatio: MediaQuery.of(context).size.width < 380 ? 0.75 : 0.85,
       ),
       itemCount: totalCount < 4 ? 4 : totalCount,
       itemBuilder: (context, index) {
@@ -865,12 +875,12 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                 : null,
             child: Container(
               width: double.infinity,
-              height: 72,
+              height: MediaQuery.of(context).size.height < 700 ? 60 : 72,
               decoration: BoxDecoration(
                 color: canStart
                     ? AppColors.primaryPink.withOpacity(0.85)
                     : AppColors.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(MediaQuery.of(context).size.height < 700 ? 16 : 24),
                 boxShadow: canStart
                     ? [
                         BoxShadow(
