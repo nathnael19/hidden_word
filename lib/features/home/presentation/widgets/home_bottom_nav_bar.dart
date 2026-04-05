@@ -4,12 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class HomeBottomNavBar extends StatelessWidget {
   const HomeBottomNavBar({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         final currentIndex = (state is HomeLoaded) ? state.currentTabIndex : 0;
@@ -33,10 +35,34 @@ class HomeBottomNavBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildNavItem(context, Icons.home_filled, 'HOME', currentIndex == 0, 0),
-              _buildNavItem(context, Icons.sensors_rounded, 'CONNECT', currentIndex == 1, 1),
-              _buildNavItem(context, Icons.menu_book_rounded, 'RULES', currentIndex == 2, 2),
-              _buildNavItem(context, Icons.settings_rounded, 'SETTINGS', currentIndex == 3, 3),
+              _buildNavItem(
+                context,
+                Icons.home_filled,
+                l10n.homeNav,
+                currentIndex == 0,
+                0,
+              ),
+              _buildNavItem(
+                context,
+                Icons.sensors_rounded,
+                l10n.connectNav,
+                currentIndex == 1,
+                1,
+              ),
+              _buildNavItem(
+                context,
+                Icons.menu_book_rounded,
+                l10n.rulesNav,
+                currentIndex == 2,
+                2,
+              ),
+              _buildNavItem(
+                context,
+                Icons.settings_rounded,
+                l10n.settingsNav,
+                currentIndex == 3,
+                3,
+              ),
             ],
           ),
         );
@@ -80,7 +106,9 @@ class HomeBottomNavBar extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isActive ? Colors.white : AppColors.onSurface.withOpacity(0.3),
+              color: isActive
+                  ? Colors.white
+                  : AppColors.onSurface.withOpacity(0.3),
               size: 24,
             ),
             if (isActive) ...[
