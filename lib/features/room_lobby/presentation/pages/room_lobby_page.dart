@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/room_lobby/presentation/cubit/room_lobby_cubit.dart';
 import 'package:hidden_word/features/room_lobby/presentation/cubit/room_lobby_state.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
@@ -10,13 +9,15 @@ import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/core/game/lobby_category_mapping.dart';
-import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
+import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart'
+    hide GoogleFonts;
 import 'package:hidden_word/features/room_lobby/presentation/widgets/agent_roster_section.dart';
 import 'package:hidden_word/features/room_lobby/presentation/widgets/mission_briefing_card.dart';
 import 'package:hidden_word/features/room_lobby/presentation/widgets/mission_parameters_card.dart';
 import 'package:hidden_word/features/room_lobby/presentation/widgets/room_lobby_header.dart';
 import 'package:hidden_word/features/room_lobby/presentation/widgets/secure_frequency_card.dart';
 import 'package:hidden_word/features/room_lobby/presentation/widgets/start_mission_button.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class RoomLobbyPage extends StatefulWidget {
   const RoomLobbyPage({super.key});
@@ -26,7 +27,7 @@ class RoomLobbyPage extends StatefulWidget {
 }
 
 class _RoomLobbyPageState extends State<RoomLobbyPage> {
-  final TextEditingController _roomNameController = TextEditingController(text: 'SECURE CHAMBER');
+  late TextEditingController _roomNameController;
   late TextEditingController _playerNameController;
 
   @override
@@ -34,11 +35,24 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
     super.initState();
     final netCubit = context.read<MultiplayerCubit>();
     context.read<RoomLobbyCubit>().init();
-    _playerNameController = TextEditingController(text: netCubit.state.playerName);
-    
+    _roomNameController = TextEditingController();
+    _playerNameController = TextEditingController(
+      text: netCubit.state.playerName,
+    );
+
     _playerNameController.addListener(() {
-      context.read<MultiplayerCubit>().setPlayerName(_playerNameController.text);
+      context.read<MultiplayerCubit>().setPlayerName(
+        _playerNameController.text,
+      );
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_roomNameController.text.isEmpty) {
+      _roomNameController.text = AppLocalizations.of(context)!.defaultRoomName;
+    }
   }
 
   @override
@@ -56,13 +70,18 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
           builder: (context, netState) {
             return SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 24,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     RoomLobbyHeader(
                       netState: netState,
-                      onBackTap: () => context.read<HomeCubit>().setConnectViewMode(ConnectViewMode.main),
+                      onBackTap: () => context
+                          .read<HomeCubit>()
+                          .setConnectViewMode(ConnectViewMode.main),
                     ),
                     const SizedBox(height: 24),
                     if (netState.status == MultiplayerStatus.error &&
@@ -77,15 +96,20 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                       netState: netState,
                       onStartHosting: () async {
                         context.read<MultiplayerCubit>().prepareNewSession();
-                        await context.read<MultiplayerCubit>().startHosting(_roomNameController.text.trim());
+                        await context.read<MultiplayerCubit>().startHosting(
+                          _roomNameController.text.trim(),
+                        );
                       },
                     ),
                     const SizedBox(height: 20),
                     MissionParametersCard(
                       state: roomState,
-                      onSpyCountChanged: (count) => context.read<RoomLobbyCubit>().updateSpyCount(count),
-                      onCategoryToggle: (label) => context.read<RoomLobbyCubit>().toggleCategory(label),
-                      onTimerToggle: (val) => context.read<RoomLobbyCubit>().toggleTimer(val),
+                      onSpyCountChanged: (count) =>
+                          context.read<RoomLobbyCubit>().updateSpyCount(count),
+                      onCategoryToggle: (label) =>
+                          context.read<RoomLobbyCubit>().toggleCategory(label),
+                      onTimerToggle: (val) =>
+                          context.read<RoomLobbyCubit>().toggleTimer(val),
                     ),
                     const SizedBox(height: 20),
                     SecureFrequencyCard(netState: netState),
@@ -99,10 +123,18 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                       netState: netState,
                       onStartTap: () async {
                         final lobbyState = context.read<RoomLobbyCubit>().state;
-                        final categoryId = resolveCategoryIdFromLobby(lobbyState.selectedCategories);
+                        final categoryId = resolveCategoryIdFromLobby(
+                          lobbyState.selectedCategories,
+                        );
                         context.read<MultiplayerCubit>().prepareNewSession();
-                        final connectedPlayers = context.read<MultiplayerCubit>().state.connectedPlayers;
-                        final hostName = context.read<MultiplayerCubit>().state.playerName;
+                        final connectedPlayers = context
+                            .read<MultiplayerCubit>()
+                            .state
+                            .connectedPlayers;
+                        final hostName = context
+                            .read<MultiplayerCubit>()
+                            .state
+                            .playerName;
                         final totalRoster = [hostName, ...connectedPlayers];
 
                         await context.read<GameCubit>().init(
@@ -114,7 +146,9 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                         if (context.mounted) {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const SecretRevealPage()),
+                            MaterialPageRoute(
+                              builder: (_) => const SecretRevealPage(),
+                            ),
                           );
                         }
                       },
