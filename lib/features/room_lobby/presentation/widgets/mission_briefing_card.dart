@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class MissionBriefingCard extends StatelessWidget {
   final TextEditingController roomNameController;
@@ -19,6 +20,7 @@ class MissionBriefingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final canEdit = netState.status != MultiplayerStatus.connecting;
     final roomName = roomNameController.text.trim();
     final canStartHosting = canEdit && roomName.isNotEmpty;
@@ -36,13 +38,15 @@ class MissionBriefingCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.05),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(32),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'MISSION BRIEFING',
+                  l10n.missionBriefing,
                   style: GoogleFonts.manrope(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -63,15 +67,29 @@ class MissionBriefingCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildFieldLabel('ROOM IDENTIFIER', AppColors.primaryPink.withOpacity(0.5)),
+                _buildFieldLabel(
+                  l10n.roomIdentifier,
+                  AppColors.primaryPink.withOpacity(0.5),
+                ),
                 const SizedBox(height: 12),
-                _buildTextField(roomNameController, canEdit, AppColors.primaryPink.withOpacity(0.8)),
+                _buildTextField(
+                  roomNameController,
+                  canEdit,
+                  AppColors.primaryPink.withOpacity(0.8),
+                ),
                 const SizedBox(height: 24),
-                _buildFieldLabel('HOST CODENAME', AppColors.gold.withOpacity(0.5)),
+                _buildFieldLabel(
+                  l10n.hostCodename,
+                  AppColors.gold.withOpacity(0.5),
+                ),
                 const SizedBox(height: 12),
-                _buildTextField(playerNameController, true, AppColors.gold.withOpacity(0.8)),
+                _buildTextField(
+                  playerNameController,
+                  true,
+                  AppColors.gold.withOpacity(0.8),
+                ),
                 const SizedBox(height: 24),
-                _buildHostingButton(canStartHosting, isAlreadyHosting),
+                _buildHostingButton(canStartHosting, isAlreadyHosting, l10n),
               ],
             ),
           ),
@@ -92,7 +110,11 @@ class MissionBriefingCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, bool enabled, Color focusColor) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    bool enabled,
+    Color focusColor,
+  ) {
     return TextField(
       controller: controller,
       enabled: enabled,
@@ -105,7 +127,10 @@ class MissionBriefingCard extends StatelessWidget {
         isDense: true,
         filled: true,
         fillColor: Colors.black.withOpacity(0.2),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 16,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: Colors.white12),
@@ -118,20 +143,30 @@ class MissionBriefingCard extends StatelessWidget {
     );
   }
 
-  Widget _buildHostingButton(bool canStartHosting, bool isAlreadyHosting) {
+  Widget _buildHostingButton(
+    bool canStartHosting,
+    bool isAlreadyHosting,
+    AppLocalizations l10n,
+  ) {
     return SizedBox(
       width: double.infinity,
       height: 54,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: canStartHosting ? AppColors.primaryRed : Colors.white.withOpacity(0.05),
+          backgroundColor: canStartHosting
+              ? AppColors.primaryRed
+              : Colors.white.withOpacity(0.05),
           foregroundColor: Colors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
         onPressed: canStartHosting ? onStartHosting : null,
         child: Text(
-          isAlreadyHosting ? 'UPDATE MISSION IDENTITY' : 'INITIALIZE BROADCAST',
+          isAlreadyHosting
+              ? l10n.updateMissionIdentity
+              : l10n.initializeBroadcast,
           style: GoogleFonts.manrope(
             fontSize: 12,
             fontWeight: FontWeight.w900,
