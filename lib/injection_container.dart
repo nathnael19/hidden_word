@@ -8,6 +8,7 @@ import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_
 import 'package:hidden_word/features/settings/presentation/cubit/settings_cubit.dart';
 
 import 'package:hidden_word/features/multiplayer/domain/services/multiplayer_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final sl = GetIt.instance;
 
@@ -23,7 +24,10 @@ Future<void> init() async {
     gameCubit: sl(),
     multiplayerService: sl(),
   ));
-  sl.registerFactory(() => SettingsCubit());
+  
+  final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton(() => sharedPreferences);
+  sl.registerLazySingleton(() => SettingsCubit(sharedPreferences: sl()));
 
   //! Services
   sl.registerLazySingleton(() => MultiplayerService());
