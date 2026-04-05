@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class SecureFrequencyCard extends StatelessWidget {
   final MultiplayerState netState;
@@ -10,13 +11,14 @@ class SecureFrequencyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final ip = netState.hostIp ?? '...';
     final port = netState.hostPort?.toString() ?? '...';
     final roomDisplay = netState.status == MultiplayerStatus.error
-        ? 'OFFLINE'
+        ? l10n.statusOffline
         : netState.status == MultiplayerStatus.hosting
-            ? '$ip:$port'
-            : 'READYING...';
+        ? '$ip:$port'
+        : l10n.statusReadying;
 
     return Container(
       width: double.infinity,
@@ -30,7 +32,7 @@ class SecureFrequencyCard extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              'SECURE FREQUENCY',
+              l10n.secureFrequency,
               style: GoogleFonts.manrope(
                 fontSize: 10,
                 fontWeight: FontWeight.w900,
@@ -55,10 +57,14 @@ class SecureFrequencyCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.wifi_tethering, size: 14, color: AppColors.gold.withOpacity(0.5)),
+                Icon(
+                  Icons.wifi_tethering,
+                  size: 14,
+                  color: AppColors.gold.withOpacity(0.5),
+                ),
                 const SizedBox(width: 8),
                 Text(
-                  'LOCAL NETWORK BROADCAST ACTIVE',
+                  l10n.localNetworkBroadcastActive,
                   style: GoogleFonts.manrope(
                     fontSize: 9,
                     fontWeight: FontWeight.w900,
