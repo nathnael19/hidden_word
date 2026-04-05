@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
 import 'package:hidden_word/features/join_room/presentation/widgets/radar_scanner_widget.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class NearbyGamesList extends StatelessWidget {
   final MultiplayerState state;
@@ -19,21 +20,22 @@ class NearbyGamesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
-        _buildNearbyGamesHeader(),
+        _buildNearbyGamesHeader(l10n),
         const SizedBox(height: 12),
-        _buildNearbyGamesList(context),
+        _buildNearbyGamesList(context, l10n),
       ],
     );
   }
 
-  Widget _buildNearbyGamesHeader() {
+  Widget _buildNearbyGamesHeader(AppLocalizations l10n) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Nearby Games',
+          l10n.nearbyGames,
           style: GoogleFonts.epilogue(
             fontSize: 24,
             fontWeight: FontWeight.w900,
@@ -44,7 +46,7 @@ class NearbyGamesList extends StatelessWidget {
         Row(
           children: [
             Text(
-              'Auto-scanning',
+              l10n.autoScanning,
               style: GoogleFonts.manrope(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -59,8 +61,9 @@ class NearbyGamesList extends StatelessWidget {
     );
   }
 
-  Widget _buildNearbyGamesList(BuildContext context) {
-    if (state.status == MultiplayerStatus.searching && state.discoveredServices.isEmpty) {
+  Widget _buildNearbyGamesList(BuildContext context, AppLocalizations l10n) {
+    if (state.status == MultiplayerStatus.searching &&
+        state.discoveredServices.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 60),
@@ -73,7 +76,7 @@ class NearbyGamesList extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'INTERCEPTING SIGNALS...',
+                l10n.interceptingSignals,
                 style: GoogleFonts.manrope(
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
@@ -105,7 +108,7 @@ class NearbyGamesList extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                'NO ROOMS LOCATED',
+                l10n.noRoomsLocated,
                 style: GoogleFonts.epilogue(
                   fontSize: 14,
                   fontWeight: FontWeight.w900,
@@ -115,7 +118,7 @@ class NearbyGamesList extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Ensure the Host is visible on your\nnetwork or local hotspot.',
+                l10n.ensureHostVisible,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.manrope(
                   fontSize: 12,
@@ -134,6 +137,7 @@ class NearbyGamesList extends StatelessWidget {
         return _NearbyGameTile(
           host: service.name,
           onJoin: () => onJoin(service),
+          l10n: l10n,
         );
       }).toList(),
     );
@@ -143,8 +147,13 @@ class NearbyGamesList extends StatelessWidget {
 class _NearbyGameTile extends StatelessWidget {
   final String host;
   final VoidCallback onJoin;
+  final AppLocalizations l10n;
 
-  const _NearbyGameTile({required this.host, required this.onJoin});
+  const _NearbyGameTile({
+    required this.host,
+    required this.onJoin,
+    required this.l10n,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -172,7 +181,9 @@ class _NearbyGameTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(
-                    host.toLowerCase().contains('room') ? Icons.door_front_door_rounded : Icons.sports_esports_rounded,
+                    host.toLowerCase().contains('room')
+                        ? Icons.door_front_door_rounded
+                        : Icons.sports_esports_rounded,
                     color: Colors.white.withOpacity(0.4),
                     size: 24,
                   ),
@@ -193,7 +204,7 @@ class _NearbyGameTile extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'SIGNAL STABLE • READY TO DEPLOY',
+                        l10n.readyToDeploy,
                         style: GoogleFonts.manrope(
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
