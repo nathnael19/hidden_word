@@ -8,9 +8,11 @@ import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
-import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
+import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart'
+    hide GoogleFonts;
 import 'package:hidden_word/features/join_room/presentation/widgets/join_room_hero.dart';
 import 'package:hidden_word/features/join_room/presentation/widgets/nearby_games_list.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class JoinRoomPage extends StatefulWidget {
   const JoinRoomPage({super.key});
@@ -19,7 +21,8 @@ class JoinRoomPage extends StatefulWidget {
   State<JoinRoomPage> createState() => _JoinRoomPageState();
 }
 
-class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderStateMixin {
+class _JoinRoomPageState extends State<JoinRoomPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _scanController;
   late TextEditingController _playerNameController;
   bool _navigatedToGame = false;
@@ -36,7 +39,9 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
     )..repeat();
 
     _playerNameController.addListener(() {
-      context.read<MultiplayerCubit>().setPlayerName(_playerNameController.text);
+      context.read<MultiplayerCubit>().setPlayerName(
+        _playerNameController.text,
+      );
     });
   }
 
@@ -49,6 +54,7 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return MultiBlocListener(
       listeners: [
         BlocListener<GameCubit, GameState>(
@@ -72,7 +78,7 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildBackNavigation(),
+                  _buildBackNavigation(l10n),
                   if (state.status == MultiplayerStatus.error &&
                       (state.errorMessage?.isNotEmpty ?? false))
                     Padding(
@@ -82,20 +88,21 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
                   if (state.status == MultiplayerStatus.connected)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: _buildConnectedBanner(),
+                      child: _buildConnectedBanner(l10n),
                     ),
                   const SizedBox(height: 12),
                   const JoinRoomHero(),
                   const SizedBox(height: 16),
-                  _buildPlayerNameCard(),
+                  _buildPlayerNameCard(l10n),
                   const SizedBox(height: 20),
                   NearbyGamesList(
                     state: state,
                     scanAnimation: _scanController,
-                    onJoin: (service) => context.read<MultiplayerCubit>().connectToHost(service),
+                    onJoin: (service) =>
+                        context.read<MultiplayerCubit>().connectToHost(service),
                   ),
                   const SizedBox(height: 20),
-                  _buildConnectivityInfoBanner(),
+                  _buildConnectivityInfoBanner(l10n),
                   const SizedBox(height: 120),
                 ],
               ),
@@ -106,7 +113,7 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildBackNavigation() {
+  Widget _buildBackNavigation(AppLocalizations l10n) {
     return GestureDetector(
       onTap: () {
         context.read<HomeCubit>().setConnectViewMode(ConnectViewMode.main);
@@ -120,10 +127,14 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white.withOpacity(0.5), size: 14),
+            Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white.withOpacity(0.5),
+              size: 14,
+            ),
             const SizedBox(width: 10),
             Text(
-              'ABORT MISSION',
+              l10n.abortMission,
               style: GoogleFonts.manrope(
                 fontSize: 10,
                 fontWeight: FontWeight.w900,
@@ -137,7 +148,7 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildConnectedBanner() {
+  Widget _buildConnectedBanner(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -151,12 +162,15 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
           const SizedBox(
             width: 16,
             height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.greenAccent),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.greenAccent,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Connected! Waiting for the host to start the game...',
+              l10n.connectedHostWaiting,
               style: GoogleFonts.beVietnamPro(
                 fontSize: 13,
                 color: Colors.greenAccent.shade100,
@@ -169,7 +183,7 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildPlayerNameCard() {
+  Widget _buildPlayerNameCard(AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerHigh.withOpacity(0.5),
@@ -182,13 +196,15 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.05),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(32),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'AGENT PROFILE',
+                  l10n.agentProfile,
                   style: GoogleFonts.manrope(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -196,7 +212,11 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
                     letterSpacing: 2,
                   ),
                 ),
-                Icon(Icons.fingerprint, size: 16, color: AppColors.primaryPink.withOpacity(0.5)),
+                Icon(
+                  Icons.fingerprint,
+                  size: 16,
+                  color: AppColors.primaryPink.withOpacity(0.5),
+                ),
               ],
             ),
           ),
@@ -205,9 +225,16 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildFieldLabel('CODENAME', AppColors.primaryPink.withOpacity(0.5)),
+                _buildFieldLabel(
+                  l10n.codename,
+                  AppColors.primaryPink.withOpacity(0.5),
+                ),
                 const SizedBox(height: 12),
-                _buildTextField(_playerNameController, AppColors.primaryPink.withOpacity(0.8)),
+                _buildTextField(
+                  _playerNameController,
+                  AppColors.primaryPink.withOpacity(0.8),
+                  l10n,
+                ),
               ],
             ),
           ),
@@ -228,17 +255,31 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, Color focusColor) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    Color focusColor,
+    AppLocalizations l10n,
+  ) {
     return TextField(
       controller: controller,
-      style: GoogleFonts.epilogue(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+      style: GoogleFonts.epilogue(
+        color: Colors.white,
+        fontSize: 20,
+        fontWeight: FontWeight.w900,
+      ),
       decoration: InputDecoration(
         isDense: true,
         filled: true,
         fillColor: Colors.black.withOpacity(0.2),
-        hintText: 'IDENTIFY YOURSELF...',
-        hintStyle: GoogleFonts.epilogue(color: Colors.white.withOpacity(0.1), fontWeight: FontWeight.w800),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        hintText: l10n.identifyYourself,
+        hintStyle: GoogleFonts.epilogue(
+          color: Colors.white.withOpacity(0.1),
+          fontWeight: FontWeight.w800,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: Colors.white12),
@@ -262,12 +303,16 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
       ),
       child: Text(
         message,
-        style: GoogleFonts.beVietnamPro(fontSize: 13, color: Colors.redAccent.shade100, height: 1.35),
+        style: GoogleFonts.beVietnamPro(
+          fontSize: 13,
+          color: Colors.redAccent.shade100,
+          height: 1.35,
+        ),
       ),
     );
   }
 
-  Widget _buildConnectivityInfoBanner() {
+  Widget _buildConnectivityInfoBanner(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -280,21 +325,35 @@ class _JoinRoomPageState extends State<JoinRoomPage> with SingleTickerProviderSt
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(color: AppColors.gold, shape: BoxShape.circle),
-            child: const Icon(Icons.info_outline_rounded, color: AppColors.obsidian, size: 16),
+            decoration: const BoxDecoration(
+              color: AppColors.gold,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.info_outline_rounded,
+              color: AppColors.obsidian,
+              size: 16,
+            ),
           ),
           const SizedBox(width: 20),
           Expanded(
             child: RichText(
               text: TextSpan(
-                style: GoogleFonts.manrope(fontSize: 14, color: Colors.white.withOpacity(0.4), height: 1.5),
+                style: GoogleFonts.manrope(
+                  fontSize: 14,
+                  color: Colors.white.withOpacity(0.4),
+                  height: 1.5,
+                ),
                 children: [
-                  const TextSpan(text: 'Ensure all players are connected to the '),
+                  TextSpan(text: l10n.connectivityInfoPart1),
                   TextSpan(
-                    text: 'same WiFi network',
-                    style: GoogleFonts.manrope(fontWeight: FontWeight.w800, color: Colors.white.withOpacity(0.8)),
+                    text: l10n.connectivityInfoPart2,
+                    style: GoogleFonts.manrope(
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
                   ),
-                  const TextSpan(text: ' or mobile hotspot to discover nearby games instantly.'),
+                  TextSpan(text: l10n.connectivityInfoPart3),
                 ],
               ),
             ),
