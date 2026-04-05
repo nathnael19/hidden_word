@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/room_lobby/presentation/cubit/room_lobby_state.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class MissionParametersCard extends StatelessWidget {
   final RoomLobbyState state;
@@ -19,6 +20,7 @@ class MissionParametersCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerHigh.withOpacity(0.5),
@@ -31,13 +33,15 @@ class MissionParametersCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.05),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(32),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'MISSION PARAMETERS',
+                  l10n.missionParameters,
                   style: GoogleFonts.manrope(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -58,32 +62,54 @@ class MissionParametersCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionHeader(Icons.visibility_off_outlined, 'NUMBER OF SPIES'),
+                _buildSectionHeader(
+                  Icons.visibility_off_outlined,
+                  l10n.numberOfSpies,
+                ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    _buildSpyButton(1, state.spyCount == 1),
+                    _buildSpyButton(1, state.spyCount == 1, l10n),
                     const SizedBox(width: 12),
-                    _buildSpyButton(2, state.spyCount == 2),
+                    _buildSpyButton(2, state.spyCount == 2, l10n),
                     const SizedBox(width: 12),
-                    _buildSpyButton(3, state.spyCount == 3),
+                    _buildSpyButton(3, state.spyCount == 3, l10n),
                   ],
                 ),
                 const SizedBox(height: 32),
-                _buildSectionHeader(Icons.category_outlined, 'WORD CATEGORIES'),
+                _buildSectionHeader(
+                  Icons.category_outlined,
+                  l10n.wordCategories,
+                ),
                 const SizedBox(height: 16),
                 Wrap(
                   spacing: 8,
                   runSpacing: 12,
                   children: [
-                    _buildCategoryChip('Traditional Food', state.selectedCategories.contains('Traditional Food')),
-                    _buildCategoryChip('Heritage Sites', state.selectedCategories.contains('Heritage Sites')),
-                    _buildCategoryChip('Ethiopian Culture', state.selectedCategories.contains('Ethiopian Culture')),
-                    _buildCategoryChip('Sports', state.selectedCategories.contains('Sports')),
+                    _buildCategoryChip(
+                      l10n.categoryTraditionalFood,
+                      'Traditional Food',
+                      state.selectedCategories.contains('Traditional Food'),
+                    ),
+                    _buildCategoryChip(
+                      l10n.categoryHeritageSites,
+                      'Heritage Sites',
+                      state.selectedCategories.contains('Heritage Sites'),
+                    ),
+                    _buildCategoryChip(
+                      l10n.categoryEthiopianCulture,
+                      'Ethiopian Culture',
+                      state.selectedCategories.contains('Ethiopian Culture'),
+                    ),
+                    _buildCategoryChip(
+                      l10n.categorySports,
+                      'Sports',
+                      state.selectedCategories.contains('Sports'),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 32),
-                _buildTimerTile(state.isTimerEnabled),
+                _buildTimerTile(state.isTimerEnabled, l10n),
               ],
             ),
           ),
@@ -110,20 +136,22 @@ class MissionParametersCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSpyButton(int count, bool isSelected) {
+  Widget _buildSpyButton(int count, bool isSelected, AppLocalizations l10n) {
     return Expanded(
       child: GestureDetector(
         onTap: () => onSpyCountChanged(count),
         child: Container(
           height: 60,
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primaryRed : Colors.white.withOpacity(0.05),
+            color: isSelected
+                ? AppColors.primaryRed
+                : Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(16),
             border: isSelected ? Border.all(color: Colors.white24) : null,
           ),
           alignment: Alignment.center,
           child: Text(
-            '$count ${count == 1 ? 'Spy' : 'Spies'}',
+            l10n.spyCountLabel(count),
             style: GoogleFonts.epilogue(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -135,9 +163,9 @@ class MissionParametersCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryChip(String label, bool isSelected) {
+  Widget _buildCategoryChip(String label, String value, bool isSelected) {
     return GestureDetector(
-      onTap: () => onCategoryToggle(label),
+      onTap: () => onCategoryToggle(value),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
@@ -147,7 +175,8 @@ class MissionParametersCard extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (isSelected) const Icon(Icons.check_circle, size: 14, color: Colors.black),
+            if (isSelected)
+              const Icon(Icons.check_circle, size: 14, color: Colors.black),
             if (isSelected) const SizedBox(width: 8),
             Text(
               label,
@@ -163,7 +192,7 @@ class MissionParametersCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTimerTile(bool isEnabled) {
+  Widget _buildTimerTile(bool isEnabled, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -179,7 +208,7 @@ class MissionParametersCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '60s Discussion Timer',
+                  l10n.discussionTimer,
                   style: GoogleFonts.epilogue(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -187,7 +216,7 @@ class MissionParametersCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Keep the pressure high',
+                  l10n.discussionTimerDesc,
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 11,
                     color: Colors.white30,
