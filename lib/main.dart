@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hidden_word/core/style/app_theme.dart';
 import 'package:hidden_word/features/game_lobby/presentation/cubit/game_lobby_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
@@ -8,7 +9,9 @@ import 'package:hidden_word/features/room_lobby/presentation/cubit/room_lobby_cu
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
 import 'package:hidden_word/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:hidden_word/features/settings/presentation/cubit/settings_state.dart';
 import 'package:hidden_word/features/splash/presentation/pages/splash_page.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 import 'injection_container.dart' as di;
 
 void main() async {
@@ -32,11 +35,24 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => di.sl<MultiplayerCubit>()),
         BlocProvider(create: (_) => di.sl<SettingsCubit>()),
       ],
-      child: MaterialApp(
-        title: 'Hidden Word',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.darkTheme,
-        home: const SplashPage(),
+      child: BlocBuilder<SettingsCubit, SettingsState>(
+        buildWhen: (previous, current) => previous.language != current.language,
+        builder: (context, state) {
+          return MaterialApp(
+            title: 'Hidden Word',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.darkTheme,
+            locale: Locale(state.language),
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const SplashPage(),
+          );
+        },
       ),
     );
   }
