@@ -5,15 +5,17 @@ import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
 import 'package:hidden_word/features/game/presentation/pages/voting_page.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class DiscussionPage extends StatelessWidget {
   const DiscussionPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.obsidian,
-      appBar: _buildAppBar(context),
+      appBar: _buildAppBar(context, l10n),
       body: BlocConsumer<GameCubit, GameState>(
         listener: (context, state) {
           if (state.phase == GamePhase.voting) {
@@ -30,17 +32,17 @@ class DiscussionPage extends StatelessWidget {
                 child: Column(
                   children: [
                     const SizedBox(height: 24),
-                    _buildPhaseHeader(),
+                    _buildPhaseHeader(l10n),
                     const SizedBox(height: 48),
-                    _buildTimerSection(context, state.timerSeconds),
+                    _buildTimerSection(context, state.timerSeconds, l10n),
                     const SizedBox(height: 64),
-                    _buildActivePlayersSection(context, state),
+                    _buildActivePlayersSection(context, state, l10n),
                     const SizedBox(height: 120), // Placeholder for bottom bar
                   ],
                 ),
               ),
               // Peeking Bottom Sheet logic
-              _buildPeekingToolbar(context, state),
+              _buildPeekingToolbar(context, state, l10n),
             ],
           );
         },
@@ -48,17 +50,20 @@ class DiscussionPage extends StatelessWidget {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
-      title: const _SmallBoxedTitle(),
-      actions: [_buildLiveSessionPill(), const SizedBox(width: 16)],
+      title: _SmallBoxedTitle(text: l10n.secretWord),
+      actions: [_buildLiveSessionPill(l10n), const SizedBox(width: 16)],
     );
   }
 
-  Widget _buildLiveSessionPill() {
+  Widget _buildLiveSessionPill(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -76,7 +81,7 @@ class DiscussionPage extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            'የቀጥታ ስብሰባ',
+            l10n.liveSession,
             style: GoogleFonts.manrope(
               fontSize: 10,
               fontWeight: FontWeight.w800,
@@ -89,11 +94,11 @@ class DiscussionPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPhaseHeader() {
+  Widget _buildPhaseHeader(AppLocalizations l10n) {
     return Column(
       children: [
         Text(
-          'የውይይት ምዕራፍ',
+          l10n.discussionPhase,
           style: GoogleFonts.manrope(
             fontSize: 12,
             fontWeight: FontWeight.w900,
@@ -103,7 +108,7 @@ class DiscussionPage extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          'ሰላዩ ማነው?',
+          l10n.whoIsTheSpy,
           style: GoogleFonts.epilogue(
             fontSize: 32,
             fontWeight: FontWeight.bold,
@@ -114,7 +119,11 @@ class DiscussionPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTimerSection(BuildContext context, int seconds) {
+  Widget _buildTimerSection(
+    BuildContext context,
+    int seconds,
+    AppLocalizations l10n,
+  ) {
     final minutes = (seconds / 60).floor();
     final remainingSeconds = (seconds % 60).toString().padLeft(2, '0');
     const totalDiscussionTime = 105; // Matches GameCubit.startDiscussion
@@ -153,7 +162,7 @@ class DiscussionPage extends StatelessWidget {
               ),
             ),
             Text(
-              'ቀሪ ጊዜ',
+              l10n.remainingTime,
               style: GoogleFonts.manrope(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -167,7 +176,11 @@ class DiscussionPage extends StatelessWidget {
     );
   }
 
-  Widget _buildActivePlayersSection(BuildContext context, GameState state) {
+  Widget _buildActivePlayersSection(
+    BuildContext context,
+    GameState state,
+    AppLocalizations l10n,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Column(
@@ -176,7 +189,7 @@ class DiscussionPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'ተሳታፊዎች',
+                l10n.participants,
                 style: GoogleFonts.manrope(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
@@ -191,7 +204,7 @@ class DiscussionPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  '${state.connectedPlayers.length} በመስመር ላይ',
+                  l10n.onlineCount(state.connectedPlayers.length),
                   style: GoogleFonts.manrope(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -209,7 +222,9 @@ class DiscussionPage extends StatelessWidget {
               maxCrossAxisExtent: 200,
               mainAxisSpacing: 16,
               crossAxisSpacing: 16,
-              childAspectRatio: MediaQuery.of(context).size.width < 380 ? 1.4 : 1.3,
+              childAspectRatio: MediaQuery.of(context).size.width < 380
+                  ? 1.4
+                  : 1.3,
             ),
             itemCount: state.connectedPlayers.length,
             itemBuilder: (context, index) {
@@ -225,7 +240,11 @@ class DiscussionPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPeekingToolbar(BuildContext context, GameState state) {
+  Widget _buildPeekingToolbar(
+    BuildContext context,
+    GameState state,
+    AppLocalizations l10n,
+  ) {
     return Positioned(
       bottom: 0,
       left: 0,
@@ -258,7 +277,7 @@ class DiscussionPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'ሚስጥራዊ ቃልህ:',
+                        l10n.yourSecretWord,
                         style: GoogleFonts.manrope(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -316,7 +335,7 @@ class DiscussionPage extends StatelessWidget {
                     const Icon(Icons.remove_red_eye, color: Colors.white),
                     const SizedBox(width: 12),
                     Text(
-                      'ቃሉን ለማየት ይጫኑ',
+                      l10n.tapToSeeWord,
                       style: GoogleFonts.manrope(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
@@ -336,13 +355,14 @@ class DiscussionPage extends StatelessWidget {
 }
 
 class _SmallBoxedTitle extends StatelessWidget {
-  const _SmallBoxedTitle();
+  final String text;
+  const _SmallBoxedTitle({required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: 'ሚስጥራዊ'.split('').map((char) {
+      children: text.split('').map((char) {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Text(
