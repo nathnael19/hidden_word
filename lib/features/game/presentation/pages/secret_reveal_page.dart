@@ -7,6 +7,7 @@ import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
 import 'package:hidden_word/features/game/presentation/pages/discussion_page.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 bool _isLocalPlayerSpy(GameState state, MultiplayerState mp) {
   if (state.spyPlayerNames.isEmpty) return false;
@@ -24,6 +25,7 @@ class SecretRevealPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.obsidian,
       body: BlocConsumer<GameCubit, GameState>(
@@ -40,7 +42,7 @@ class SecretRevealPage extends StatelessWidget {
               !state.sessionActive || state.spyPlayerNames.isEmpty;
 
           if (isWaitingForHost) {
-            return _buildWaitingForHostState();
+            return _buildWaitingForHostState(l10n);
           }
 
           return SafeArea(
@@ -52,7 +54,7 @@ class SecretRevealPage extends StatelessWidget {
                   const SizedBox(height: 40),
                   // Header: Player ID Label
                   Text(
-                    'የተጫዋቾች መለያ',
+                    l10n.playerIdLabel,
                     style: GoogleFonts.epilogue(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -62,10 +64,10 @@ class SecretRevealPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   // Boxed Title
-                  const _BoxedText(text: 'ሚስጥራዊ ቃል'),
+                  _BoxedText(text: l10n.secretWord),
                   const SizedBox(height: 32),
                   // Subtitle Label with Line
-                  _buildSubHeader(),
+                  _buildSubHeader(l10n),
                   const SizedBox(height: 32),
                   // Central Reveal Card
                   _RevealCard(
@@ -79,11 +81,17 @@ class SecretRevealPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 48),
                   // Player Progress Dots
-                  _buildProgressDots(state.playersReadyCount, state.totalPlayers),
+                  _buildProgressDots(
+                    state.playersReadyCount,
+                    state.totalPlayers,
+                  ),
                   const SizedBox(height: 16),
                   // Readiness Text
                   Text(
-                    '${state.playersReadyCount} of ${state.totalPlayers} ተጫዋችች ተዘጋጅተዋል',
+                    l10n.playerReadyStatus(
+                      state.playersReadyCount,
+                      state.totalPlayers,
+                    ),
                     style: GoogleFonts.manrope(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -92,11 +100,11 @@ class SecretRevealPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
                   // Crimson Bottom Action
-                  _buildActionButton(context, state),
+                  _buildActionButton(context, state, l10n),
                   const SizedBox(height: 16),
                   // Footer Text
                   Text(
-                    'የምስጢር ቃልህን ለማንም እንዳታሳይ',
+                    l10n.dontShowSecret,
                     style: GoogleFonts.manrope(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
@@ -114,15 +122,18 @@ class SecretRevealPage extends StatelessWidget {
     );
   }
 
-  Widget _buildWaitingForHostState() {
+  Widget _buildWaitingForHostState(AppLocalizations l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
+          const CircularProgressIndicator(
+            color: AppColors.gold,
+            strokeWidth: 2,
+          ),
           const SizedBox(height: 32),
           Text(
-            'WAITING FOR HOST...',
+            l10n.waitingForHost,
             style: GoogleFonts.manrope(
               fontSize: 12,
               fontWeight: FontWeight.w900,
@@ -132,7 +143,7 @@ class SecretRevealPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'The host is configuring the game settings.',
+            l10n.hostConfiguring,
             style: GoogleFonts.manrope(
               fontSize: 10,
               fontWeight: FontWeight.w500,
@@ -144,7 +155,7 @@ class SecretRevealPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSubHeader() {
+  Widget _buildSubHeader(AppLocalizations l10n) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -158,7 +169,7 @@ class SecretRevealPage extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Text(
-          'SECRET WORD REVEAL',
+          l10n.secretWordReveal,
           style: GoogleFonts.manrope(
             fontSize: 12,
             fontWeight: FontWeight.w900,
@@ -185,15 +196,15 @@ class SecretRevealPage extends StatelessWidget {
             color: isCurrent
                 ? Colors.greenAccent
                 : isActive
-                    ? Colors.green.withOpacity(0.6)
-                    : AppColors.onSurface.withOpacity(0.1),
+                ? Colors.green.withOpacity(0.6)
+                : AppColors.onSurface.withOpacity(0.1),
             boxShadow: isCurrent
                 ? [
                     BoxShadow(
                       color: Colors.greenAccent.withOpacity(0.4),
                       blurRadius: 8,
                       spreadRadius: 2,
-                    )
+                    ),
                   ]
                 : null,
           ),
@@ -202,7 +213,11 @@ class SecretRevealPage extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, GameState state) {
+  Widget _buildActionButton(
+    BuildContext context,
+    GameState state,
+    AppLocalizations l10n,
+  ) {
     if (state.isReady) {
       return Column(
         children: [
@@ -212,7 +227,7 @@ class SecretRevealPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'አስተናጋጁን በመጠበቅ ላይ...',
+            l10n.waitingForHostAm,
             style: GoogleFonts.manrope(
               fontSize: 14,
               fontWeight: FontWeight.w700,
@@ -225,7 +240,7 @@ class SecretRevealPage extends StatelessWidget {
     }
 
     return GestureDetector(
-        onTap: () {
+      onTap: () {
         if (state.isRevealed) {
           context.read<GameCubit>().markAsReady();
           final mp = context.read<MultiplayerCubit>();
@@ -245,7 +260,9 @@ class SecretRevealPage extends StatelessWidget {
         height: MediaQuery.of(context).size.height < 700 ? 60 : 72,
         decoration: BoxDecoration(
           color: const Color(0xFF8B0000), // Dark Crimson/Maroon
-          borderRadius: BorderRadius.circular(MediaQuery.of(context).size.height < 700 ? 16 : 20),
+          borderRadius: BorderRadius.circular(
+            MediaQuery.of(context).size.height < 700 ? 16 : 20,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.3),
@@ -254,9 +271,9 @@ class SecretRevealPage extends StatelessWidget {
             ),
           ],
         ),
-        child: const Center(
+        child: Center(
           child: _BoxedText(
-            text: 'ዝግጁ', // READY
+            text: l10n.ready, // READY
             boxSize: 32,
             fontSize: 16,
             borderColor: Colors.transparent,
@@ -301,7 +318,9 @@ class _BoxedText extends StatelessWidget {
           width: effectiveBoxSize,
           height: effectiveBoxSize,
           decoration: BoxDecoration(
-            color: isFilled ? AppColors.surfaceContainerHigh : Colors.transparent,
+            color: isFilled
+                ? AppColors.surfaceContainerHigh
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: borderColor ?? AppColors.onSurface.withOpacity(0.2),
@@ -339,22 +358,20 @@ class _RevealCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
         width: double.infinity,
-        height: MediaQuery.of(context).size.height < 700 
-            ? MediaQuery.of(context).size.height * 0.4 
+        height: MediaQuery.of(context).size.height < 700
+            ? MediaQuery.of(context).size.height * 0.4
             : MediaQuery.of(context).size.height * 0.45,
         decoration: BoxDecoration(
           color: AppColors.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(40),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.05),
-            width: 1,
-          ),
+          border: Border.all(color: Colors.white.withOpacity(0.05), width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.5),
@@ -363,7 +380,8 @@ class _RevealCard extends StatelessWidget {
             ),
             if (isRevealed)
               BoxShadow(
-                color: (isSpy ? AppColors.primaryRed : Colors.green).withOpacity(0.1),
+                color: (isSpy ? AppColors.primaryRed : Colors.green)
+                    .withOpacity(0.1),
                 blurRadius: 60,
                 spreadRadius: 10,
               ),
@@ -385,7 +403,9 @@ class _RevealCard extends StatelessWidget {
                 ),
               ),
               child: Icon(
-                isRevealed ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
+                isRevealed
+                    ? Icons.lock_open_rounded
+                    : Icons.lock_outline_rounded,
                 size: 40,
                 color: isRevealed
                     ? (isSpy ? AppColors.primaryRed : Colors.greenAccent)
@@ -395,7 +415,7 @@ class _RevealCard extends StatelessWidget {
             const SizedBox(height: 48),
             if (!isRevealed) ...[
               Text(
-                'ለመክፈት ይጫኑ',
+                l10n.pressToOpen,
                 style: GoogleFonts.epilogue(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
@@ -407,7 +427,7 @@ class _RevealCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: Text(
-                  'የአርሀዎን ሚስጥራዊ ቃል ለማየት ካርዱን ይንኩ። ማንም እንደማያይዎት እርግጠኛ ይሁኑ።',
+                  l10n.pressToOpenSubtitle,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.manrope(
                     fontSize: 13,
@@ -418,11 +438,12 @@ class _RevealCard extends StatelessWidget {
               ),
             ] else ...[
               Text(
-                isSpy ? 'አንተ ሰላይ ነህ!' : 'ሚስጥራዊው ቃል',
+                isSpy ? l10n.youAreSpy : l10n.secretWordLabel,
                 style: GoogleFonts.epilogue(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: (isSpy ? AppColors.primaryRed : Colors.greenAccent).withOpacity(0.8),
+                  color: (isSpy ? AppColors.primaryRed : Colors.greenAccent)
+                      .withOpacity(0.8),
                   letterSpacing: 2,
                 ),
               ),
