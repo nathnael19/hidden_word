@@ -6,13 +6,14 @@ import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
 import 'package:hidden_word/features/game/presentation/pages/results_page.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
-import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class VotingPage extends StatelessWidget {
   const VotingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.obsidian,
       body: BlocConsumer<GameCubit, GameState>(
@@ -25,25 +26,32 @@ class VotingPage extends StatelessWidget {
           }
         },
         builder: (context, state) {
+          final mpState = context.watch<MultiplayerCubit>().state;
           return SafeArea(
-            child: Stack(
+            child: Column(
               children: [
-                SingleChildScrollView(
-                  child: Padding(
+                _buildHeader(l10n),
+                Expanded(
+                  child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 32),
-                        _buildHeader(context),
-                        const SizedBox(height: 16), // Reduced from 48
-                        _buildVotingGrid(context, state),
-                        const SizedBox(height: 180), // Space for bottom status card
+                        _buildVotingStatus(l10n),
+                        const SizedBox(height: 40),
+                        _buildPlayerGrid(
+                          context,
+                          state,
+                          mpState.playerName,
+                          l10n,
+                        ),
+                        const SizedBox(height: 32),
                       ],
                     ),
                   ),
                 ),
-                _buildStatusDashboard(context, state),
-                if (state.isVotingReady) _buildWaitingOverlay(),
+                _buildBottomBranding(l10n),
               ],
             ),
           );
@@ -52,303 +60,78 @@ class VotingPage extends StatelessWidget {
     );
   }
 
-  Widget _buildWaitingOverlay() {
-    return Container(
-      color: Colors.black.withOpacity(0.85),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
-            const SizedBox(height: 24),
-            Text(
-              'ሌሎች እስኪጨርሱ እየተጠበቀ ነው...',
-              style: GoogleFonts.manrope(
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                color: AppColors.gold,
-                letterSpacing: 2,
+  Widget _buildHeader(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.votingStatus,
+                    style: GoogleFonts.epilogue(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.gold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.whoIsTheSpy,
+                    style: GoogleFonts.epilogue(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.onSurface,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
+              _buildDecisionIndicator(l10n),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Container(
+            height: 1,
+            width: double.infinity,
+            color: Colors.white.withOpacity(0.05),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Text(
-              '2',
-              style: GoogleFonts.epilogue(
-                fontSize: MediaQuery.of(context).size.width < 360 ? 120 : 160,
-                fontWeight: FontWeight.w900,
-                color: Colors.white.withOpacity(0.03),
-              ),
+  Widget _buildDecisionIndicator(AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(
+            width: 10,
+            height: 10,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold),
             ),
           ),
-        ),
-        Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const SizedBox(width: 40), // spacer
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.green.withOpacity(0.3)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: Colors.greenAccent,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'ሚስጥሩ እንደቀጠለ ነው',
-                        style: GoogleFonts.manrope(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.greenAccent,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'ሰላዩ\nማነው?',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.epilogue(
-                fontSize: MediaQuery.of(context).size.width < 360 ? 36 : 48,
-                fontWeight: FontWeight.w900,
-                color: AppColors.onSurface,
-                height: 1.1,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'ማንንም አትመን! ታማኝነቱን አረጋግጥ',
-              style: GoogleFonts.manrope(
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                color: AppColors.primaryRed.withOpacity(0.6),
-                letterSpacing: 2,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildVotingGrid(BuildContext context, GameState state) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 220,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
-        childAspectRatio: MediaQuery.of(context).size.width < 380 ? 0.6 : 0.65,
-      ),
-      itemCount: state.connectedPlayers.length,
-      itemBuilder: (context, index) {
-        final targetName = state.connectedPlayers[index];
-        final isSelected = state.votedPlayerIndex == index;
-        return _VotingCard(
-          name: targetName,
-          isSelected: isSelected,
-          onTap: () {
-            context.read<GameCubit>().selectVote(index);
-            final mp = context.read<MultiplayerCubit>();
-            final st = mp.state;
-            if (st.status == MultiplayerStatus.hosting ||
-                st.status == MultiplayerStatus.connected) {
-              mp.submitVote(st.playerName, targetName);
-            } else {
-              final spies = context.read<GameCubit>().state.spyPlayerNames;
-              final caught =
-                  spies.isNotEmpty && spies.contains(targetName);
-              context.read<GameCubit>().startResults(caught, targetName);
-            }
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildStatusDashboard(BuildContext context, GameState state) {
-    final minutes = (state.timerSeconds / 60).floor();
-    final seconds = (state.timerSeconds % 60).toString().padLeft(2, '0');
-
-    return Positioned(
-      bottom: 24,
-      left: 24,
-      right: 24,
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerHigh.withOpacity(0.95),
-          borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.5),
-              blurRadius: 40,
-              offset: const Offset(0, 20),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'የድምፅ መስጠት ሁኔታ',
-                      style: GoogleFonts.manrope(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.onSurface,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'ተጫዋቾች ምርጫቸውን እያደረጉ ነው',
-                      style: GoogleFonts.manrope(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.onSurface.withOpacity(0.3),
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  '$minutes:$seconds',
-                  style: GoogleFonts.manrope(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.gold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            // Progress Bar
-            Stack(
-              children: [
-                Container(
-                  height: 6,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                ),
-                AnimatedContainer(
-                  duration: const Duration(seconds: 1),
-                  height: 6,
-                  width: (MediaQuery.of(context).size.width - 96) * (state.timerSeconds / 45),
-                  decoration: BoxDecoration(
-                    color: AppColors.gold,
-                    borderRadius: BorderRadius.circular(3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.gold.withOpacity(0.3),
-                        blurRadius: 10,
-                      )
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Mini Voted Avatars
-                _buildMiniAvatars(),
-                Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Colors.greenAccent,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'ውሳኔ እየተሰጠ ነው',
-                      style: GoogleFonts.manrope(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.greenAccent,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMiniAvatars() {
-    return SizedBox(
-      height: 32,
-      child: Stack(
-        children: [
-          _buildMiniAvatar(0),
-          Positioned(left: 18, child: _buildMiniAvatar(11)),
-          Positioned(
-            left: 36,
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.primaryRed,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.obsidian, width: 2),
-              ),
-              child: Center(
-                child: Text(
-                  '+1',
-                  style: GoogleFonts.manrope(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+          const SizedBox(width: 10),
+          Text(
+            l10n.decisionInProgress,
+            style: GoogleFonts.manrope(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: AppColors.gold,
+              letterSpacing: 0.5,
             ),
           ),
         ],
@@ -356,110 +139,246 @@ class VotingPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMiniAvatar(int index) {
+  Widget _buildVotingStatus(AppLocalizations l10n) {
     return Container(
-      width: 32,
-      height: 32,
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.obsidian, width: 2),
-        image: const DecorationImage(
-          image: AssetImage('assets/ritualist_avatar.png'),
-          fit: BoxFit.cover,
+        color: AppColors.primaryRed.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.primaryRed.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            l10n.playersVoting,
+            style: GoogleFonts.manrope(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.onSurface,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.secretContinues,
+            style: GoogleFonts.manrope(
+              fontSize: 12,
+              color: AppColors.onSurface.withOpacity(0.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlayerGrid(
+    BuildContext context,
+    GameState state,
+    String localName,
+    AppLocalizations l10n,
+  ) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 220,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: MediaQuery.of(context).size.width < 380 ? 0.8 : 0.85,
+      ),
+      itemCount: state.connectedPlayers.length,
+      itemBuilder: (context, index) {
+        final playerName = state.connectedPlayers[index];
+        final isSelf = playerName == localName;
+        final isVoted = state.votedPlayerIndex == index;
+
+        return _VoteCard(
+          name: playerName,
+          isSelf: isSelf,
+          isVoted: isVoted,
+          onVote: isSelf || state.isVotingReady
+              ? null
+              : () => context.read<GameCubit>().selectVote(index),
+          l10n: l10n,
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomBranding(AppLocalizations l10n) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _BoxedChar(char: l10n.appTitlePart1[0], size: 24),
+          const SizedBox(width: 8),
+          Text(
+            l10n.appTitle,
+            style: GoogleFonts.epilogue(
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              color: AppColors.onSurface.withOpacity(0.2),
+              letterSpacing: 4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BoxedChar extends StatelessWidget {
+  final String char;
+  final double size;
+  const _BoxedChar({required this.char, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: AppColors.primaryRed.withOpacity(0.3),
+          width: 1.5,
+        ),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Center(
+        child: Text(
+          char,
+          style: GoogleFonts.epilogue(
+            fontSize: size * 0.6,
+            fontWeight: FontWeight.w900,
+            color: AppColors.primaryRed,
+          ),
         ),
       ),
     );
   }
 }
 
-class _VotingCard extends StatelessWidget {
+class _VoteCard extends StatelessWidget {
   final String name;
-  final bool isSelected;
-  final VoidCallback onTap;
+  final bool isSelf;
+  final bool isVoted;
+  final VoidCallback? onVote;
+  final AppLocalizations l10n;
 
-  const _VotingCard({
+  const _VoteCard({
     required this.name,
-    required this.isSelected,
-    required this.onTap,
+    required this.isSelf,
+    required this.isVoted,
+    this.onVote,
+    required this.l10n,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: onVote,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         decoration: BoxDecoration(
-          color: AppColors.surfaceContainerHigh,
+          color: isVoted
+              ? AppColors.primaryRed.withOpacity(0.1)
+              : AppColors.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isSelected ? AppColors.gold : Colors.white.withOpacity(0.05),
-            width: isSelected ? 2 : 1,
+            color: isVoted
+                ? AppColors.primaryRed
+                : Colors.white.withOpacity(0.05),
+            width: isVoted ? 2 : 1,
           ),
-          boxShadow: isSelected
+          boxShadow: isVoted
               ? [
                   BoxShadow(
-                    color: AppColors.gold.withOpacity(0.1),
+                    color: AppColors.primaryRed.withOpacity(0.2),
                     blurRadius: 20,
-                    spreadRadius: 2,
-                  )
+                    offset: const Offset(0, 10),
+                  ),
                 ]
               : null,
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  image: const DecorationImage(
-                    image: AssetImage('assets/ritualist_avatar.png'),
-                    fit: BoxFit.cover,
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.03),
+                    shape: BoxShape.circle,
                   ),
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  name,
-                  style: GoogleFonts.epilogue(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.onSurface,
-                  ),
+                Icon(
+                  Icons.person_outline_rounded,
+                  size: 32,
+                  color: isVoted
+                      ? AppColors.primaryRed
+                      : AppColors.onSurface.withOpacity(0.3),
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-              child: Container(
-                width: double.infinity,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF8B0000) : Colors.white.withOpacity(0.03),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isSelected ? Colors.transparent : Colors.white.withOpacity(0.05),
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    isSelected ? 'ተመርጧል' : 'ምረጥ',
-                    style: GoogleFonts.manrope(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      color: isSelected ? Colors.white : AppColors.onSurface.withOpacity(0.4),
-                      letterSpacing: 1,
+                if (isVoted)
+                  const Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: CircleAvatar(
+                      radius: 10,
+                      backgroundColor: AppColors.primaryRed,
+                      child: Icon(Icons.check, size: 12, color: Colors.white),
                     ),
                   ),
-                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              isSelf ? "$name (${l10n.badgeHost})" : name,
+              style: GoogleFonts.epilogue(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: AppColors.onSurface,
               ),
             ),
+            const SizedBox(height: 16),
+            if (!isSelf)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: isVoted
+                      ? AppColors.primaryRed
+                      : Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  isVoted ? l10n.votedSelected : l10n.votedSelect,
+                  style: GoogleFonts.manrope(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: isVoted
+                        ? Colors.white
+                        : AppColors.onSurface.withOpacity(0.5),
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
