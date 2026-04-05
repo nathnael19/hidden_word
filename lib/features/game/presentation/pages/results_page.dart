@@ -4,35 +4,40 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
-import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
+import 'package:hidden_word/features/home/presentation/pages/home_page.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
+import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class ResultsPage extends StatelessWidget {
   const ResultsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.obsidian,
-      appBar: _buildAppBar(context),
       body: BlocBuilder<GameCubit, GameState>(
         builder: (context, state) {
-          return SingleChildScrollView(
-            child: Padding(
+          final isSpyVictory = !state.spyCaught;
+          final primaryColor = isSpyVictory
+              ? AppColors.primaryRed
+              : Colors.greenAccent;
+
+          return SafeArea(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 children: [
-                  const SizedBox(height: 24),
-                  _buildMissionTitle(),
                   const SizedBox(height: 48),
-                  _buildSpyUnmaskedCard(context, state),
+                  _buildMissionHeader(primaryColor, l10n),
+                  const SizedBox(height: 40),
+                  _buildVictorCard(isSpyVictory, l10n),
+                  const SizedBox(height: 48),
+                  _buildResultsSummary(state, isSpyVictory, l10n),
+                  const SizedBox(height: 64),
+                  _buildActionButtons(context, l10n),
                   const SizedBox(height: 32),
-                  _buildVictoryBanner(state.spyCaught),
-                  const SizedBox(height: 32),
-                  _buildSecretWordReveal(state.secretWord),
-                  const SizedBox(height: 48),
-                  _buildActionButtons(context),
-                  const SizedBox(height: 48),
                 ],
               ),
             ),
@@ -42,442 +47,220 @@ class ResultsPage extends StatelessWidget {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      centerTitle: true,
-      title: _buildBoxedTitle(),
-      actions: [
-        Container(
-          margin: const EdgeInsets.only(right: 16),
-          padding: const EdgeInsets.all(2),
-          decoration: const BoxDecoration(
-            color: Colors.white24,
-            shape: BoxShape.circle,
-          ),
-          child: const CircleAvatar(
-            radius: 14,
-            backgroundImage: AssetImage('assets/ritualist_avatar.png'),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBoxedTitle() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: '??? ??'.split('').map((char) {
-        if (char == ' ') return const SizedBox(width: 8);
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 1),
-          height: 20,
-          width: 20,
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.gold, width: 1.5),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Center(
-            child: Text(
-              char,
-              style: GoogleFonts.epilogue(
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                color: AppColors.gold,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildMissionTitle() {
+  Widget _buildMissionHeader(Color color, AppLocalizations l10n) {
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'ተልዕኮው ተጠናቋል',
-              style: GoogleFonts.manrope(
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                color: Colors.greenAccent,
-                letterSpacing: 2,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: Colors.greenAccent,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ],
+        Text(
+          l10n.missionComplete,
+          style: GoogleFonts.epilogue(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: color,
+            letterSpacing: 4,
+          ),
         ),
-        const SizedBox(height: 16),
-        RichText(
-          textAlign: TextAlign.center,
-          text: TextSpan(
-            style: GoogleFonts.epilogue(
-              fontSize: 48,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-              height: 1,
-            ),
-            children: [
-              const TextSpan(text: 'እውነቱ\n'),
-              TextSpan(
-                text: 'ታውቋል',
-                style: TextStyle(color: AppColors.gold),
-              ),
-            ],
+        const SizedBox(height: 12),
+        Text(
+          l10n.truthRevealed,
+          style: GoogleFonts.epilogue(
+            fontSize: 32,
+            fontWeight: FontWeight.w900,
+            color: AppColors.onSurface,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSpyUnmaskedCard(BuildContext context, GameState state) {
+  Widget _buildVictorCard(bool isSpyVictory, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(40),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(
+          color: (isSpyVictory ? AppColors.primaryRed : Colors.greenAccent)
+              .withOpacity(0.2),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isSpyVictory ? AppColors.primaryRed : Colors.greenAccent)
+                .withOpacity(0.1),
+            blurRadius: 40,
+            spreadRadius: 5,
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.primaryRed.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.primaryRed.withOpacity(0.4)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.security,
-                  color: AppColors.primaryRed,
-                  size: 14,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'ሰላዩ!',
-                  style: GoogleFonts.manrope(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.primaryRed,
-                    letterSpacing: 1,
-                  ),
-                ),
-              ],
-            ),
+          Icon(
+            isSpyVictory ? Icons.vpn_key_rounded : Icons.gavel_rounded,
+            size: 64,
+            color: isSpyVictory ? AppColors.primaryRed : Colors.greenAccent,
           ),
-          const SizedBox(height: 32),
-          Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.bottomLeft,
-            children: [
-              Container(
-                width: 160,
-                height: 160,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(32),
-                  border: Border.all(
-                    color: AppColors.gold.withOpacity(0.3),
-                    width: 2,
-                  ),
-                  image: const DecorationImage(
-                    image: AssetImage('assets/ritualist_avatar.png'),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: 10,
-                left: -10,
-                child: Transform.rotate(
-                  angle: -0.1,
-                  child: Container(
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.6,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.gold,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        state.spyPlayerNames.isEmpty
-                            ? 'ያልታወቀ'
-                            : state.spyPlayerNames
-                                  .map((e) => e.toUpperCase())
-                                  .join(', '),
-                        style: GoogleFonts.epilogue(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.obsidian,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 48),
+          const SizedBox(height: 24),
           Text(
-            state.spyCaught
-                ? 'ሰላዩ በዜጎች ተለይቷል\nዜጎች ለ ${state.spyPlayerNames.join(', ')} ድምፃቸውን በትክክል ሰጥተዋል።'
-                : 'ሰላዩ ሳይታወቅ በሰላም አምልጧል።\nዜጎች በስህተት ለ ${state.majorityVotedName ?? 'ማንም'} ድምፃቸውን ሰጥተዋል።',
+            isSpyVictory ? l10n.spyWins : l10n.citizensWin,
+            style: GoogleFonts.epilogue(
+              fontSize: 36,
+              fontWeight: FontWeight.w900,
+              color: AppColors.onSurface,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isSpyVictory ? l10n.missionFailed : l10n.justicePrevailed,
+            style: GoogleFonts.manrope(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.onSurface.withOpacity(0.4),
+              letterSpacing: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResultsSummary(
+    GameState state,
+    bool isSpyVictory,
+    AppLocalizations l10n,
+  ) {
+    final spyNamesStr = state.spyPlayerNames.join(", ");
+
+    final resultDesc = isSpyVictory
+        ? l10n.spyEscapedDesc(state.majorityVotedName ?? l10n.unknown)
+        : l10n.spyCaughtDesc(spyNamesStr);
+
+    return Column(
+      children: [
+        _buildSummaryRow(l10n.spyLabel, spyNamesStr, AppColors.primaryRed),
+        const SizedBox(height: 16),
+        _buildSummaryRow(
+          l10n.secretWordLabel,
+          state.secretWord,
+          AppColors.gold,
+        ),
+        const SizedBox(height: 32),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            resultDesc,
             textAlign: TextAlign.center,
             style: GoogleFonts.manrope(
               fontSize: 14,
-              fontWeight: FontWeight.w700,
+              height: 1.6,
               color: AppColors.onSurface.withOpacity(0.6),
-              height: 1.5,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVictoryBanner(bool spyCaught) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: spyCaught
-            ? Colors.green.withOpacity(0.1)
-            : AppColors.primaryRed.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: spyCaught
-              ? Colors.green.withOpacity(0.3)
-              : AppColors.primaryRed.withOpacity(0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: spyCaught
-                  ? Colors.green.withOpacity(0.2)
-                  : AppColors.primaryRed.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              spyCaught ? Icons.military_tech : Icons.error_outline,
-              color: spyCaught ? Colors.greenAccent : AppColors.primaryRed,
-            ),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    spyCaught ? 'ዜጎች አሸንፈዋል!' : 'ሰላዩ አሸንፏል!',
-                    style: GoogleFonts.epilogue(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: spyCaught
-                          ? Colors.greenAccent
-                          : AppColors.primaryRed,
-                    ),
-                  ),
-                ),
-                Text(
-                  spyCaught ? 'ፍትህ ሰፍኗል' : 'ተልዕኮው ተሰናክሏል',
-                  style: GoogleFonts.manrope(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color:
-                        (spyCaught ? Colors.greenAccent : AppColors.primaryRed)
-                            .withOpacity(0.5),
-                    letterSpacing: 1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSecretWordReveal(String word) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        children: [
-          Text(
-            'ሚስጥራዊ ቃል',
-            style: GoogleFonts.manrope(
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              color: AppColors.onSurface.withOpacity(0.3),
-              letterSpacing: 2,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildBoxIcon(),
-              const SizedBox(width: 4),
-              _buildBoxIcon(),
-              const SizedBox(width: 12),
-              Text(
-                '($word)',
-                style: GoogleFonts.epilogue(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.gold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              3,
-              (index) => Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBoxIcon() {
-    return Container(
-      width: 24,
-      height: 32,
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.gold, width: 2),
-        borderRadius: BorderRadius.circular(4),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(BuildContext context) {
-    return Column(
-      children: [
-        _buildLargeButton(
-          context: context,
-          label: 'እንደገና ተጫወት',
-          color: AppColors.primaryRed,
-          icon: Icons.refresh,
-          onTap: () async {
-            context.read<MultiplayerCubit>().prepareNewSession();
-            await context.read<GameCubit>().resetGame();
-            if (context.mounted) {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const SecretRevealPage(),
-                ),
-                (route) => false,
-              );
-            }
-          },
-        ),
-        const SizedBox(height: 16),
-        _buildLargeButton(
-          context: context,
-          label: 'ዋና ማውጫ',
-          color: AppColors.surfaceContainerHigh,
-          onTap: () {
-            Navigator.of(context).popUntil((route) => route.isFirst);
-          },
         ),
       ],
     );
   }
 
-  Widget _buildLargeButton({
-    required BuildContext context,
-    required String label,
-    required Color color,
-    IconData? icon,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        height: MediaQuery.of(context).size.height < 700 ? 56 : 64,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: color == AppColors.primaryRed
-              ? [
+  Widget _buildSummaryRow(String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.manrope(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: AppColors.onSurface.withOpacity(0.3),
+              letterSpacing: 1,
+            ),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.epilogue(
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context, AppLocalizations l10n) {
+    final isHost =
+        context.read<MultiplayerCubit>().state.status ==
+        MultiplayerStatus.hosting;
+
+    return Column(
+      children: [
+        if (isHost)
+          GestureDetector(
+            onTap: () => context.read<GameCubit>().resetGame(),
+            child: Container(
+              width: double.infinity,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.primaryRed,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
                   BoxShadow(
-                    color: color.withOpacity(0.3),
+                    color: AppColors.primaryRed.withOpacity(0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.manrope(
-                fontSize: MediaQuery.of(context).size.width < 360 ? 14 : 16,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-                letterSpacing: 1,
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  l10n.playAgain,
+                  style: GoogleFonts.epilogue(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 1,
+                  ),
+                ),
               ),
             ),
-            if (icon != null) ...[
-              const SizedBox(width: 12),
-              Icon(icon, color: Colors.white, size: 20),
-            ],
-          ],
+          ),
+        const SizedBox(height: 16),
+        GestureDetector(
+          onTap: () {
+            context.read<MultiplayerCubit>().stopMultiplayer();
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const HomePage()),
+              (route) => false,
+            );
+          },
+          child: Container(
+            width: double.infinity,
+            height: 64,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: Center(
+              child: Text(
+                l10n.mainMenu,
+                style: GoogleFonts.manrope(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.onSurface,
+                ),
+              ),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 }
