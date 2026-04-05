@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class HomeHeroSection extends StatelessWidget {
   const HomeHeroSection({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'THE HIDDEN WORD',
+          l10n.appTitle,
           style: GoogleFonts.manrope(
             color: AppColors.gold,
             fontSize: 14,
@@ -25,7 +27,7 @@ class HomeHeroSection extends StatelessWidget {
           runSpacing: 8,
           children: [
             Text(
-              'ስውር',
+              l10n.appTitlePart1,
               style: GoogleFonts.epilogue(
                 fontSize: MediaQuery.of(context).size.width < 360 ? 32 : 36,
                 fontWeight: FontWeight.w900,
@@ -34,7 +36,7 @@ class HomeHeroSection extends StatelessWidget {
               ),
             ),
             Text(
-              'ቃል',
+              l10n.appTitlePart2,
               style: GoogleFonts.epilogue(
                 fontSize: MediaQuery.of(context).size.width < 360 ? 32 : 36,
                 fontWeight: FontWeight.w900,
@@ -60,7 +62,7 @@ class HomeHeroSection extends StatelessWidget {
         ),
         const SizedBox(height: 32),
         Text(
-          'Find the spy among you. Speak\ncarefully, trust no one.',
+          l10n.appSubtitle.replaceAll('\\n', '\n'),
           style: GoogleFonts.beVietnamPro(
             fontSize: MediaQuery.of(context).size.width < 360 ? 16 : 18,
             color: AppColors.onSurface.withOpacity(0.6),
