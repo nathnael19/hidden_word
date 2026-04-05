@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class StartMissionButton extends StatelessWidget {
   final MultiplayerState netState;
@@ -15,6 +16,7 @@ class StartMissionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final bool canStart = netState.status == MultiplayerStatus.hosting;
     return Column(
       children: [
@@ -23,15 +25,19 @@ class StartMissionButton extends StatelessWidget {
           height: 64,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: canStart ? AppColors.primaryRed : Colors.white.withOpacity(0.05),
+              backgroundColor: canStart
+                  ? AppColors.primaryRed
+                  : Colors.white.withOpacity(0.05),
               foregroundColor: Colors.white,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               shadowColor: AppColors.primaryRed.withOpacity(0.5),
             ),
             onPressed: canStart ? onStartTap : null,
             child: Text(
-              'BEGIN MISSION',
+              l10n.beginMission,
               style: GoogleFonts.manrope(
                 fontSize: 14,
                 fontWeight: FontWeight.w900,
@@ -42,7 +48,7 @@ class StartMissionButton extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         Text(
-          'ALL AGENTS MUST BE BRIEFED BEFORE DEPLOYMENT',
+          l10n.briefingRequirement,
           textAlign: TextAlign.center,
           style: GoogleFonts.manrope(
             fontSize: 9,
