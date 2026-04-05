@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class RoomLobbyHeader extends StatelessWidget {
   final MultiplayerState netState;
   final VoidCallback onBackTap;
-  
+
   const RoomLobbyHeader({
     super.key,
     required this.netState,
@@ -15,17 +16,18 @@ class RoomLobbyHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildBackNavigation(),
+        _buildBackNavigation(l10n),
         const SizedBox(height: 24),
-        _buildHeader(netState),
+        _buildHeader(netState, l10n),
       ],
     );
   }
 
-  Widget _buildBackNavigation() {
+  Widget _buildBackNavigation(AppLocalizations l10n) {
     return GestureDetector(
       onTap: onBackTap,
       child: Container(
@@ -37,10 +39,14 @@ class RoomLobbyHeader extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white.withOpacity(0.5), size: 14),
+            Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white.withOpacity(0.5),
+              size: 14,
+            ),
             const SizedBox(width: 10),
             Text(
-              'ABORT MISSION',
+              l10n.abortMission,
               style: GoogleFonts.manrope(
                 fontSize: 10,
                 fontWeight: FontWeight.w900,
@@ -54,7 +60,7 @@ class RoomLobbyHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(MultiplayerState netState) {
+  Widget _buildHeader(MultiplayerState netState, AppLocalizations l10n) {
     bool isHosting = netState.status == MultiplayerStatus.hosting;
     return Container(
       width: double.infinity,
@@ -98,12 +104,12 @@ class RoomLobbyHeader extends StatelessWidget {
                         color: AppColors.primaryRed.withOpacity(0.8),
                       ),
                     ),
-                    _buildConnectionBadge(netState),
+                    _buildConnectionBadge(netState, l10n),
                   ],
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Host Mission',
+                  l10n.hostMission,
                   style: GoogleFonts.epilogue(
                     fontSize: 36,
                     fontWeight: FontWeight.w900,
@@ -113,9 +119,9 @@ class RoomLobbyHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  isHosting 
-                    ? 'Broadcasting mission frequency...' 
-                    : 'Initialize secure frequency for your agents.',
+                  isHosting
+                      ? l10n.broadcastingFrequency
+                      : l10n.initializeFrequency,
                   style: GoogleFonts.manrope(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -130,21 +136,25 @@ class RoomLobbyHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildConnectionBadge(MultiplayerState netState) {
-    final isReady = netState.status == MultiplayerStatus.hosting &&
+  Widget _buildConnectionBadge(
+    MultiplayerState netState,
+    AppLocalizations l10n,
+  ) {
+    final isReady =
+        netState.status == MultiplayerStatus.hosting &&
         netState.hostIp != null &&
         netState.hostPort != null;
     final isError = netState.status == MultiplayerStatus.error;
     final color = isError
         ? Colors.redAccent
         : isReady
-            ? Colors.green
-            : Colors.orange;
+        ? Colors.green
+        : Colors.orange;
     final label = isError
-        ? 'FAILED'
+        ? l10n.statusFailed
         : isReady
-            ? 'BROADCASTING'
-            : 'STARTING...';
+        ? l10n.statusBroadcasting
+        : l10n.statusStarting;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -158,10 +168,7 @@ class RoomLobbyHeader extends StatelessWidget {
           Container(
             width: 6,
             height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 8),
           Text(
