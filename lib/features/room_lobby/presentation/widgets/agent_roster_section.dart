@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class AgentRosterSection extends StatelessWidget {
   final List<String> connectedPlayers;
@@ -14,10 +15,11 @@ class AgentRosterSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final totalCount = connectedPlayers.length + 1;
     return Column(
       children: [
-        _buildPlayersHeader(totalCount),
+        _buildPlayersHeader(totalCount, l10n),
         const SizedBox(height: 24),
         GridView.builder(
           shrinkWrap: true,
@@ -26,29 +28,43 @@ class AgentRosterSection extends StatelessWidget {
             maxCrossAxisExtent: 220,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: MediaQuery.of(context).size.width < 380 ? 0.75 : 0.85,
+            childAspectRatio: MediaQuery.of(context).size.width < 380
+                ? 0.75
+                : 0.85,
           ),
           itemCount: totalCount < 4 ? 4 : totalCount,
           itemBuilder: (context, index) {
             if (index == 0) {
-              return _PlayerCard(player: {'name': 'You (Host)', 'status': 'READY', 'isHost': true});
+              return _PlayerCard(
+                player: {
+                  'name': l10n.youHost,
+                  'status': l10n.statusReady,
+                  'isHost': true,
+                },
+              );
             }
             if (index < totalCount) {
-              return _PlayerCard(player: {'name': connectedPlayers[index - 1], 'status': 'JOINED', 'isHost': false});
+              return _PlayerCard(
+                player: {
+                  'name': connectedPlayers[index - 1],
+                  'status': l10n.statusJoined,
+                  'isHost': false,
+                },
+              );
             }
-            return const _WaitingSlot();
+            return _WaitingSlot(l10n: l10n);
           },
         ),
       ],
     );
   }
 
-  Widget _buildPlayersHeader(int count) {
+  Widget _buildPlayersHeader(int count, AppLocalizations l10n) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Agent Roster',
+          l10n.agentRoster,
           style: GoogleFonts.epilogue(
             fontSize: 24,
             fontWeight: FontWeight.w900,
@@ -82,15 +98,20 @@ class _PlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final bool isHost = player['isHost'] ?? false;
-    final bool isReady = player['status'] == 'READY' || player['status'] == 'JOINED';
+    final bool isReady =
+        player['status'] == l10n.statusReady ||
+        player['status'] == l10n.statusJoined;
 
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerHigh.withOpacity(0.5),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isHost ? AppColors.primaryRed.withOpacity(0.3) : Colors.white.withOpacity(0.05),
+          color: isHost
+              ? AppColors.primaryRed.withOpacity(0.3)
+              : Colors.white.withOpacity(0.05),
           width: isHost ? 2 : 1,
         ),
       ),
@@ -102,13 +123,18 @@ class _PlayerCard extends StatelessWidget {
               top: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: const BoxDecoration(
                   color: AppColors.primaryRed,
-                  borderRadius: BorderRadius.only(bottomLeft: Radius.circular(12)),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(12),
+                  ),
                 ),
                 child: Text(
-                  'HOST',
+                  l10n.badgeHost,
                   style: GoogleFonts.manrope(
                     fontSize: 8,
                     fontWeight: FontWeight.w900,
@@ -132,7 +158,9 @@ class _PlayerCard extends StatelessWidget {
                   ),
                   child: Icon(
                     isHost ? Icons.security_rounded : Icons.person_rounded,
-                    color: isHost ? AppColors.primaryRed.withOpacity(0.8) : Colors.white.withOpacity(0.4),
+                    color: isHost
+                        ? AppColors.primaryRed.withOpacity(0.8)
+                        : Colors.white.withOpacity(0.4),
                     size: 24,
                   ),
                 ),
@@ -150,9 +178,14 @@ class _PlayerCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: (isReady ? Colors.green : Colors.orange).withOpacity(0.1),
+                    color: (isReady ? Colors.green : Colors.orange).withOpacity(
+                      0.1,
+                    ),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -175,7 +208,8 @@ class _PlayerCard extends StatelessWidget {
 }
 
 class _WaitingSlot extends StatelessWidget {
-  const _WaitingSlot();
+  final AppLocalizations l10n;
+  const _WaitingSlot({required this.l10n});
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +239,7 @@ class _WaitingSlot extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'ENCRYPTING...',
+            l10n.statusEncrypting,
             style: GoogleFonts.manrope(
               fontSize: 8,
               fontWeight: FontWeight.w900,
