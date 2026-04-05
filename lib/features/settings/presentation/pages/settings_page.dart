@@ -4,12 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:hidden_word/features/settings/presentation/cubit/settings_state.dart';
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
         return SafeArea(
@@ -22,57 +24,65 @@ class SettingsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 15),
-                  _buildHeader(),
+                  _buildHeader(l10n),
                   const SizedBox(height: 40),
-                  _buildSectionTitle('GAMEPLAY & ACCESSIBILITY'),
+                  _buildSectionTitle(l10n.gameplayAccessibility),
                   const SizedBox(height: 16),
                   _buildSettingCard(
                     icon: Icons.language_rounded,
-                    title: 'Language',
-                    subtitle: state.language == 'am' ? 'ባህላዊ ቋንቋ (አማርኛ)' : 'Mission Language (English)',
+                    title: l10n.languageLabel,
+                    subtitle: state.language == 'am'
+                        ? l10n.amharicSubtitle
+                        : l10n.englishSubtitle,
                     trailing: _buildLanguageToggle(context, state.language),
                   ),
                   const SizedBox(height: 16),
                   _buildSettingCard(
                     icon: Icons.volume_up_rounded,
-                    title: 'Sound Effects',
-                    subtitle: 'Immersive ritual sounds',
+                    title: l10n.soundEffects,
+                    subtitle: l10n.soundEffectsSubtitle,
                     trailing: _buildSwitch(
                       value: state.isSoundEnabled,
-                      onChanged: (_) => context.read<SettingsCubit>().toggleSound(),
+                      onChanged: (_) =>
+                          context.read<SettingsCubit>().toggleSound(),
                     ),
                   ),
                   const SizedBox(height: 16),
                   _buildSettingCard(
                     icon: Icons.vibration_rounded,
-                    title: 'Haptic Feedback',
-                    subtitle: 'Tactile tension cues',
+                    title: l10n.hapticFeedback,
+                    subtitle: l10n.hapticFeedbackSubtitle,
                     trailing: _buildSwitch(
                       value: state.isHapticEnabled,
-                      onChanged: (_) => context.read<SettingsCubit>().toggleHaptic(),
+                      onChanged: (_) =>
+                          context.read<SettingsCubit>().toggleHaptic(),
                     ),
                   ),
                   const SizedBox(height: 16),
                   _buildSettingCard(
                     icon: Icons.timer_outlined,
-                    title: 'Game Timer',
-                    subtitle: 'Visible countdown during play',
+                    title: l10n.gameTimer,
+                    subtitle: l10n.gameTimerSubtitle,
                     trailing: _buildSwitch(
                       value: state.isTimerVisible,
-                      onChanged: (_) => context.read<SettingsCubit>().toggleTimer(),
+                      onChanged: (_) =>
+                          context.read<SettingsCubit>().toggleTimer(),
                     ),
                   ),
                   const SizedBox(height: 32),
-                  _buildSectionTitle('KNOWLEDGE BASE'),
+                  _buildSectionTitle(l10n.knowledgeBase),
                   const SizedBox(height: 16),
-                  _buildLinkCard(icon: Icons.history_edu_rounded, title: 'Credits'),
+                  _buildLinkCard(
+                    icon: Icons.history_edu_rounded,
+                    title: l10n.credits,
+                  ),
                   const SizedBox(height: 16),
                   _buildLinkCard(
                     icon: Icons.groups_rounded,
-                    title: 'About the Developers',
+                    title: l10n.aboutDevelopers,
                   ),
                   const SizedBox(height: 40),
-                  _buildRitualCard(),
+                  _buildRitualCard(l10n),
                   const SizedBox(height: 120), // Bottom nav space
                 ],
               ),
@@ -83,7 +93,7 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AppLocalizations l10n) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,7 +102,7 @@ class SettingsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Settings',
+              l10n.settingsTitle,
               style: GoogleFonts.epilogue(
                 fontSize: 30,
                 fontWeight: FontWeight.w900,
@@ -102,7 +112,7 @@ class SettingsPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'PERSONALIZE YOUR RITUAL',
+              l10n.personalizeRitual,
               style: GoogleFonts.manrope(
                 fontSize: 10,
                 fontWeight: FontWeight.w800,
@@ -276,7 +286,10 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSwitch({required bool value, required ValueChanged<bool> onChanged}) {
+  Widget _buildSwitch({
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
     return Switch(
       value: value,
       onChanged: onChanged,
@@ -286,7 +299,7 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildRitualCard() {
+  Widget _buildRitualCard(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -310,7 +323,7 @@ class SettingsPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'THE RITUAL CONTINUES',
+            l10n.ritualContinues,
             style: GoogleFonts.epilogue(
               fontSize: 22,
               fontWeight: FontWeight.w900,
@@ -321,7 +334,7 @@ class SettingsPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Your progress is automatically saved to the Vault. Level up your rank to unlock exclusive traditional avatars and hidden word packs.',
+            l10n.ritualContinuesSubtitle,
             style: GoogleFonts.beVietnamPro(
               fontSize: 15,
               color: AppColors.onSurface.withValues(alpha: 0.5),
