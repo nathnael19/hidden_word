@@ -5,7 +5,9 @@ import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
-import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
+import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart'
+    hide GoogleFonts;
+import 'package:hidden_word/l10n/app_localizations.dart';
 
 class GameConfigSection extends StatelessWidget {
   final HomeLoaded state;
@@ -13,16 +15,22 @@ class GameConfigSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSettingsGrid(context, state.timerSeconds, state.roundsCount),
+        _buildSettingsGrid(
+          context,
+          l10n,
+          state.timerSeconds,
+          state.roundsCount,
+        ),
         const SizedBox(height: 32),
-        _buildStartAction(context, state.playersCount),
+        _buildStartAction(context, l10n, state.playersCount),
         const SizedBox(height: 12),
         Center(
           child: Text(
-            'PREPARE YOUR POKER FACE',
+            l10n.preparePokerFace,
             style: GoogleFonts.manrope(
               fontSize: 10,
               fontWeight: FontWeight.w800,
@@ -35,12 +43,17 @@ class GameConfigSection extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsGrid(BuildContext context, int timer, int rounds) {
+  Widget _buildSettingsGrid(
+    BuildContext context,
+    AppLocalizations l10n,
+    int timer,
+    int rounds,
+  ) {
     return Row(
       children: [
         Expanded(
           child: _SettingCard(
-            label: 'TIMER',
+            label: l10n.timerLabel,
             value: '${timer}s',
             icon: Icons.timer,
             iconColor: Colors.green,
@@ -55,8 +68,8 @@ class GameConfigSection extends StatelessWidget {
         const SizedBox(width: 16),
         Expanded(
           child: _SettingCard(
-            label: 'ROUNDS',
-            value: '$rounds Wins',
+            label: l10n.roundsLabel,
+            value: '$rounds ${l10n.wins}',
             icon: Icons.military_tech,
             iconColor: AppColors.primaryRed,
             onTap: () {
@@ -71,7 +84,11 @@ class GameConfigSection extends StatelessWidget {
     );
   }
 
-  Widget _buildStartAction(BuildContext context, int count) {
+  Widget _buildStartAction(
+    BuildContext context,
+    AppLocalizations l10n,
+    int count,
+  ) {
     return GestureDetector(
       onTap: () async {
         final themeToCategory = {
@@ -112,7 +129,7 @@ class GameConfigSection extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: Text(
-                    'START MISSION',
+                    l10n.startMission,
                     style: GoogleFonts.manrope(
                       fontSize: 16,
                       fontWeight: FontWeight.w900,
@@ -123,7 +140,10 @@ class GameConfigSection extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(16),
