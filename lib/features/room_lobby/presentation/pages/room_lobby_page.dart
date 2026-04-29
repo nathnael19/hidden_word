@@ -17,6 +17,7 @@ import 'package:hidden_word/features/room_lobby/presentation/widgets/mission_par
 import 'package:hidden_word/features/room_lobby/presentation/widgets/room_lobby_header.dart';
 import 'package:hidden_word/features/room_lobby/presentation/widgets/secure_frequency_card.dart';
 import 'package:hidden_word/features/room_lobby/presentation/widgets/start_mission_button.dart';
+import 'package:hidden_word/features/qr/presentation/widgets/qr_display_widget.dart';
 import 'package:hidden_word/l10n/app_localizations.dart';
 
 class RoomLobbyPage extends StatefulWidget {
@@ -113,6 +114,16 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                     ),
                     const SizedBox(height: 20),
                     SecureFrequencyCard(netState: netState),
+                    if (netState.status == MultiplayerStatus.hosting &&
+                        netState.hostIp != null &&
+                        netState.hostPort != null) ...[
+                      const SizedBox(height: 20),
+                      QrDisplayWidget(
+                        ip: netState.hostIp!,
+                        port: netState.hostPort!,
+                        roomName: netState.roomName ?? '',
+                      ),
+                    ],
                     const SizedBox(height: 32),
                     AgentRosterSection(
                       connectedPlayers: netState.connectedPlayers,
