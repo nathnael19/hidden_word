@@ -145,5 +145,11 @@
   "interceptingSignals": "ምልክቶችን በመጥለፍ ላይ...",
   "noRoomsLocated": "ምንም ክፍሎች አልተገኙም",
   "ensureHostVisible": "አስተናጋጁ በእርስዎ አውታረ መረብ ወይም\nበአካባቢው ሆትስፖት ላይ መታየቱን ያረጋግጡ።",
-  "readyToDeploy": "ምልክቱ አስተማማኝ ነው • ለመጀመር ዝግጁ"
+  "readyToDeploy": "ምልክቱ አስተማማኝ ነው • ለመጀመር ዝግጁ",
+  "scanToJoin": "ለመቀላቀል ስካን ያድርጉ",
+  "scanQrCode": "QR ኮድ ስካን ያድርጉ",
+  "scanQrSubtitle": "ካሜራዎን ወደ አስተናጋጁ QR ኮድ ያቅኑ",
+  "qrInvalidFormat": "ትክክለኛ ያልሆነ QR ኮድ — የ Hidden Word ክፍል ኮድ ስካን ያድርጉ",
+  "qrConnecting": "ወደ ክፍሉ በማገናኘት ላይ...",
+  "orLabel": "ወይም"
 }

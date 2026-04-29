@@ -387,4 +387,23 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get readyToDeploy => 'ምልክቱ አስተማማኝ ነው • ለመጀመር ዝግጁ';
+
+  @override
+  String get scanToJoin => 'ለመቀላቀል ስካን ያድርጉ';
+
+  @override
+  String get scanQrCode => 'QR ኮድ ስካን ያድርጉ';
+
+  @override
+  String get scanQrSubtitle => 'ካሜራዎን ወደ አስተናጋጁ QR ኮድ ያቅኑ';
+
+  @override
+  String get qrInvalidFormat =>
+      'ትክክለኛ ያልሆነ QR ኮድ — የ Hidden Word ክፍል ኮድ ስካን ያድርጉ';
+
+  @override
+  String get qrConnecting => 'ወደ ክፍሉ በማገናኘት ላይ...';
+
+  @override
+  String get orLabel => 'ወይም';
 }

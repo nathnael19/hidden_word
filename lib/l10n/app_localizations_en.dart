@@ -393,4 +393,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readyToDeploy => 'SIGNAL STABLE • READY TO DEPLOY';
+
+  @override
+  String get scanToJoin => 'SCAN TO JOIN';
+
+  @override
+  String get scanQrCode => 'Scan QR Code';
+
+  @override
+  String get scanQrSubtitle => 'Point your camera at the host\'s QR code';
+
+  @override
+  String get qrInvalidFormat =>
+      'Invalid QR code — scan a Hidden Word room code';
+
+  @override
+  String get qrConnecting => 'Connecting to room...';
+
+  @override
+  String get orLabel => 'OR';
 }

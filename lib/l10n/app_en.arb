@@ -145,5 +145,11 @@
   "interceptingSignals": "INTERCEPTING SIGNALS...",
   "noRoomsLocated": "NO ROOMS LOCATED",
   "ensureHostVisible": "Ensure the Host is visible on your\nnetwork or local hotspot.",
-  "readyToDeploy": "SIGNAL STABLE • READY TO DEPLOY"
+  "readyToDeploy": "SIGNAL STABLE • READY TO DEPLOY",
+  "scanToJoin": "SCAN TO JOIN",
+  "scanQrCode": "Scan QR Code",
+  "scanQrSubtitle": "Point your camera at the host's QR code",
+  "qrInvalidFormat": "Invalid QR code — scan a Hidden Word room code",
+  "qrConnecting": "Connecting to room...",
+  "orLabel": "OR"
 }

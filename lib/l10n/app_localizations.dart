@@ -817,6 +817,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'SIGNAL STABLE • READY TO DEPLOY'**
   String get readyToDeploy;
+
+  /// No description provided for @scanToJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'SCAN TO JOIN'**
+  String get scanToJoin;
+
+  /// No description provided for @scanQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR Code'**
+  String get scanQrCode;
+
+  /// No description provided for @scanQrSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Point your camera at the host\'s QR code'**
+  String get scanQrSubtitle;
+
+  /// No description provided for @qrInvalidFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid QR code — scan a Hidden Word room code'**
+  String get qrInvalidFormat;
+
+  /// No description provided for @qrConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to room...'**
+  String get qrConnecting;
+
+  /// No description provided for @orLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'OR'**
+  String get orLabel;
 }
 
 class _AppLocalizationsDelegate
