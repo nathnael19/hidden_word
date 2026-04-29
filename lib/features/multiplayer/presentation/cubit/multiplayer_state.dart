@@ -11,6 +11,7 @@ class MultiplayerState extends Equatable {
   final int? hostPort;
   final String? errorMessage;
   final String playerName;
+  final String? roomName;
 
   const MultiplayerState({
     this.status = MultiplayerStatus.initial,
@@ -20,6 +21,7 @@ class MultiplayerState extends Equatable {
     this.hostPort,
     this.errorMessage,
     this.playerName = '',
+    this.roomName,
   });
 
   MultiplayerState copyWith({
@@ -30,6 +32,7 @@ class MultiplayerState extends Equatable {
     int? hostPort,
     String? errorMessage,
     String? playerName,
+    String? roomName,
     bool clearError = false,
   }) {
     return MultiplayerState(
@@ -40,6 +43,7 @@ class MultiplayerState extends Equatable {
       hostPort: hostPort ?? this.hostPort,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       playerName: playerName ?? this.playerName,
+      roomName: roomName ?? this.roomName,
     );
   }
 
@@ -52,5 +56,6 @@ class MultiplayerState extends Equatable {
         hostPort,
         errorMessage,
         playerName,
+        roomName,
       ];
 }
