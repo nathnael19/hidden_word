@@ -5,6 +5,7 @@ import 'package:network_info_plus/network_info_plus.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:flutter/foundation.dart';
 
 class MultiplayerService {
   final NetworkInfo _networkInfo = NetworkInfo();
@@ -22,6 +23,9 @@ class MultiplayerService {
     required Function(WebSocketChannel, dynamic) onClientMessage,
     required Function(WebSocketChannel) onClientDisconnected,
   }) async {
+    if (kIsWeb) {
+      throw UnsupportedError('Hosting is not supported on Web. Please use a mobile or desktop app.');
+    }
     final ip = await _resolveAdvertisedHostIp();
 
     final handler = webSocketHandler((webSocket, _) {
@@ -43,12 +47,15 @@ class MultiplayerService {
     }
     _server = server;
 
+    // Sanitize room name for mDNS service name (no spaces/special chars for maximum compatibility)
+    final sanitizedName = roomName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '-').toLowerCase();
+
     final service = BonsoirService(
-      name: roomName,
+      name: sanitizedName,
       type: '_hiddenword._tcp',
       port: port,
-      host: ip,
       attributes: {
+        'roomName': roomName,
         'ip': ip,
         'IP': ip,
         'port': port.toString(),
@@ -74,6 +81,7 @@ class MultiplayerService {
   Future<void> startDiscovery({
     required Function(List<BonsoirService>) onServicesUpdate,
   }) async {
+    if (kIsWeb) return;
     await _discoverySubscription?.cancel();
     await _discovery?.stop();
 
@@ -150,6 +158,24 @@ class MultiplayerService {
     _clientChannel = null;
   }
 
+  /// Connects directly to a host using a raw IP and port (e.g. from a QR code).
+  /// Skips Bonsoir service resolution entirely.
+  Future<Map<String, dynamic>> connectDirectly({
+    required String ip,
+    required int port,
+    required Function(dynamic) onMessage,
+    required Function() onDone,
+  }) async {
+    final url = Uri.parse('ws://$ip:$port');
+    _clientChannel = WebSocketChannel.connect(url);
+
+    await _clientChannel!.ready.timeout(const Duration(seconds: 8));
+
+    _clientChannel!.stream.listen(onMessage, onDone: onDone);
+
+    return {'ip': ip, 'port': port, 'url': url};
+  }
+
   void broadcastToClients(Iterable<WebSocketChannel> clients, String message) {
     for (final client in clients) {
       client.sink.add(message);
@@ -162,6 +188,7 @@ class MultiplayerService {
 
   // Internals
   Future<String> _resolveAdvertisedHostIp() async {
+    if (kIsWeb) return '127.0.0.1';
     String? ip;
     try {
       ip = await _networkInfo
