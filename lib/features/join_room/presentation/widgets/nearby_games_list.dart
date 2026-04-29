@@ -134,8 +134,9 @@ class NearbyGamesList extends StatelessWidget {
 
     return Column(
       children: state.discoveredServices.map((service) {
+        final displayName = service.attributes['roomName'] ?? service.name;
         return _NearbyGameTile(
-          host: service.name,
+          host: displayName,
           onJoin: () => onJoin(service),
           l10n: l10n,
         );
