@@ -12,6 +12,7 @@ import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.
     hide GoogleFonts;
 import 'package:hidden_word/features/join_room/presentation/widgets/join_room_hero.dart';
 import 'package:hidden_word/features/join_room/presentation/widgets/nearby_games_list.dart';
+import 'package:hidden_word/features/qr/presentation/pages/qr_scanner_page.dart';
 import 'package:hidden_word/l10n/app_localizations.dart';
 
 class JoinRoomPage extends StatefulWidget {
@@ -95,6 +96,10 @@ class _JoinRoomPageState extends State<JoinRoomPage>
                   const SizedBox(height: 16),
                   _buildPlayerNameCard(l10n),
                   const SizedBox(height: 20),
+                  _buildScanQrButton(context, l10n),
+                  const SizedBox(height: 20),
+                  _buildOrDivider(),
+                  const SizedBox(height: 20),
                   NearbyGamesList(
                     state: state,
                     scanAnimation: _scanController,
@@ -110,6 +115,104 @@ class _JoinRoomPageState extends State<JoinRoomPage>
           );
         },
       ),
+    );
+  }
+
+  Widget _buildScanQrButton(BuildContext context, AppLocalizations l10n) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (_) => BlocProvider.value(
+              value: context.read<MultiplayerCubit>(),
+              child: const QrScannerPage(),
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerHigh.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: AppColors.primaryPink.withOpacity(0.2),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.primaryPink.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.qr_code_scanner_rounded,
+                color: AppColors.primaryPink.withOpacity(0.8),
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Scan QR Code',
+                  style: GoogleFonts.epilogue(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Point your camera at the host\'s QR',
+                  style: GoogleFonts.manrope(
+                    fontSize: 11,
+                    color: Colors.white.withOpacity(0.35),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.primaryPink.withOpacity(0.4),
+              size: 22,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOrDivider() {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(height: 1, color: Colors.white.withOpacity(0.06)),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'OR',
+            style: GoogleFonts.manrope(
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              color: Colors.white.withOpacity(0.2),
+              letterSpacing: 2,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(height: 1, color: Colors.white.withOpacity(0.06)),
+        ),
+      ],
     );
   }
 
