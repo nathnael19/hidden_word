@@ -7,6 +7,7 @@ import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
 import 'package:hidden_word/features/multiplayer/data/models/network_message.dart';
 import 'package:hidden_word/features/multiplayer/domain/services/multiplayer_service.dart';
+import 'package:hidden_word/features/qr/services/qr_service.dart';
 
 class MultiplayerCubit extends Cubit<MultiplayerState> {
   final GameCubit gameCubit;
@@ -71,6 +72,7 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
         status: MultiplayerStatus.hosting,
         hostIp: result['ip'],
         hostPort: result['port'],
+        roomName: roomName,
         clearError: true,
       ));
     } catch (e) {
@@ -114,6 +116,38 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
       );
     } catch (e) {
       emit(state.copyWith(status: MultiplayerStatus.error, errorMessage: e.toString()));
+    }
+  }
+
+  // --- QR CONNECTION ---
+  /// Connects directly to a host using data parsed from a QR code.
+  /// Mirrors [connectToHost] but uses raw IP/port instead of a BonsoirService.
+  Future<void> connectByQr(QrData data) async {
+    try {
+      emit(state.copyWith(status: MultiplayerStatus.connecting, clearError: true));
+
+      final result = await multiplayerService.connectDirectly(
+        ip: data.ip,
+        port: data.port,
+        onMessage: _handleHostMessage,
+        onDone: () => stopMultiplayer(),
+      );
+
+      multiplayerService.sendToHost(NetworkMessage(
+        type: NetworkMessageType.action,
+        payload: {'action': 'JOIN', 'playerName': state.playerName},
+      ).encode());
+
+      emit(state.copyWith(
+        status: MultiplayerStatus.connected,
+        hostIp: result['ip'],
+        hostPort: result['port'],
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        status: MultiplayerStatus.error,
+        errorMessage: e.toString(),
+      ));
     }
   }
 
