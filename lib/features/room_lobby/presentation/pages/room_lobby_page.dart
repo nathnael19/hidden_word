@@ -15,7 +15,6 @@ import 'package:hidden_word/features/room_lobby/presentation/widgets/mission_bri
 import 'package:hidden_word/features/room_lobby/presentation/widgets/room_lobby_header.dart';
 import 'package:hidden_word/features/room_lobby/presentation/widgets/start_mission_button.dart';
 import 'package:hidden_word/features/qr/presentation/widgets/qr_display_widget.dart';
-import 'package:hidden_word/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:hidden_word/l10n/app_localizations.dart';
 
 class RoomLobbyPage extends StatefulWidget {
@@ -27,28 +26,12 @@ class RoomLobbyPage extends StatefulWidget {
 
 class _RoomLobbyPageState extends State<RoomLobbyPage> {
   late TextEditingController _roomNameController;
-  late TextEditingController _playerNameController;
 
   @override
   void initState() {
     super.initState();
-    final netCubit = context.read<MultiplayerCubit>();
-    final settingsCubit = context.read<SettingsCubit>();
     context.read<RoomLobbyCubit>().init();
     _roomNameController = TextEditingController();
-    _playerNameController = TextEditingController(
-      text: settingsCubit.state.playerName.isNotEmpty
-          ? settingsCubit.state.playerName
-          : netCubit.state.playerName,
-    );
-
-    _playerNameController.addListener(() {
-      final newName = _playerNameController.text.trim();
-      if (newName.isNotEmpty) {
-        context.read<MultiplayerCubit>().setPlayerName(newName);
-        context.read<SettingsCubit>().setPlayerName(newName);
-      }
-    });
   }
 
   @override
@@ -62,7 +45,6 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
   @override
   void dispose() {
     _roomNameController.dispose();
-    _playerNameController.dispose();
     super.dispose();
   }
 
@@ -96,7 +78,6 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                       ),
                     MissionBriefingCard(
                       roomNameController: _roomNameController,
-                      // playerNameController: _playerNameController,
                       netState: netState,
                       onStartHosting: () async {
                         context.read<MultiplayerCubit>().prepareNewSession();
@@ -105,12 +86,16 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                         );
                       },
                     ),
-                    const SizedBox(height: 20),
-                    QrDisplayWidget(
-                      ip: netState.hostIp!,
-                      port: netState.hostPort!,
-                      roomName: netState.roomName ?? '',
-                    ),
+                    if (netState.status == MultiplayerStatus.hosting &&
+                        netState.hostIp != null &&
+                        netState.hostPort != null) ...[
+                      const SizedBox(height: 20),
+                      QrDisplayWidget(
+                        ip: netState.hostIp!,
+                        port: netState.hostPort!,
+                        roomName: netState.roomName ?? '',
+                      ),
+                    ],
                     const SizedBox(height: 32),
                     AgentRosterSection(
                       connectedPlayers: netState.connectedPlayers,
