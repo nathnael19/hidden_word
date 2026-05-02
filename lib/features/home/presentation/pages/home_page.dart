@@ -5,10 +5,10 @@ import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_state.dart';
 import 'package:hidden_word/features/home/presentation/widgets/connect_section.dart';
-import 'package:hidden_word/features/home/presentation/widgets/game_config_section.dart';
 import 'package:hidden_word/features/home/presentation/widgets/home_bottom_nav_bar.dart';
-import 'package:hidden_word/features/home/presentation/widgets/home_hero_section.dart';
-import 'package:hidden_word/features/home/presentation/widgets/theme_selection_grid.dart';
+import 'package:hidden_word/features/home/presentation/widgets/launcher_hero_section.dart';
+import 'package:hidden_word/features/home/presentation/widgets/game_card.dart';
+import 'package:hidden_word/features/game/presentation/pages/hidden_word_setup_page.dart';
 import 'package:hidden_word/features/settings/presentation/pages/settings_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -30,7 +30,6 @@ class _HomePageState extends State<HomePage> {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         final currentIndex = (state is HomeLoaded) ? state.currentTabIndex : 0;
-        final selectedTheme = (state is HomeLoaded) ? state.selectedTheme : 'Food';
 
         return Scaffold(
           backgroundColor: AppColors.obsidian,
@@ -44,10 +43,7 @@ class _HomePageState extends State<HomePage> {
               : IndexedStack(
                   index: currentIndex,
                   children: [
-                    _HomeSection(
-                      selectedTheme: selectedTheme,
-                      homeLoaded: state as HomeLoaded,
-                    ),
+                    const _GamePickerSection(),
                     const ConnectSection(),
                     const _PlaceholderSection(title: 'RULES'),
                     const SettingsPage(),
@@ -59,10 +55,8 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _HomeSection extends StatelessWidget {
-  final String selectedTheme;
-  final HomeLoaded homeLoaded;
-  const _HomeSection({required this.selectedTheme, required this.homeLoaded});
+class _GamePickerSection extends StatelessWidget {
+  const _GamePickerSection();
 
   @override
   Widget build(BuildContext context) {
@@ -79,11 +73,46 @@ class _HomeSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 32),
-                  const HomeHeroSection(),
-                  const SizedBox(height: 48),
-                  ThemeSelectionGrid(currentTheme: selectedTheme),
-                  const SizedBox(height: 32),
-                  GameConfigSection(state: homeLoaded),
+                  const LauncherHeroSection(),
+                  const SizedBox(height: 40),
+                  Text(
+                    'SELECT OPERATION',
+                    style: GoogleFonts.manrope(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.onSurface.withOpacity(0.3),
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  GameCard(
+                    title: 'Hidden Word',
+                    subtitle: 'Find the spy before they figure out the secret word.',
+                    icon: Icons.security_rounded,
+                    accentColor: AppColors.primaryPink,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const HiddenWordSetupPage()),
+                      );
+                    },
+                  ),
+                  GameCard(
+                    title: 'Spyfall',
+                    subtitle: 'Everyone knows the location except the spy.',
+                    icon: Icons.location_on_rounded,
+                    accentColor: Colors.blueAccent,
+                    isComingSoon: true,
+                    onTap: () {},
+                  ),
+                  GameCard(
+                    title: 'Undercover',
+                    subtitle: 'Describe your word without giving it away.',
+                    icon: Icons.visibility_off_rounded,
+                    accentColor: Colors.purpleAccent,
+                    isComingSoon: true,
+                    onTap: () {},
+                  ),
                   const SizedBox(height: 140),
                 ],
               ),
@@ -168,3 +197,4 @@ class _PlaceholderSection extends StatelessWidget {
     );
   }
 }
+
