@@ -9,6 +9,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   static const _keyHaptic = 'settings_haptic';
   static const _keyTimer = 'settings_timer';
   static const _keyLanguage = 'settings_language';
+  static const _keyFirstRun = 'settings_first_run';
+  static const _keyPlayerName = 'settings_player_name';
 
   SettingsCubit({required this.sharedPreferences})
       : super(SettingsState(
@@ -16,6 +18,8 @@ class SettingsCubit extends Cubit<SettingsState> {
           isHapticEnabled: sharedPreferences.getBool(_keyHaptic) ?? true,
           isTimerVisible: sharedPreferences.getBool(_keyTimer) ?? false,
           language: sharedPreferences.getString(_keyLanguage) ?? 'en',
+          isFirstRun: sharedPreferences.getBool(_keyFirstRun) ?? true,
+          playerName: sharedPreferences.getString(_keyPlayerName) ?? '',
         ));
 
   void toggleSound() {
@@ -39,5 +43,15 @@ class SettingsCubit extends Cubit<SettingsState> {
   void setLanguage(String langCode) {
     sharedPreferences.setString(_keyLanguage, langCode);
     emit(state.copyWith(language: langCode));
+  }
+
+  void setPlayerName(String name) {
+    sharedPreferences.setString(_keyPlayerName, name);
+    emit(state.copyWith(playerName: name));
+  }
+
+  void completeOnboarding() {
+    sharedPreferences.setBool(_keyFirstRun, false);
+    emit(state.copyWith(isFirstRun: false));
   }
 }
