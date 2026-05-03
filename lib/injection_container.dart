@@ -20,14 +20,16 @@ Future<void> init() async {
   sl.registerFactory(() => RoomLobbyCubit());
   sl.registerFactory(() => JoinRoomCubit());
   sl.registerLazySingleton(() => GameCubit());
-  sl.registerLazySingleton(() => MultiplayerCubit(
-    gameCubit: sl(),
-    multiplayerService: sl(),
-  ));
-  
+
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
   sl.registerLazySingleton(() => SettingsCubit(sharedPreferences: sl()));
+
+  sl.registerLazySingleton(() => MultiplayerCubit(
+    gameCubit: sl(),
+    multiplayerService: sl(),
+    settingsCubit: sl(),
+  ));
 
   //! Services
   sl.registerLazySingleton(() => MultiplayerService());
