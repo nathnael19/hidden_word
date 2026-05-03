@@ -8,10 +8,12 @@ import 'package:hidden_word/features/game/presentation/cubit/game_state.dart';
 import 'package:hidden_word/features/multiplayer/data/models/network_message.dart';
 import 'package:hidden_word/features/multiplayer/domain/services/multiplayer_service.dart';
 import 'package:hidden_word/features/qr/services/qr_service.dart';
+import 'package:hidden_word/features/settings/presentation/cubit/settings_cubit.dart';
 
 class MultiplayerCubit extends Cubit<MultiplayerState> {
   final GameCubit gameCubit;
   final MultiplayerService multiplayerService;
+  final SettingsCubit settingsCubit;
   
   StreamSubscription<GameState>? _gameSubscription;
   final Map<WebSocketChannel, String> _connectedClients = {};
@@ -22,7 +24,12 @@ class MultiplayerCubit extends Cubit<MultiplayerState> {
   MultiplayerCubit({
     required this.gameCubit,
     required this.multiplayerService,
-  }) : super(MultiplayerState(playerName: _generateRandomAgentName()));
+    required this.settingsCubit,
+  }) : super(MultiplayerState(
+          playerName: settingsCubit.state.playerName.isNotEmpty
+              ? settingsCubit.state.playerName
+              : _generateRandomAgentName(),
+        ));
 
   static String _generateRandomAgentName() {
     final names = ['SHADOW', 'ECHO', 'SILENT', 'SPECTER', 'GHOST', 'VIPER', 'NOVA', 'RAVEN', 'CIPHER', 'ORACLE', 'COBRA', 'PHANTOM', 'NEON', 'TITAN', 'ZENITH'];
