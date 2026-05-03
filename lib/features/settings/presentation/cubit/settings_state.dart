@@ -5,12 +5,16 @@ class SettingsState extends Equatable {
   final bool isHapticEnabled;
   final bool isTimerVisible;
   final String language; // 'am' or 'en'
+  final bool isFirstRun;
+  final String playerName;
 
   const SettingsState({
     this.isSoundEnabled = true,
     this.isHapticEnabled = true,
     this.isTimerVisible = false,
     this.language = 'am',
+    this.isFirstRun = true,
+    this.playerName = '',
   });
 
   SettingsState copyWith({
@@ -18,12 +22,16 @@ class SettingsState extends Equatable {
     bool? isHapticEnabled,
     bool? isTimerVisible,
     String? language,
+    bool? isFirstRun,
+    String? playerName,
   }) {
     return SettingsState(
       isSoundEnabled: isSoundEnabled ?? this.isSoundEnabled,
       isHapticEnabled: isHapticEnabled ?? this.isHapticEnabled,
       isTimerVisible: isTimerVisible ?? this.isTimerVisible,
       language: language ?? this.language,
+      isFirstRun: isFirstRun ?? this.isFirstRun,
+      playerName: playerName ?? this.playerName,
     );
   }
 
@@ -33,5 +41,7 @@ class SettingsState extends Equatable {
         isHapticEnabled,
         isTimerVisible,
         language,
+        isFirstRun,
+        playerName,
       ];
 }
