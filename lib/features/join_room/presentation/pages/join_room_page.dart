@@ -94,7 +94,7 @@ class _JoinRoomPageState extends State<JoinRoomPage>
                   const SizedBox(height: 12),
                   const JoinRoomHero(),
                   const SizedBox(height: 16),
-                  _buildPlayerNameCard(l10n),
+                  // _buildPlayerNameCard(l10n),
                   const SizedBox(height: 20),
                   _buildScanQrButton(context, l10n),
                   const SizedBox(height: 20),
@@ -137,9 +137,7 @@ class _JoinRoomPageState extends State<JoinRoomPage>
         decoration: BoxDecoration(
           color: AppColors.surfaceContainerHigh.withOpacity(0.5),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: AppColors.primaryPink.withOpacity(0.2),
-          ),
+          border: Border.all(color: AppColors.primaryPink.withOpacity(0.2)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -282,115 +280,6 @@ class _JoinRoomPageState extends State<JoinRoomPage>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPlayerNameCard(AppLocalizations l10n) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(32),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n.agentProfile,
-                  style: GoogleFonts.manrope(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white.withOpacity(0.4),
-                    letterSpacing: 2,
-                  ),
-                ),
-                Icon(
-                  Icons.fingerprint,
-                  size: 16,
-                  color: AppColors.primaryPink.withOpacity(0.5),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildFieldLabel(
-                  l10n.codename,
-                  AppColors.primaryPink.withOpacity(0.5),
-                ),
-                const SizedBox(height: 12),
-                _buildTextField(
-                  _playerNameController,
-                  AppColors.primaryPink.withOpacity(0.8),
-                  l10n,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFieldLabel(String label, Color color) {
-    return Text(
-      label,
-      style: GoogleFonts.manrope(
-        fontSize: 10,
-        fontWeight: FontWeight.w900,
-        color: color,
-        letterSpacing: 1,
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-    TextEditingController controller,
-    Color focusColor,
-    AppLocalizations l10n,
-  ) {
-    return TextField(
-      controller: controller,
-      style: GoogleFonts.epilogue(
-        color: Colors.white,
-        fontSize: 20,
-        fontWeight: FontWeight.w900,
-      ),
-      decoration: InputDecoration(
-        isDense: true,
-        filled: true,
-        fillColor: Colors.black.withOpacity(0.2),
-        hintText: l10n.identifyYourself,
-        hintStyle: GoogleFonts.epilogue(
-          color: Colors.white.withOpacity(0.1),
-          fontWeight: FontWeight.w800,
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.white12),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: focusColor),
-        ),
       ),
     );
   }
