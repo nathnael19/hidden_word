@@ -2,18 +2,44 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
+import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_cubit.dart';
 import 'package:hidden_word/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:hidden_word/features/settings/presentation/cubit/settings_state.dart';
 import 'package:hidden_word/l10n/app_localizations.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  late TextEditingController _nameController;
+
+  @override
+  void initState() {
+    super.initState();
+    final settings = context.read<SettingsCubit>().state;
+    _nameController = TextEditingController(text: settings.playerName);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
+        // Sync controller if name changes from outside (e.g. randomize in settings)
+        if (_nameController.text != state.playerName) {
+          _nameController.text = state.playerName;
+        }
+
         return SafeArea(
           bottom: false,
           child: SingleChildScrollView(
@@ -26,6 +52,10 @@ class SettingsPage extends StatelessWidget {
                   const SizedBox(height: 15),
                   _buildHeader(l10n),
                   const SizedBox(height: 40),
+                  _buildSectionTitle(l10n.agentProfile),
+                  const SizedBox(height: 16),
+                  _buildAgentNameCard(context, state, l10n),
+                  const SizedBox(height: 32),
                   _buildSectionTitle(l10n.gameplayAccessibility),
                   const SizedBox(height: 16),
                   _buildSettingCard(
@@ -279,6 +309,127 @@ class SettingsPage extends StatelessWidget {
                       : AppColors.onSurface.withValues(alpha: 0.3),
                 ),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAgentNameCard(
+    BuildContext context,
+    SettingsState state,
+    AppLocalizations l10n,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerHigh.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.gold.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.fingerprint_rounded,
+                  color: AppColors.gold.withValues(alpha: 0.8),
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                l10n.codename,
+                style: GoogleFonts.manrope(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.gold.withValues(alpha: 0.8),
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: AppColors.obsidian,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _nameController,
+                    style: GoogleFonts.epilogue(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.onSurface,
+                    ),
+                    onChanged: (val) {
+                      final trimmed = val.trim();
+                      if (trimmed.isNotEmpty) {
+                        context.read<SettingsCubit>().setPlayerName(trimmed);
+                        context.read<MultiplayerCubit>().setPlayerName(trimmed);
+                      }
+                    },
+                    decoration: InputDecoration(
+                      hintText: l10n.identifyYourself,
+                      hintStyle: GoogleFonts.epilogue(
+                        color: AppColors.onSurface.withValues(alpha: 0.2),
+                      ),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    final names = [
+                      'SHADOW',
+                      'ECHO',
+                      'SILENT',
+                      'SPECTER',
+                      'GHOST',
+                      'VIPER',
+                      'NOVA',
+                      'RAVEN',
+                      'CIPHER',
+                      'ORACLE',
+                    ];
+                    final suffixes = [
+                      'AGENT',
+                      'OPERATOR',
+                      'WALKER',
+                      'BLADE',
+                      'SOUL',
+                      'MIND',
+                    ];
+                    final rand = DateTime.now().millisecond;
+                    final name = names[rand % names.length];
+                    final suffix =
+                        suffixes[(rand ~/ names.length) % suffixes.length];
+                    final id = (rand % 900) + 100;
+                    final newName = '$name $suffix $id';
+
+                    context.read<SettingsCubit>().setPlayerName(newName);
+                    context.read<MultiplayerCubit>().setPlayerName(newName);
+                    // Name change will sync via the build() check
+                  },
+                  icon: Icon(
+                    Icons.casino_outlined,
+                    color: AppColors.onSurface.withValues(alpha: 0.3),
+                    size: 20,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
