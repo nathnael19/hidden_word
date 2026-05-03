@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/home/presentation/pages/home_page.dart';
+import 'package:hidden_word/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:hidden_word/features/settings/presentation/cubit/settings_cubit.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -41,9 +44,13 @@ class _SplashPageState extends State<SplashPage>
   }
 
   void _navigateToHome() {
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+    final isFirstRun = context.read<SettingsCubit>().state.isFirstRun;
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => isFirstRun ? const OnboardingPage() : const HomePage(),
+      ),
+    );
   }
 
   @override
