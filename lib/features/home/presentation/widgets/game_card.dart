@@ -5,30 +5,31 @@ import 'package:hidden_word/core/style/app_colors.dart';
 class GameCard extends StatelessWidget {
   final String title;
   final String subtitle;
+  final String description;
   final IconData icon;
   final Color accentColor;
-  final bool isComingSoon;
-  final VoidCallback onTap;
+  final bool isLocked;
+  final VoidCallback? onTap;
 
   const GameCard({
     super.key,
     required this.title,
     required this.subtitle,
+    required this.description,
     required this.icon,
-    required this.accentColor,
-    this.isComingSoon = false,
-    required this.onTap,
+    this.accentColor = AppColors.primaryPink,
+    this.isLocked = false,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: isComingSoon ? null : onTap,
+      onTap: isLocked ? null : onTap,
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 300),
-        opacity: isComingSoon ? 0.6 : 1.0,
+        opacity: isLocked ? 0.6 : 1.0,
         child: Container(
-          margin: const EdgeInsets.only(bottom: 20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(32),
             gradient: LinearGradient(
@@ -40,13 +41,13 @@ class GameCard extends StatelessWidget {
               ],
             ),
             border: Border.all(
-              color: isComingSoon 
+              color: isLocked 
                   ? Colors.white.withOpacity(0.05) 
                   : accentColor.withOpacity(0.2),
               width: 1.5,
             ),
             boxShadow: [
-              if (!isComingSoon)
+              if (!isLocked)
                 BoxShadow(
                   color: accentColor.withOpacity(0.05),
                   blurRadius: 20,
@@ -58,7 +59,7 @@ class GameCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(32),
             child: Stack(
               children: [
-                // Decorative elements
+                // Decorative icon in background
                 Positioned(
                   right: -20,
                   bottom: -20,
@@ -86,7 +87,7 @@ class GameCard extends StatelessWidget {
                             ),
                             child: Icon(icon, color: accentColor, size: 28),
                           ),
-                          if (isComingSoon)
+                          if (isLocked)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
@@ -120,19 +121,30 @@ class GameCard extends StatelessWidget {
                         subtitle,
                         style: GoogleFonts.beVietnamPro(
                           fontSize: 14,
-                          color: AppColors.onSurface.withOpacity(0.5),
+                          fontWeight: FontWeight.w600,
+                          color: isLocked ? AppColors.onSurface.withOpacity(0.3) : accentColor,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        description,
+                        style: GoogleFonts.beVietnamPro(
+                          fontSize: 13,
+                          color: AppColors.onSurface.withOpacity(0.4),
+                          height: 1.5,
                         ),
                       ),
                     ],
                   ),
                 ),
                 
-                // Gradient overlay for interactive feel
+                // InkWell overlay
                 Positioned.fill(
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: isComingSoon ? null : onTap,
+                      onTap: isLocked ? null : onTap,
                       splashColor: accentColor.withOpacity(0.1),
                       highlightColor: accentColor.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(32),
