@@ -19,7 +19,7 @@ class GameCubit extends Cubit<GameState> {
   /// Initialises the game. Fetches a random word from [categoryId].
   Future<void> init(
     int playersCount, {
-    String categoryId = 'food',
+    dynamic categoryId = 'food',
     List<String>? spyPlayerNamesOverride,
     List<String> connectedPlayers = const [],
     int spyCount = 1,
@@ -39,6 +39,10 @@ class GameCubit extends Cubit<GameState> {
       spies = shuffled.take(k).toList();
     }
 
+    final List<String> categoryIds = categoryId is List 
+        ? List<String>.from(categoryId) 
+        : [categoryId.toString()];
+
     emit(GameState(
       totalPlayers: effectiveCount,
       currentPlayerIndex: 1,
@@ -51,7 +55,7 @@ class GameCubit extends Cubit<GameState> {
       spyPlayerNames: spies,
       connectedPlayers: roster,
       sessionActive: true,
-      categoryId: categoryId,
+      categoryIds: categoryIds,
       spyCount: spies.length,
       playersReadyCount: 0,
     ));
@@ -141,7 +145,7 @@ class GameCubit extends Cubit<GameState> {
   Future<void> resetGame() async {
     await init(
       state.totalPlayers,
-      categoryId: state.categoryId,
+      categoryId: state.categoryIds,
       connectedPlayers: state.connectedPlayers,
       spyCount: state.spyCount,
     );
