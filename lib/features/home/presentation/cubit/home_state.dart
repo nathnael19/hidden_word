@@ -13,48 +13,53 @@ class HomeInitial extends HomeState {}
 class HomeLoading extends HomeState {}
 
 class HomeLoaded extends HomeState {
-  final String selectedTheme;
+  final List<String> selectedThemes;
   final int currentTabIndex;
   final ConnectViewMode connectViewMode;
   final int playersCount;
   final int timerSeconds;
   final int roundsCount;
+  final bool isConfigValid;
 
   const HomeLoaded({
-    this.selectedTheme = 'Food',
+    this.selectedThemes = const ['Food'],
     this.currentTabIndex = 0,
     this.connectViewMode = ConnectViewMode.main,
     this.playersCount = 6,
     this.timerSeconds = 60,
     this.roundsCount = 5,
+    this.isConfigValid = true,
   });
 
   HomeLoaded copyWith({
-    String? selectedTheme,
+    List<String>? selectedThemes,
     int? currentTabIndex,
     ConnectViewMode? connectViewMode,
     int? playersCount,
     int? timerSeconds,
     int? roundsCount,
+    bool? isConfigValid,
   }) {
     return HomeLoaded(
-      selectedTheme: selectedTheme ?? this.selectedTheme,
+      selectedThemes: selectedThemes ?? this.selectedThemes,
       currentTabIndex: currentTabIndex ?? this.currentTabIndex,
       connectViewMode: connectViewMode ?? this.connectViewMode,
       playersCount: playersCount ?? this.playersCount,
       timerSeconds: timerSeconds ?? this.timerSeconds,
       roundsCount: roundsCount ?? this.roundsCount,
+      isConfigValid: isConfigValid ?? this.isConfigValid,
     );
   }
 
   @override
   List<Object> get props => [
-        selectedTheme,
+        selectedThemes,
         currentTabIndex,
         connectViewMode,
         playersCount,
         timerSeconds,
         roundsCount,
+        isConfigValid,
       ];
 }
 
