@@ -91,14 +91,22 @@ class GameConfigSection extends StatelessWidget {
   ) {
     return GestureDetector(
       onTap: () async {
+        if (!state.isConfigValid) return;
+
         final themeToCategory = {
           'Food': 'food',
           'Transport': 'transport',
           'Culture': 'culture',
           'Student': 'student',
         };
-        final categoryId = themeToCategory[state.selectedTheme] ?? 'food';
-        await context.read<GameCubit>().init(count, categoryId: categoryId);
+        final categoryIds = state.selectedThemes
+            .map((t) => themeToCategory[t] ?? 'food')
+            .toList();
+            
+        await context.read<GameCubit>().init(
+          state.playersCount, 
+          categoryId: categoryIds,
+        );
 
         if (context.mounted) {
           Navigator.push(
