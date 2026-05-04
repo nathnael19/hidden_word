@@ -7,68 +7,69 @@ class LauncherHeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'ULTIMATE',
-          style: GoogleFonts.manrope(
-            color: AppColors.gold,
-            fontSize: 14,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.2,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 12,
-          runSpacing: 8,
-          children: [
-            Text(
-              'GAME',
-              style: GoogleFonts.epilogue(
-                fontSize: MediaQuery.of(context).size.width < 360 ? 32 : 40,
-                fontWeight: FontWeight.w900,
-                color: AppColors.onSurface,
-                letterSpacing: 4,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryPink.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(100),
+                  border: Border.all(
+                    color: AppColors.primaryPink.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome,
+                      color: AppColors.primaryPink,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'PREMIUM ACCESS',
+                      style: GoogleFonts.manrope(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primaryPink,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Text(
-              'VAULT',
-              style: GoogleFonts.epilogue(
-                fontSize: MediaQuery.of(context).size.width < 360 ? 32 : 40,
-                fontWeight: FontWeight.w900,
-                color: AppColors.primaryPink,
-                letterSpacing: 4,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Container(
-          width: 120,
-          height: 4,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(2),
-            gradient: LinearGradient(
-              colors: [
-                AppColors.primaryPink.withOpacity(0.6),
-                Colors.transparent,
-              ],
+            ],
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Game Vault',
+            style: GoogleFonts.epilogue(
+              fontSize: 48,
+              fontWeight: FontWeight.w900,
+              color: AppColors.onSurface,
+              letterSpacing: -1,
+              height: 1.1,
             ),
           ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Select your next operation.\nPremium multiplayer experiences.',
-          style: GoogleFonts.beVietnamPro(
-            fontSize: MediaQuery.of(context).size.width < 360 ? 16 : 18,
-            color: AppColors.onSurface.withOpacity(0.5),
-            height: 1.4,
-            fontWeight: FontWeight.w400,
+          const SizedBox(height: 12),
+          Text(
+            'Select your next operation. High stakes,\nmaximum deduction required.',
+            style: GoogleFonts.beVietnamPro(
+              fontSize: 16,
+              color: AppColors.onSurface.withOpacity(0.5),
+              height: 1.5,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
