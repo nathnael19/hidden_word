@@ -20,8 +20,8 @@ class GameState extends Equatable {
   final String? majorityVotedName;
   /// True after [GameCubit.init] has run for an active round (host or synced client).
   final bool sessionActive;
-  /// Word category id used for this session (words.json).
-  final String categoryId;
+  /// Word category ids used for this session (words.json).
+  final List<String> categoryIds;
   /// Number of spies configured for this session.
   final int spyCount;
   /// How many players have pressed ready (host-authoritative, synced).
@@ -43,7 +43,7 @@ class GameState extends Equatable {
     this.connectedPlayers = const [],
     this.majorityVotedName,
     this.sessionActive = false,
-    this.categoryId = 'food',
+    this.categoryIds = const ['food'],
     this.spyCount = 1,
     this.playersReadyCount = 0,
   });
@@ -56,6 +56,14 @@ class GameState extends Equatable {
       final legacy = json['spyPlayerName'] as String?;
       if (legacy != null && legacy.isNotEmpty) return [legacy];
       return const [];
+    }
+
+    List<String> parseCategoryIds() {
+      if (json['categoryIds'] != null) {
+        return List<String>.from(json['categoryIds'] as List);
+      }
+      final legacy = json['categoryId'] as String?;
+      return legacy != null ? [legacy] : const ['food'];
     }
 
     return GameState(
@@ -74,7 +82,7 @@ class GameState extends Equatable {
       connectedPlayers: List<String>.from(json['connectedPlayers'] ?? []),
       majorityVotedName: json['majorityVotedName'] as String?,
       sessionActive: json['sessionActive'] as bool? ?? false,
-      categoryId: json['categoryId'] as String? ?? 'food',
+      categoryIds: parseCategoryIds(),
       spyCount: json['spyCount'] as int? ?? 1,
       playersReadyCount: json['playersReadyCount'] as int? ?? 0,
     );
@@ -97,7 +105,7 @@ class GameState extends Equatable {
       'connectedPlayers': connectedPlayers,
       'majorityVotedName': majorityVotedName,
       'sessionActive': sessionActive,
-      'categoryId': categoryId,
+      'categoryIds': categoryIds,
       'spyCount': spyCount,
       'playersReadyCount': playersReadyCount,
     };
@@ -119,7 +127,7 @@ class GameState extends Equatable {
     List<String>? connectedPlayers,
     String? majorityVotedName,
     bool? sessionActive,
-    String? categoryId,
+    List<String>? categoryIds,
     int? spyCount,
     int? playersReadyCount,
     bool clearVotedPlayer = false,
@@ -140,7 +148,7 @@ class GameState extends Equatable {
       connectedPlayers: connectedPlayers ?? this.connectedPlayers,
       majorityVotedName: majorityVotedName ?? this.majorityVotedName,
       sessionActive: sessionActive ?? this.sessionActive,
-      categoryId: categoryId ?? this.categoryId,
+      categoryIds: categoryIds ?? this.categoryIds,
       spyCount: spyCount ?? this.spyCount,
       playersReadyCount: playersReadyCount ?? this.playersReadyCount,
     );
@@ -163,7 +171,7 @@ class GameState extends Equatable {
         connectedPlayers,
         majorityVotedName,
         sessionActive,
-        categoryId,
+        categoryIds,
         spyCount,
         playersReadyCount,
       ];
