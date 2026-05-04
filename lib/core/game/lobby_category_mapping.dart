@@ -6,11 +6,11 @@ const Map<String, String> kLobbyCategoryLabelToId = {
   'Sports': 'sports',
 };
 
-String resolveCategoryIdFromLobby(List<String> selectedLabels) {
-  if (selectedLabels.isEmpty) return 'food';
-  for (final label in selectedLabels) {
-    final id = kLobbyCategoryLabelToId[label];
-    if (id != null) return id;
-  }
-  return 'food';
+List<String> resolveCategoryIdsFromLobby(List<String> selectedLabels) {
+  if (selectedLabels.isEmpty) return ['food'];
+  final ids = selectedLabels
+      .map((l) => kLobbyCategoryLabelToId[l])
+      .whereType<String>()
+      .toList();
+  return ids.isEmpty ? ['food'] : ids;
 }
