@@ -7,13 +7,26 @@ class HomeCubit extends Cubit<HomeState> {
   void init() {
     emit(HomeLoading());
     // Initializing with default theme
-    emit(const HomeLoaded(selectedTheme: 'Food'));
+    emit(const HomeLoaded(selectedThemes: ['Food']));
   }
 
   void selectTheme(String theme) {
     final currentState = state;
     if (currentState is HomeLoaded) {
-      emit(currentState.copyWith(selectedTheme: theme));
+      final updatedThemes = List<String>.from(currentState.selectedThemes);
+      if (updatedThemes.contains(theme)) {
+        // Toggle off if more than 1 selected
+        if (updatedThemes.length > 1) {
+          updatedThemes.remove(theme);
+        }
+      } else {
+        // Toggle on
+        updatedThemes.add(theme);
+      }
+      emit(currentState.copyWith(
+        selectedThemes: updatedThemes,
+        isConfigValid: updatedThemes.isNotEmpty,
+      ));
     }
   }
 
