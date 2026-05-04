@@ -106,7 +106,7 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                       netState: netState,
                       onStartTap: () async {
                         final lobbyState = context.read<RoomLobbyCubit>().state;
-                        final categoryId = resolveCategoryIdFromLobby(
+                        final categoryIds = resolveCategoryIdsFromLobby(
                           lobbyState.selectedCategories,
                         );
                         context.read<MultiplayerCubit>().prepareNewSession();
@@ -122,7 +122,7 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
 
                         await context.read<GameCubit>().init(
                           totalRoster.length,
-                          categoryId: categoryId,
+                          categoryId: categoryIds,
                           connectedPlayers: totalRoster,
                           spyCount: lobbyState.spyCount,
                         );
