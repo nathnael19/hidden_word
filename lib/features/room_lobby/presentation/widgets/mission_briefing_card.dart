@@ -6,14 +6,12 @@ import 'package:hidden_word/l10n/app_localizations.dart';
 
 class MissionBriefingCard extends StatelessWidget {
   final TextEditingController roomNameController;
-  final TextEditingController playerNameController;
   final MultiplayerState netState;
   final VoidCallback onStartHosting;
 
   const MissionBriefingCard({
     super.key,
     required this.roomNameController,
-    required this.playerNameController,
     required this.netState,
     required this.onStartHosting,
   });
@@ -77,17 +75,7 @@ class MissionBriefingCard extends StatelessWidget {
                   canEdit,
                   AppColors.primaryPink.withOpacity(0.8),
                 ),
-                const SizedBox(height: 24),
-                _buildFieldLabel(
-                  l10n.hostCodename,
-                  AppColors.gold.withOpacity(0.5),
-                ),
-                const SizedBox(height: 12),
-                _buildTextField(
-                  playerNameController,
-                  true,
-                  AppColors.gold.withOpacity(0.8),
-                ),
+
                 const SizedBox(height: 24),
                 _buildHostingButton(canStartHosting, isAlreadyHosting, l10n),
               ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart';
 import 'package:hidden_word/features/room_lobby/presentation/cubit/room_lobby_cubit.dart';
 import 'package:hidden_word/features/room_lobby/presentation/cubit/room_lobby_state.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
@@ -9,12 +10,9 @@ import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_
 import 'package:hidden_word/features/multiplayer/presentation/cubit/multiplayer_state.dart';
 import 'package:hidden_word/features/game/presentation/cubit/game_cubit.dart';
 import 'package:hidden_word/core/game/lobby_category_mapping.dart';
-import 'package:hidden_word/features/game/presentation/pages/secret_reveal_page.dart'
-    hide GoogleFonts;
 import 'package:hidden_word/features/room_lobby/presentation/widgets/agent_roster_section.dart';
 import 'package:hidden_word/features/room_lobby/presentation/widgets/mission_briefing_card.dart';
 import 'package:hidden_word/features/room_lobby/presentation/widgets/room_lobby_header.dart';
-import 'package:hidden_word/features/room_lobby/presentation/widgets/secure_frequency_card.dart';
 import 'package:hidden_word/features/room_lobby/presentation/widgets/start_mission_button.dart';
 import 'package:hidden_word/features/qr/presentation/widgets/qr_display_widget.dart';
 import 'package:hidden_word/features/settings/presentation/cubit/settings_cubit.dart';
@@ -98,7 +96,7 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                       ),
                     MissionBriefingCard(
                       roomNameController: _roomNameController,
-                      playerNameController: _playerNameController,
+                      // playerNameController: _playerNameController,
                       netState: netState,
                       onStartHosting: () async {
                         context.read<MultiplayerCubit>().prepareNewSession();
@@ -107,18 +105,12 @@ class _RoomLobbyPageState extends State<RoomLobbyPage> {
                         );
                       },
                     ),
-                    // const SizedBox(height: 20),
-                    // SecureFrequencyCard(netState: netState),
-                    // if (netState.status == MultiplayerStatus.hosting &&
-                    //     netState.hostIp != null &&
-                    //     netState.hostPort != null) ...[
-                    //   const SizedBox(height: 20),
-                    //   QrDisplayWidget(
-                    //     ip: netState.hostIp!,
-                    //     port: netState.hostPort!,
-                    //     roomName: netState.roomName ?? '',
-                    //   ),
-                    // ],
+                    const SizedBox(height: 20),
+                    QrDisplayWidget(
+                      ip: netState.hostIp!,
+                      port: netState.hostPort!,
+                      roomName: netState.roomName ?? '',
+                    ),
                     const SizedBox(height: 32),
                     AgentRosterSection(
                       connectedPlayers: netState.connectedPlayers,
