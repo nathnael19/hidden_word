@@ -5,8 +5,8 @@ import 'package:hidden_word/core/style/app_colors.dart';
 import 'package:hidden_word/features/home/presentation/cubit/home_cubit.dart';
 
 class ThemeSelectionGrid extends StatelessWidget {
-  final String currentTheme;
-  const ThemeSelectionGrid({super.key, required this.currentTheme});
+  final List<String> selectedThemes;
+  const ThemeSelectionGrid({super.key, required this.selectedThemes});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class ThemeSelectionGrid extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Choose Theme',
+              'Select Categories',
               style: GoogleFonts.epilogue(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
@@ -25,11 +25,11 @@ class ThemeSelectionGrid extends StatelessWidget {
               ),
             ),
             Text(
-              'REQUIRED',
+              'CHOOSE MULTIPLE',
               style: GoogleFonts.manrope(
                 fontSize: 8,
                 fontWeight: FontWeight.w900,
-                color: AppColors.onSurface.withOpacity(0.2),
+                color: AppColors.primaryPink.withOpacity(0.5),
                 letterSpacing: 1,
               ),
             ),
@@ -49,7 +49,7 @@ class ThemeSelectionGrid extends StatelessWidget {
           itemBuilder: (context, index) {
             final themes = [
               {'title': 'Food', 'keywords': 'Injera, Kitfo,\ncoffee...', 'icon': Icons.restaurant},
-              {'title': 'Transport', 'keywords': 'Anbessa, Bajaj,\nRide...', 'icon': Icons.directions_bus, 'hasStatus': true},
+              {'title': 'Transport', 'keywords': 'Anbessa, Bajaj,\nRide...', 'icon': Icons.directions_bus},
               {'title': 'Culture', 'keywords': 'Meskel, Timket,\nGenna...', 'icon': Icons.celebration},
               {'title': 'Student', 'keywords': 'Campus, Exams,\nDorm...', 'icon': Icons.school},
             ];
@@ -58,8 +58,7 @@ class ThemeSelectionGrid extends StatelessWidget {
               title: theme['title'] as String,
               keywords: theme['keywords'] as String,
               icon: theme['icon'] as IconData,
-              isSelected: currentTheme == theme['title'],
-              hasStatus: theme['hasStatus'] == true,
+              isSelected: selectedThemes.contains(theme['title']),
               onTap: () => context.read<HomeCubit>().selectTheme(theme['title'] as String),
             );
           },
@@ -74,7 +73,6 @@ class ThemeCard extends StatelessWidget {
   final String keywords;
   final IconData icon;
   final bool isSelected;
-  final bool hasStatus;
   final VoidCallback onTap;
 
   const ThemeCard({
@@ -83,7 +81,6 @@ class ThemeCard extends StatelessWidget {
     required this.keywords,
     required this.icon,
     required this.isSelected,
-    this.hasStatus = false,
     required this.onTap,
   });
 
@@ -143,48 +140,6 @@ class ThemeCard extends StatelessWidget {
                     color: AppColors.primaryPink,
                     shape: BoxShape.circle,
                   ),
-                ),
-              ),
-            if (hasStatus && !isSelected)
-              Positioned(
-                top: 0,
-                right: 0,
-                bottom: 0,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 4,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            top: 12,
-                            left: -2,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.green.withOpacity(0.6),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                 ),
               ),
           ],
