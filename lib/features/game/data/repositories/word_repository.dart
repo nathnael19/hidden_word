@@ -33,12 +33,21 @@ class WordRepository {
     }
   }
 
-  /// Picks a random word from the given category id.
-  static Future<String> pickRandomWord(String categoryId) async {
-    final category = await getCategoryById(categoryId);
-    if (category == null || category.words.isEmpty) return 'Injera';
+  /// Picks a random word from the given category id(s).
+  static Future<String> pickRandomWord(dynamic categoryId) async {
+    final categories = await loadCategories();
+    final List<String> targetIds = categoryId is List 
+        ? List<String>.from(categoryId) 
+        : [categoryId.toString()];
+
+    final allWords = categories
+        .where((c) => targetIds.contains(c.id))
+        .expand((c) => c.words)
+        .toList();
+
+    if (allWords.isEmpty) return 'Injera';
     final random = Random();
-    return category.words[random.nextInt(category.words.length)];
+    return allWords[random.nextInt(allWords.length)];
   }
 
   /// Returns all category names for display in the UI.
