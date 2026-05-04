@@ -66,7 +66,7 @@ class HiddenWordSetupPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 40),
-                        ThemeSelectionGrid(currentTheme: state.selectedTheme),
+                        ThemeSelectionGrid(selectedThemes: state.selectedThemes),
                         const SizedBox(height: 32),
                         GameConfigSection(state: state),
                         const SizedBox(height: 40),
